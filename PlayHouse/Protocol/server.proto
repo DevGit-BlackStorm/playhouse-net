@@ -1,0 +1,153 @@
+﻿syntax = "proto3";
+
+package playhouse.protocol;
+
+import "common.proto";
+
+message RouteHeaderMsg {
+  HeaderMsg header_msg = 1;
+  int32 sid = 2;
+  bool is_system = 3;
+  bool is_reply = 4;
+  bool is_base = 5;
+  bool is_backend = 6;
+  string session_info = 7;
+  int64 stage_id = 8;
+  int64 account_id = 9;
+}
+
+message RoutePacketMsg {
+  RouteHeaderMsg route_header_msg = 1;
+  bytes message = 2;
+}
+
+
+message ServerInfoMsg{
+  string service_type = 1;
+  string service_id = 2;
+  string endpoint = 3;
+  string server_state = 4;
+  int64 timestamp = 5;
+  int32 weighting_point = 6;
+}
+
+message AuthenticateMsg {
+  string service_id = 1;
+  int64 account_id = 2;
+  string session_info = 3;
+}
+
+message UpdateSessionInfoMsg {
+  string service_id = 1;
+  string session_info = 2;
+}
+
+
+message SessionCloseMsg {
+}
+
+message DisconnectNoticeMsg {
+  int64 account_id = 1;
+//  string session_info = 2;
+
+}
+
+//////////////// for room service //////////////////////////
+
+
+message CreateJoinStageReq {
+  string stageType = 1;
+  string create_payload_name = 2;
+  bytes create_payload = 3;
+  string join_payload_name =4;
+  bytes join_payload = 5;
+  string sessionEndpoint = 6;
+  int32 sid = 7;
+}
+
+message CreateJoinStageRes {
+  bool isCreated =1;
+  string create_payload_name = 2;
+  bytes create_payload = 3;
+  string join_payload_name =4;
+  bytes join_payload = 5;
+}
+
+message CreateStageReq {
+  string stage_type = 1;
+//  int64 accountId = 2;
+  string payload_name = 3;
+  bytes payload = 4;
+}
+
+message CreateStageRes {
+  int64 stage_id =1;
+  string payload_name = 2;
+  bytes payload = 3;
+}
+
+message JoinStageReq {
+//  int64 stageId = 1;
+//  int64 accountId = 2;
+  string sessionEndpoint = 1;
+  int32 sid = 2;
+  string payload_name = 3;
+  bytes payload = 4;
+}
+
+message JoinStageMsg{
+  string playEndpoint = 1;
+  int64 stage_id = 2;
+
+
+}
+
+message JoinStageRes {
+  string payload_name = 1;
+  bytes payload = 2;
+}
+
+message LeaveStageMsg {
+}
+
+//message LeaveStageRes {
+//  bool result =1;
+//  string payload_name = 2;
+//  bytes payload = 3;
+//}
+
+message DeleteStageReq {
+  string payload_name = 1;
+  bytes payload = 2;
+}
+
+message DeleteStageRes {
+  string payload_name = 1;
+  bytes payload = 2;
+}
+message SessionClose {
+  string session_id = 1;
+}
+message TimerMsg {
+  enum Type{
+    REPEAT = 0;
+    COUNT = 1 ;
+    CANCEL = 2;
+  }
+  Type type = 1;
+  int64 initial_delay = 3;
+  int64 period = 4;
+  int32 count = 5;
+}
+
+message StageTimer {}
+
+
+message ForceLeaveStage {
+}
+message DestroyStage {
+}
+
+message AsyncBlock {
+}
+

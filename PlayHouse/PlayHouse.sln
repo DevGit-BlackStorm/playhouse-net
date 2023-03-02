@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33414.496
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayHouse", "PlayHouse\PlayHouse.csproj", "{E5665A4B-6E7E-437E-8597-FA3C20F84A3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Protocol", "Protocol\Protocol.csproj", "{8691EE05-77A8-43E6-A106-A33EEC4AAEAB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E5665A4B-6E7E-437E-8597-FA3C20F84A3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5665A4B-6E7E-437E-8597-FA3C20F84A3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5665A4B-6E7E-437E-8597-FA3C20F84A3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5665A4B-6E7E-437E-8597-FA3C20F84A3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8691EE05-77A8-43E6-A106-A33EEC4AAEAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8691EE05-77A8-43E6-A106-A33EEC4AAEAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8691EE05-77A8-43E6-A106-A33EEC4AAEAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8691EE05-77A8-43E6-A106-A33EEC4AAEAB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A46A0E42-20D1-43E2-936B-678950D96850}
+	EndGlobalSection
+EndGlobal
