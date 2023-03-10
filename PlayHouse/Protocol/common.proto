@@ -10,9 +10,8 @@ client packet
 message HeaderMsg {
   string service_id = 1;
   int32 msg_seq = 2;
-  string msg_name = 3;
-  int32 base_error_code = 4;
-  int32 error_code = 5;
+  string msg_name = 3;  
+  int32 error_code = 4;
 
 }
 
