@@ -4,14 +4,12 @@ namespace PlayHouse.Communicator
 {
     public class XServerInfoCenter : IServerInfoCenter
     {
-        private readonly ILogger _log;
         private readonly IDictionary<string, XServerInfo> _serverInfoMap = new ConcurrentDictionary<string, XServerInfo>();
         private List<XServerInfo> _serverInfoList = new List<XServerInfo>();
         private int _offset = 0;
 
-        public XServerInfoCenter(ILogger logger)
+        public XServerInfoCenter()
         {
-            _log = logger;
         }
 
         public IList<XServerInfo> Update(IList<XServerInfo> serverList)

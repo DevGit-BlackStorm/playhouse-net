@@ -9,10 +9,12 @@ namespace PlayHouse.Communicator.Message
     using Google.Protobuf;
     using Playhouse.Protocol;
 
-    public interface IReplyCallback
-    {
-        void OnReceive(ReplyPacket replyPacket);
-    }
+    //public interface IReplyCallback
+    //{
+    //    void OnReceive(ReplyPacket replyPacket);
+    //}
+
+    public delegate void ReplyCallback(ReplyPacket replyPacket);
 
     public interface IBasePacket : IDisposable
     {
@@ -20,7 +22,6 @@ namespace PlayHouse.Communicator.Message
         
         byte[] Data();
     }
-
 
 
 
@@ -33,7 +34,7 @@ namespace PlayHouse.Communicator.Message
         public Packet(string msgName = "")
         {
             this.MsgName = msgName;
-            this._payload = XPayload.Empty();
+            this._payload =new EmptyPayload();
         }
 
         public Packet(string msgName, IPayload payload) : this(msgName)
@@ -42,7 +43,7 @@ namespace PlayHouse.Communicator.Message
         }
           
 
-        public Packet(IMessage message) : this(message.Descriptor.Name, new IMessagePayload(message)) { }
+        public Packet(IMessage message) : this(message.Descriptor.Name, new ProtoPayload(message)) { }
         public Packet(string msgName, ByteString message) : this(msgName, new ByteStringPayload(message)) { }
 
         
@@ -56,7 +57,7 @@ namespace PlayHouse.Communicator.Message
         {
             
             IPayload temp = _payload;
-            _payload = XPayload.Empty() ;
+            _payload = new EmptyPayload() ;
             return temp;
         }
 
@@ -79,10 +80,10 @@ namespace PlayHouse.Communicator.Message
             this._payload = payload;
         }
 
-        public ReplyPacket(int errorCode = 0, string msgName = ""):this(errorCode,msgName,XPayload.Empty()){}
+        public ReplyPacket(int errorCode = 0, string msgName = ""):this(errorCode,msgName,new EmptyPayload()){}
 
-        public ReplyPacket(int errorCode, IMessage message) : this(errorCode, message.Descriptor.Name, new IMessagePayload(message)) { }
-        public ReplyPacket(IMessage message) : this(0, message.Descriptor.Name, new IMessagePayload(message)) { }
+        public ReplyPacket(int errorCode, IMessage message) : this(errorCode, message.Descriptor.Name, new ProtoPayload(message)) { }
+        public ReplyPacket(IMessage message) : this(0, message.Descriptor.Name, new ProtoPayload(message)) { }
         
 
         public bool IsSuccess()
@@ -99,7 +100,7 @@ namespace PlayHouse.Communicator.Message
         public IPayload MovePayload()
         {
             IPayload temp = _payload;
-            _payload = XPayload.Empty();
+            _payload = new EmptyPayload();
             return temp;
         }
 

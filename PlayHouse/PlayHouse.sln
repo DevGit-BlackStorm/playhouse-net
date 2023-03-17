@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33414.496
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayHouse", "PlayHouse\PlayHouse.csproj", "{E5665A4B-6E7E-437E-8597-FA3C20F84A3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlayHouse", "PlayHouse\PlayHouse.csproj", "{E5665A4B-6E7E-437E-8597-FA3C20F84A3E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Protocol", "Protocol\Protocol.csproj", "{8691EE05-77A8-43E6-A106-A33EEC4AAEAB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Protocol", "Protocol\Protocol.csproj", "{8691EE05-77A8-43E6-A106-A33EEC4AAEAB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayHouseTests", "PlayHouseTests\PlayHouseTests.csproj", "{738A5C2B-FB7B-4DEF-B2DB-F75E07B9792E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlayHouseTests", "PlayHouseTests\PlayHouseTests.csproj", "{738A5C2B-FB7B-4DEF-B2DB-F75E07B9792E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

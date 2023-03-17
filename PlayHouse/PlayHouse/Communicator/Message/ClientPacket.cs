@@ -16,28 +16,28 @@ namespace PlayHouse.Communicator.Message
         }
 
         public Header Header { get; set; }
-        private IPayload _payload;
+        public IPayload Payload;
 
         public ClientPacket(Header header,IPayload payload)
         {
             Header = header;
-            _payload = payload;
+            Payload = payload;
         }
         public byte[] Data()
         {
-            return _payload.Data();
+            return Payload.Data();
         }
 
         public void Dispose()
         {
-            _payload.Dispose();            
+            Payload.Dispose();            
 
         }
 
         public IPayload MovePayload()
         {
-            IPayload temp = _payload;
-            _payload = XPayload.Empty();
+            IPayload temp = Payload;
+            Payload = new EmptyPayload();
             return temp;
         }
 

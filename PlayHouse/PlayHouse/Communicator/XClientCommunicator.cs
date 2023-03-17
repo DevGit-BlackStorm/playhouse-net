@@ -9,17 +9,15 @@ namespace PlayHouse.Communicator
     public class XClientCommunicator : IClientCommunicator
     {
         private readonly IPlaySocket _playSocket;
-        private readonly ILogger _log;
 
         private readonly HashSet<string> _connected = new HashSet<string>();
         private readonly HashSet<string> _disconnected = new HashSet<string>();
         private readonly JobBucket _jobBucket = new JobBucket();
         private bool _running = true;
 
-        public XClientCommunicator(IPlaySocket playSocket,ILogger logger)
+        public XClientCommunicator(IPlaySocket playSocket)
         {
             _playSocket = playSocket;
-            _log = logger;
         }
 
         public void Connect(string endpoint)
@@ -70,7 +68,7 @@ namespace PlayHouse.Communicator
                 }
                 catch (Exception e)
                 {
-                    _log.Error($"{_playSocket.Id()} socket send error : {endpoint},{routePacket.MsgName}", nameof(XClientCommunicator),e);
+                    LOG.Error($"{_playSocket.Id()} socket send error : {endpoint},{routePacket.MsgName}", this.GetType(),e);
                 }
             });
         }
@@ -88,7 +86,7 @@ namespace PlayHouse.Communicator
                     }
                     catch (Exception e)
                     {
-                        _log.Error($"{_playSocket.Id()} Error during communication", nameof(XClientCommunicator), e);
+                        LOG.Error($"{_playSocket.Id()} Error during communication", this.GetType(), e);
                     }
                     action = _jobBucket.Get();
                 }

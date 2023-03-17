@@ -15,14 +15,14 @@ namespace PlayHouseTests.Communicator
         [Fact]
         public void FindLocalIp_ShouldBeValid()
         {
-            Assert.True(IPAddress.TryParse(IpFinder.FindLocalIp(), out IPAddress localIp));
+            Assert.True(IPAddress.TryParse(IpFinder.FindLocalIp(), out IPAddress? localIp));
             Assert.Equal(AddressFamily.InterNetwork, localIp.AddressFamily);
         }
 
         [Fact]
         public void FindPublicIp_ShouldBeValid()
         {
-            Assert.True(IPAddress.TryParse(IpFinder.FindPublicIp(), out IPAddress publicIp));
+            Assert.True(IPAddress.TryParse(IpFinder.FindPublicIp(), out IPAddress? publicIp));
             Assert.Equal(AddressFamily.InterNetwork, publicIp.AddressFamily);
         }
     }

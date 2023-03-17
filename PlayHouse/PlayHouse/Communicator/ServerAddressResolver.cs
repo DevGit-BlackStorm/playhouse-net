@@ -17,24 +17,22 @@ namespace PlayHouse.Communicator
         private readonly XClientCommunicator communicateClient;
         private readonly IService service;
         private readonly IStorageClient storageClient;
-        private readonly ILogger log;
 
         private Timer? _timer;
 
         public ServerAddressResolver(string bindEndpoint, XServerInfoCenter serverInfoCenter,
-            XClientCommunicator communicateClient, IService service, IStorageClient storageClient, ILogger log)
+            XClientCommunicator communicateClient, IService service, IStorageClient storageClient)
         {
             this.bindEndpoint = bindEndpoint;
             this.serverInfoCenter = serverInfoCenter;
             this.communicateClient = communicateClient;
             this.service = service;
             this.storageClient = storageClient;
-            this.log = log;
         }
 
         public void Start()
         {
-            log.Info("Server address resolver start", nameof(ServerAddressResolver));
+            LOG.Info("Server address resolver start", this.GetType());
 
             _timer = new Timer(_ =>
             {
@@ -69,7 +67,7 @@ namespace PlayHouse.Communicator
                 }
                 catch (Exception e)
                 {
-                    log.Error(e.ToString(), nameof(ServerAddressResolver), e);
+                    LOG.Error(e.ToString(), this.GetType(), e);
                 }
             }, null, ConstOption.ADDRESS_RESOLVER_INITIAL_DELAY, ConstOption.ADDRESS_RESOLVER_PERIOD);
             

@@ -51,6 +51,8 @@ namespace PlayHouse.Communicator.Message
 
         public string From { get; set; } = "";
 
+        public bool ForClient { get; set; } = false;
+
         public RouteHeader(Header header)
         {
             this.Header = header;
@@ -72,6 +74,7 @@ namespace PlayHouse.Communicator.Message
             IsReply = headerMsg.IsReply;
             AccountId = headerMsg.AccountId;
             StageId = headerMsg.StageId;
+            ForClient = headerMsg.ForClient;
         }
 
         public byte[] ToByteArray()
@@ -189,6 +192,11 @@ namespace PlayHouse.Communicator.Message
             return RouteHeader.IsSystem;
         }
 
+        public bool ForClient()
+        {
+            return RouteHeader.ForClient;
+        }
+
         public static RoutePacket MoveOf(RoutePacket routePacket)
         {
             //if (routePacket is AsyncBlockPacket)
@@ -201,20 +209,20 @@ namespace PlayHouse.Communicator.Message
             return movePacket;
         }
 
-        public static RoutePacket Of(RoutePacketMsg routePacketMsg)
-        {
-            return new RoutePacket(new RouteHeader(routePacketMsg.RouteHeaderMsg), new ByteStringPayload(routePacketMsg.Message));
-        }
+        //public static RoutePacket Of(RoutePacketMsg routePacketMsg)
+        //{
+        //    return new RoutePacket(new RouteHeader(routePacketMsg.RouteHeaderMsg), new ByteStringPayload(routePacketMsg.Message));
+        //}
 
         public static RoutePacket Of(RouteHeader routeHeader, IPayload payload)
         {
             return new RoutePacket(routeHeader, payload);
         }
 
-        public static RoutePacket Of(RouteHeader routeHeader, IMessage message)
-        {
-            return new RoutePacket(routeHeader, new IMessagePayload(message));
-        }
+        //public static RoutePacket Of(RouteHeader routeHeader, IMessage message)
+        //{
+        //    return new RoutePacket(routeHeader, new ProtoPayload(message));
+        //}
 
         public static RoutePacket SystemOf(Packet packet, bool isBase)
         {
@@ -261,7 +269,7 @@ namespace PlayHouse.Communicator.Message
                 Period = (long)period.TotalMilliseconds
             };
 
-            return new RoutePacket(routeHeader, new IMessagePayload(message))
+            return new RoutePacket(routeHeader, new ProtoPayload(message))
             {
                 TimerCallback = timerCallback,
                 TimerId = timerId
@@ -273,7 +281,7 @@ namespace PlayHouse.Communicator.Message
             Header header = new Header(StageTimer.Descriptor.Name);
             RouteHeader routeHeader = RouteHeader.Of(header);
 
-            return new RoutePacket(routeHeader, XPayload.Empty())
+            return new RoutePacket(routeHeader, new EmptyPayload())
             {
                 RouteHeader = { StageId = stageId, IsBase = true },
                 TimerId = timerId,
@@ -321,10 +329,48 @@ namespace PlayHouse.Communicator.Message
             return new RoutePacket(routeHeader, packet.MovePayload());
         }
 
+        public void WriteClientPacketBytes(PreAllocByteArrayOutputStream stream)
+        {
+            ClientPacket clientPacket = ToClientPacket();
+            WriteClientPacketBytes(clientPacket,stream);
+        }
+
+
+        public static  void WriteClientPacketBytes(ClientPacket clientPacket, PreAllocByteArrayOutputStream outputStream)
+        {
+            var header = clientPacket.Header.ToMsg();
+            var payload = clientPacket.Payload;
+
+            int headerSize = header.CalculateSize();
+
+            if (headerSize > ConstOption.HEADER_SIZE)
+            {
+                throw new CommunicatorException($"Header size is over {header}");
+            }
+
+            outputStream.WriteByte((byte)headerSize);
+
+            // Prepare body size
+            int index = outputStream.WriteShort(0);
+            // Header
+            header.WriteTo(outputStream);
+            // Body
+            payload.Output(outputStream);
+
+            int bodySize = outputStream.WrittenDataLength() - (1 + 2 + headerSize);
+
+            LOG.Info($"headerSize:{headerSize}, bodySize:{bodySize}", typeof(RoutePacket));
+            // Write body size
+            outputStream.ReplaceShort(index, bodySize);
+
+            LOG.Info($"body:{BitConverter.ToString(outputStream.ToArray()).Replace("-", ",")}", typeof(RoutePacket));
+        }
+
+
         public IPayload MovePayload()
         {
             IPayload temp = _payload;
-            _payload =  XPayload.Empty();
+            _payload =  new EmptyPayload();
             return temp;
         }
 

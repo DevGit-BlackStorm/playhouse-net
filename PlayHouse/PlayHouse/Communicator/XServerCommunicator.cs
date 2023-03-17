@@ -6,15 +6,13 @@ namespace PlayHouse.Communicator
     public class XServerCommunicator : IServerCommunicator
     {
         private readonly IPlaySocket _playSocket;
-        private readonly ILogger _log ;
 
         private ICommunicateListener? _listener;
         private bool _running = true;
 
-        public XServerCommunicator(IPlaySocket playSocket,ILogger logger)
+        public XServerCommunicator(IPlaySocket playSocket)
         {
             _playSocket = playSocket;
-            _log = logger;
         }
 
         public void Bind(ICommunicateListener listener)
@@ -38,7 +36,7 @@ namespace PlayHouse.Communicator
                     catch (Exception e)
                     {
 
-                        _log.Error($"{_playSocket.Id()} Error during communication", nameof(XServerCommunicator), e);
+                        LOG.Error($"{_playSocket.Id()} Error during communication", this.GetType(), e);
                     }
 
                     packet = _playSocket.Receive();

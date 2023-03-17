@@ -11,16 +11,14 @@ namespace PlayHouse.Communicator
     class PerformanceTester
     {
         private bool _showQps;
-        private ILogger _log;
         private string _from;
         private Stopwatch _stopWatch = new Stopwatch();
         private int _counter;
         private Timer _timer; 
 
-        public PerformanceTester(bool showQps, ILogger log, string from = "Server")
+        public PerformanceTester(bool showQps,  string from = "Server")
         {
             _showQps    = showQps;
-            _log        = log;
             _from       = from;
             _timer      = new Timer((obj) => { Qps(); }, null, Timeout.Infinite, Timeout.Infinite); 
         }
@@ -60,7 +58,7 @@ namespace PlayHouse.Communicator
 
                 int qps = (messageCount == 0 || seconds == 0L) ? 0 : messageCount / (int)seconds;
 
-                _log.Info($"{_from}, {messageCount}, qps: {qps}", this.GetType().Name);
+                LOG.Info($"{_from}, {messageCount}, qps: {qps}", this.GetType());
             }
             finally
             {

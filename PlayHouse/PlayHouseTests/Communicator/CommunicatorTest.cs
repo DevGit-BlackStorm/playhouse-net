@@ -22,22 +22,22 @@ namespace PlayHouseTests.Communicator
     public class CommunicatorTest
     {
         [Fact]
-        public void Communicate()
+        public void Should_communicate_between_Session_and_Api()
         {
             var localIp = IpFinder.FindLocalIp();
 
             var sessionPort = IpFinder.FindFreePort();
             var sessionEndpoint = $"tcp://{localIp}:{sessionPort}";
-            var sessionServer = new XServerCommunicator(new NetMQPlaySocket(new SocketConfig(), sessionEndpoint, new ConsoleLogger()), new ConsoleLogger());
-            var sessionClient = new XClientCommunicator(new NetMQPlaySocket(new SocketConfig(), sessionEndpoint, new ConsoleLogger()), new ConsoleLogger());
+            var sessionServer = new XServerCommunicator(new NetMQPlaySocket(new SocketConfig(), sessionEndpoint));
+            var sessionClient = new XClientCommunicator(new NetMQPlaySocket(new SocketConfig(), sessionEndpoint));
 
             var sessionListener = new TestListener();
             sessionServer.Bind(sessionListener);
 
             var apiPort = IpFinder.FindFreePort();
             var apiEndpoint = $"tcp://{localIp}:{apiPort}";
-            var apiServer = new XServerCommunicator(new NetMQPlaySocket(new SocketConfig(), apiEndpoint, new ConsoleLogger()), new ConsoleLogger());
-            var apiClient = new XClientCommunicator(new NetMQPlaySocket(new SocketConfig(), apiEndpoint, new ConsoleLogger()), new ConsoleLogger());
+            var apiServer = new XServerCommunicator(new NetMQPlaySocket(new SocketConfig(), apiEndpoint));
+            var apiClient = new XClientCommunicator(new NetMQPlaySocket(new SocketConfig(), apiEndpoint));
 
             var apiListener = new TestListener();
             apiServer.Bind(apiListener);
@@ -72,8 +72,12 @@ namespace PlayHouseTests.Communicator
             sessionClient.Connect(apiEndpoint);
             apiListener.Results.Clear();
 
-            var message = new HeaderMsg() { MsgName = "sessionPacket" };
+            Thread.Sleep(100);
+
+            var message = new HeaderMsg();
             sessionClient.Send(apiEndpoint, RoutePacket.ClientOf("session", 0, new Packet(message)));
+
+            Thread.Sleep(200);
 
             apiListener.Results.Count.Should().Be(1);
             apiListener.Results[0].MsgName().Should().Be("HeaderMsg");
@@ -83,10 +87,14 @@ namespace PlayHouseTests.Communicator
             apiClient.Connect(sessionEndpoint);
             sessionListener.Results.Clear();
 
+            Thread.Sleep(100);
+
             apiClient.Send(sessionEndpoint, RoutePacket.ClientOf("api", 0, new Packet("apiPacket")));
 
-            apiListener.Results.Count.Should().Be(1);
-            apiListener.Results[0].MsgName().Should().Be("apiPacket");
+            Thread.Sleep(200);
+
+            sessionListener.Results.Count.Should().Be(1);
+            sessionListener.Results[0].MsgName().Should().Be("apiPacket");
 
         }
     }

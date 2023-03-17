@@ -2,6 +2,7 @@
 using NetMQ.Sockets;
 using Playhouse.Protocol;
 using PlayHouse.Communicator.Message;
+using PlayHouse.Communicator.Message.buffer;
 using System.Text;
 
 namespace PlayHouse.Communicator.PlaySocket
@@ -11,6 +12,7 @@ namespace PlayHouse.Communicator.PlaySocket
     {
         private readonly RouterSocket _socket = new();
         private readonly String _bindEndpoint = "";
+        private PreAllocByteArrayOutputStream _outputStream = new PreAllocByteArrayOutputStream(new byte[ConstOption.MAX_PACKET_SIZE]);
 
         public NetMQPlaySocket(SocketConfig socketConfig,String bindEndpoint)
         {
@@ -73,9 +75,9 @@ namespace PlayHouse.Communicator.PlaySocket
 
                 String target = Encoding.UTF8.GetString(message[0].Buffer);
                 var header = RouteHeaderMsg.Parser.ParseFrom(message[1].Buffer);
-                var payload = message[2].Buffer;
+                PooledBufferPayload payload = new(new (message[2].Buffer));
 
-                var routePacket = RoutePacket.Of(new RouteHeader(header),new XPayload(payload));
+                var routePacket = RoutePacket.Of(new (header),payload);
                 routePacket.RouteHeader.From = target;
                 return routePacket;
             }
@@ -89,9 +91,20 @@ namespace PlayHouse.Communicator.PlaySocket
                 NetMQMessage message = new NetMQMessage();
                 IPayload payload = routerPacket.GetPayload();
 
+                _outputStream.Reset();
+                if (routerPacket.ForClient())
+                {
+                    routerPacket.WriteClientPacketBytes(_outputStream);
+                }
+                else
+                {
+                    payload.Output(_outputStream);
+                }
+
+                
                 message.Append(new NetMQFrame(Encoding.UTF8.GetBytes(endpoint)));
                 message.Append(new NetMQFrame(routerPacket.RouteHeader.ToByteArray()));
-                message.Append(new NetMQFrame(payload.Data()));
+                message.Append(new NetMQFrame(_outputStream.Array(),_outputStream.WrittenDataLength()));
 
                 if (!_socket.TrySendMultipartMessage(message))
                 {

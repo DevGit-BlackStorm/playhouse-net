@@ -1,38 +1,38 @@
 ﻿
 using PlayHouse.Communicator;
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Containers;
 using FluentAssertions;
 using StackExchange.Redis;
 using Xunit;
+using Testcontainers.Redis;
 
 namespace PlayHouseTests.Communicator
 {
     public class CacheTests : IAsyncLifetime
     {
-        private readonly TestcontainerDatabase _testcontainers = new ContainerBuilder<RedisTestcontainer>().WithImage("redis:6.2.5").Build();
+        const int port = 6379;
 
-        private IConnectionMultiplexer? _connectionMultiplexer;
+        private readonly RedisContainer _redisContainer = new RedisBuilder().WithExposedPort(port).Build();
+                
 
         readonly string endpoint1 = "127.0.0.1:8081";
-        readonly string endpoint2 = "127.0.0.1:8081";
+        readonly string endpoint2 = "127.0.0.1:8082";
 
         public async Task InitializeAsync()
         {
-            
-            await _testcontainers.StartAsync();
-            _connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(_testcontainers.ConnectionString);
+             await _redisContainer.StartAsync();
+
         }
 
-        public async Task DisposeAsync() => await _testcontainers.DisposeAsync().AsTask();
+        public async Task DisposeAsync() => await _redisContainer.DisposeAsync().AsTask();
 
         [Fact]
-        public void UpdateAndGet()
+        public void Test_ServerInfo_Update_And_Get()
         {
 
-            var redisClient = new RedisClient(_testcontainers.IpAddress, _testcontainers.Port);
             // Arrange
-            //var cache = new RedisCache(_connectionMultiplexer!);
+            RedisStorageClient redisClient = new RedisStorageClient(_redisContainer.Hostname, _redisContainer.GetMappedPublicPort(port));
+            redisClient.Connect();
+
 
             // act
             redisClient.UpdateServerInfo(new XServerInfo(endpoint1,ServiceType.SESSION,"session",ServerState.RUNNING,0,0));
@@ -50,11 +50,11 @@ namespace PlayHouseTests.Communicator
 
 
         [Fact]
-        public void TimeOver()
+        public void Test_TimeOver()
         {
             var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-            XServerInfo serverInfo = new (endpoint1, ServiceType.SESSION, "session", ServerState.RUNNING, 0, 0);
+            XServerInfo serverInfo = new (endpoint1, ServiceType.SESSION, "session", ServerState.RUNNING, 0, timestamp);
 
             serverInfo.TimeOver().Should().BeFalse();
 

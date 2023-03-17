@@ -10,13 +10,10 @@ namespace PlayHouse.Communicator.Socket.Tests
 {
 
     [Collection("NetMQPlaySocketTests")]
-    public class NetMQPlaySocketTests
+    public class NetMQPlaySocketTests : IDisposable
     {
 
-        private string localIp = IpFinder.FindLocalIp();
-        private int serverPort = IpFinder.FindFreePort();
-        private int clientPort = IpFinder.FindFreePort();
-
+        
         private string serverBindEndpoint = "";
         private string clientBindEndpoint = "";
 
@@ -27,22 +24,34 @@ namespace PlayHouse.Communicator.Socket.Tests
         {
             PooledBuffer.Init(1024 * 1024);
 
+            string localIp = IpFinder.FindLocalIp();
+            int serverPort = IpFinder.FindFreePort();
+            int clientPort = IpFinder.FindFreePort();
+
             serverBindEndpoint = $"tcp://{localIp}:{serverPort}";
             clientBindEndpoint = $"tcp://{localIp}:{clientPort}";
 
-            serverSocket = new NetMQPlaySocket(new SocketConfig(), serverBindEndpoint, new ConsoleLogger());
-            clientSocket = new NetMQPlaySocket(new SocketConfig(), clientBindEndpoint, new ConsoleLogger());
+            serverSocket = new NetMQPlaySocket(new SocketConfig(), serverBindEndpoint);
+            clientSocket = new NetMQPlaySocket(new SocketConfig(), clientBindEndpoint);
 
             serverSocket.Bind();
             clientSocket.Bind();
 
             clientSocket.Connect(serverBindEndpoint);
+
+            Thread.Sleep(200);
+        }
+
+        public void Dispose()
+        {
+            clientSocket!.Close();
+            serverSocket!.Close();
         }
 
         [Fact]
         public void Send_Emtpy_Frame()
         {
-            var sendRoutePacket = RoutePacket.Of(RouteHeader.Of(new HeaderMsg()), XPayload.Empty());
+            var sendRoutePacket = RoutePacket.Of(RouteHeader.Of(new HeaderMsg()), new EmptyPayload());
             clientSocket!.Send(serverBindEndpoint, sendRoutePacket);
 
             RoutePacket? recvPacket = null;
@@ -50,6 +59,7 @@ namespace PlayHouse.Communicator.Socket.Tests
             {
                 recvPacket = serverSocket!.Receive();
             }
+            
         }
 
         [Fact]
@@ -71,7 +81,7 @@ namespace PlayHouse.Communicator.Socket.Tests
 
             var routeHeader = RouteHeader.Of(header);
 
-            var sendRoutePacket = RoutePacket.Of(routeHeader, message);
+            var sendRoutePacket = RoutePacket.Of(routeHeader,new ProtoPayload(message));
 
             clientSocket!.Send(serverBindEndpoint, sendRoutePacket);
 
@@ -82,16 +92,15 @@ namespace PlayHouse.Communicator.Socket.Tests
             }
 
 
-            receiveRoutePacket.RouteHeader.Header.ToMsg().Should().Be(message);
+            receiveRoutePacket.RouteHeader.Header.ToMsg().Should().Be(header);
             receiveRoutePacket.RouteHeader.From.Should().Be(clientBindEndpoint);
 
             var receiveBody = TestMsg.Parser.ParseFrom(receiveRoutePacket.Data());
 
-            receiveBody.Should().Be(message);
-
-            clientSocket!.Close();
-            serverSocket!.Close();
+            receiveBody.Should().Be(message);           
         }
+
+        
     }
 
 

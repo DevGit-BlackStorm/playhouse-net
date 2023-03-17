@@ -67,11 +67,9 @@ namespace PlayHouse.Service.Session.network.tcp
     public class TcpSessionServer : TcpServer
     {
         private ISessionListener _sessionListener;
-        private ILogger _log;
-        public TcpSessionServer(string address, int port,ISessionListener sessionListener,ILogger log) : base(address, port)
+        public TcpSessionServer(string address, int port,ISessionListener sessionListener) : base(address, port)
         {
             _sessionListener = sessionListener;
-            _log = log;
         }
 
         protected override TcpSession CreateSession()
@@ -84,29 +82,27 @@ namespace PlayHouse.Service.Session.network.tcp
         private SessionOption _sessionOption;
         private ISessionListener _sessionListener;
         private TcpSessionServer _tcpSessionServer;
-        private ILogger _log;
-        public TcpSessionNetwork(SessionOption sessionOption,ISessionListener sessionListener,ILogger log) { 
+        public TcpSessionNetwork(SessionOption sessionOption,ISessionListener sessionListener) { 
             _sessionOption = sessionOption;
             _sessionListener = sessionListener;
-            _log = log;
 
-            _tcpSessionServer = new TcpSessionServer(IpFinder.FindLocalIp(), sessionOption.SessionPort, sessionListener, log);
+            _tcpSessionServer = new TcpSessionServer(IpFinder.FindLocalIp(), sessionOption.SessionPort, sessionListener);
         }
         public void Restart()
         {
-            _log.Info("TcpSessionNetwork Restart", typeof(TcpSessionNetwork).Name);
+            LOG.Info("TcpSessionNetwork Restart", this.GetType());
             _tcpSessionServer.Restart();
         }
 
         public void Start()
         {
-            _log.Info("TcpSessionNetwork Start", typeof(TcpSessionNetwork).Name);
+            LOG.Info("TcpSessionNetwork Start", this.GetType());
             _tcpSessionServer.Start();
         }
 
         public void Stop()
         {
-            _log.Info("TcpSessionNetwork Stop", typeof(TcpSessionNetwork).Name);
+            LOG.Info("TcpSessionNetwork Stop", this.GetType());
             _tcpSessionServer.Stop();
         }
     }

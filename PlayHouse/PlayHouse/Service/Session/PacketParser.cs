@@ -53,7 +53,7 @@ namespace PlayHouse.Service.Session
                     body.Append(new Span<byte>(buffer.Data, LENGTH_FIELD_SIZE + headerSize, bodySize));
 
 
-                    var clientPacket = new ClientPacket(Header.Of(header), new XPayload(body));
+                    var clientPacket = new ClientPacket(Header.Of(header), new PooledBufferPayload(body));
                     packets.Add(clientPacket);
 
                     buffer.Remove(0, LENGTH_FIELD_SIZE + headerSize + bodySize);

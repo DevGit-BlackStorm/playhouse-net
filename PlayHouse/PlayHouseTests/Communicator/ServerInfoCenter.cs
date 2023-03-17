@@ -13,7 +13,7 @@ namespace PlayHouseTests.Communicator
 
         public ServerInfoCenterFuncSpecTest()
         {
-            _serverInfoCenter = new XServerInfoCenter(new ConsoleLogger());
+            _serverInfoCenter = new XServerInfoCenter();
             _curTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             _serverList = new List<XServerInfo>
             {

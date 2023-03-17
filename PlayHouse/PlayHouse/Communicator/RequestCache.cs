@@ -6,9 +6,9 @@ namespace PlayHouse.Communicator
 {
     public class ReplyObject
     {
-        private Action<ReplyPacket>? _replyCallback = null;
+        private ReplyCallback? _replyCallback = null;
         private TaskCompletionSource<ReplyPacket>? _taskCompletionSource= null;
-        public ReplyObject(Action<ReplyPacket>? callback = null, TaskCompletionSource<ReplyPacket>? taskCompletionSource = null)  
+        public ReplyObject(ReplyCallback? callback = null, TaskCompletionSource<ReplyPacket>? taskCompletionSource = null)  
         { 
             this._replyCallback = callback;
             this._taskCompletionSource = taskCompletionSource;
