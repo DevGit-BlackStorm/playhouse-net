@@ -11,10 +11,8 @@ namespace PlayHouse.Communicator.PlaySocket
     {
         private readonly RouterSocket _socket = new();
         private readonly String _bindEndpoint = "";
-        private readonly ILogger _log;
-        //public ILogger Log { get { return _log; } }
 
-        public NetMQPlaySocket(SocketConfig socketConfig,String bindEndpoint, ILogger logger)
+        public NetMQPlaySocket(SocketConfig socketConfig,String bindEndpoint)
         {
             _socket.Options.Identity = Encoding.UTF8.GetBytes(bindEndpoint);
             _socket.Options.DelayAttachOnConnect = true; // immediate
@@ -29,13 +27,12 @@ namespace PlayHouse.Communicator.PlaySocket
             _socket.Options.RouterMandatory = true;
 
             this._bindEndpoint = bindEndpoint;
-            this._log = logger;
         }
 
         public void Bind()
         {
             _socket.Bind(_bindEndpoint);
-            _log.Info($"socket bind {_bindEndpoint}",nameof(NetMQPlaySocket));
+            LOG.Info($"socket bind {_bindEndpoint}",this.GetType());
         }
 
         public void Close()
@@ -70,7 +67,7 @@ namespace PlayHouse.Communicator.PlaySocket
             {
                 if(message.Count() < 3)
                 {
-                    _log.Error($"message size is invalid : {message.Count()}", nameof(NetMQPlaySocket));
+                    LOG.Error($"message size is invalid : {message.Count()}", this.GetType());
                     return null;
                 }
 
@@ -98,7 +95,7 @@ namespace PlayHouse.Communicator.PlaySocket
 
                 if (!_socket.TrySendMultipartMessage(message))
                 {
-                    _log.Error($"Send fail to {endpoint}, MsgName:{routerPacket.MsgName}", nameof(NetMQPlaySocket));
+                    LOG.Error($"Send fail to {endpoint}, MsgName:{routerPacket.MsgName}", this.GetType());
                 }
             }
             

@@ -8,14 +8,12 @@ namespace PlayHouse.Service.Session.network.websocket
 {
     class XWsSession : WsSession
     {
-        private ILogger _log;
         private PacketParser _packetParser;
         private ISessionListener _sessionListener;
 
-        public XWsSession(WsSessionServer server, ISessionListener sessionListener, ILogger log) : base(server)
+        public XWsSession(WsSessionServer server, ISessionListener sessionListener) : base(server)
         {
-            _log = log;
-            _packetParser = new PacketParser(log);
+            _packetParser = new PacketParser();
             _sessionListener = sessionListener;
         }
 
@@ -26,14 +24,14 @@ namespace PlayHouse.Service.Session.network.websocket
         protected override void OnConnected()
         {
 
-            _log.Info($"Websocket session with Id {GetSid()} connected!", typeof(XWsSession).Name);
+            LOG.Info($"Websocket session with Id {GetSid()} connected!", this.GetType());
             _sessionListener.OnConnect(GetSid());
 
         }
 
         protected override void OnDisconnected()
         {
-            _log.Info($"Websocket session with Id {GetSid()} disconnected!", typeof(XWsSession).Name);
+            LOG.Info($"Websocket session with Id {GetSid()} disconnected!", this.GetType());
             _sessionListener.OnDisconnect(GetSid());
         }
 
@@ -51,7 +49,7 @@ namespace PlayHouse.Service.Session.network.websocket
 
         protected override void OnError(SocketError error)
         {
-            _log.Error($"Chat TCP session caught an error with code {error}", typeof(XWsSession).Name);
+            LOG.Error($"Chat TCP session caught an error with code {error}", this.GetType());
             Disconnect();
         }
     }
@@ -67,7 +65,7 @@ namespace PlayHouse.Service.Session.network.websocket
 
         protected override WsSession CreateSession()
         {
-            return new XWsSession(this, _sessionListener, _log);
+            return new XWsSession(this, _sessionListener);
         }
     }
     class WsSessionNetwork : ISessionNetwork
@@ -86,19 +84,19 @@ namespace PlayHouse.Service.Session.network.websocket
         }
         public void Restart()
         {
-            _log.Info("WsSessionNetwork Restart", typeof(WsSessionNetwork).Name);
+            LOG.Info("WsSessionNetwork Restart", this.GetType());
             _wsSessionServer.Restart();
         }
 
         public void Start()
         {
-            _log.Info("WsSessionNetwork Start", typeof(WsSessionNetwork).Name);
+            LOG.Info("WsSessionNetwork Start", this.GetType());
             _wsSessionServer.Start();
         }
 
         public void Stop()
         {
-            _log.Info("WsSessionNetwork Stop", typeof(WsSessionNetwork).Name);
+            LOG.Info("WsSessionNetwork Stop", this.GetType());
             _wsSessionServer.Stop();
         }
     }

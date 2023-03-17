@@ -10,15 +10,13 @@ namespace PlayHouse.Service.Session.network.tcp
 {
     class XTcpSession : TcpSession, ISession
     {
-        private ILogger _log;
         private PacketParser _packetParser;
         private ISessionListener _sessionListener;
         private PooledBuffer _pooledBuffer;
 
-        public XTcpSession(TcpServer server,ISessionListener sessionListener, ILogger log) : base(server)
+        public XTcpSession(TcpServer server,ISessionListener sessionListener) : base(server)
         {
-            _log = log;
-            _packetParser = new PacketParser(log);
+            _packetParser = new PacketParser();
             _sessionListener = sessionListener;
             _pooledBuffer = new PooledBuffer(ConstOption.SessionBufferSize);
         }
@@ -30,14 +28,14 @@ namespace PlayHouse.Service.Session.network.tcp
         protected override void OnConnected()
         {
             
-            _log.Info($"TCP session with Id {GetSid()} connected!",typeof(XTcpSession).Name);
+            LOG.Info($"TCP session with Id {GetSid()} connected!",this.GetType());
             _sessionListener.OnConnect(GetSid());
 
         }
 
         protected override void OnDisconnected()
         {
-            _log.Info($"TCP session with Id {GetSid()} disconnected!", typeof(XTcpSession).Name);
+            LOG.Info($"TCP session with Id {GetSid()} disconnected!", this.GetType());
             _sessionListener.OnDisconnect(GetSid());
         }
 
@@ -52,7 +50,7 @@ namespace PlayHouse.Service.Session.network.tcp
 
         protected override void OnError(SocketError error)
         {
-            _log.Error($"Chat TCP session caught an error with code {error}", typeof(XTcpSession).Name);
+            LOG.Error($"Chat TCP session caught an error with code {error}", this.GetType());
             Disconnect();
         }
 
@@ -63,7 +61,7 @@ namespace PlayHouse.Service.Session.network.tcp
 
         public void Send(ClientPacket packet)
         {
-            base.Send(packet.Data);
+            //base.Send(packet.Data);
         }
     }
     public class TcpSessionServer : TcpServer
@@ -78,7 +76,7 @@ namespace PlayHouse.Service.Session.network.tcp
 
         protected override TcpSession CreateSession()
         {
-            return new XTcpSession(this,_sessionListener,_log);
+            return new XTcpSession(this,_sessionListener);
         }
     }
     class TcpSessionNetwork : ISessionNetwork

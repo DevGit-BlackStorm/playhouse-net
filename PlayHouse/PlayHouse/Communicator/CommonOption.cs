@@ -16,6 +16,5 @@ namespace PlayHouse.Communicator
         public long RequestTimeoutSec { get; set; } = 5;
         public bool ShowQps { get; set; }
 
-        public ILogger Logger { get; set; } = new ConsoleLogger();
     }
 }

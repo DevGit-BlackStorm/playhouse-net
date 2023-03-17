@@ -12,12 +12,8 @@ namespace PlayHouse.Service.Session
         public const int MAX_PACKET_SIZE = 65535;
         public const int HEADER_SIZE = 256;
         public const int LENGTH_FIELD_SIZE = 3;
-        private readonly ILogger _log;
 
-        public PacketParser(ILogger log)
-        {
-            _log = log;
-        }
+        public PacketParser(){}
 
         public virtual List<ClientPacket> Parse(PooledBuffer buffer)
         {
@@ -33,7 +29,7 @@ namespace PlayHouse.Service.Session
 
                     if (headerSize > HEADER_SIZE)
                     {
-                        _log.Error($"Header size over : {headerSize}", typeof(PacketParser).Name) ;
+                        LOG.Error($"Header size over : {headerSize}", this.GetType()) ;
                         throw new IndexOutOfRangeException("HeaderSizeOver");
                     }
 
@@ -41,7 +37,7 @@ namespace PlayHouse.Service.Session
 
                     if (bodySize > MAX_PACKET_SIZE)
                     {
-                        _log.Error($"Body size over : {bodySize}", typeof(PacketParser).Name);
+                        LOG.Error($"Body size over : {bodySize}", this.GetType());
                         throw new IndexOutOfRangeException("BodySizeOver");
                     }
 
@@ -65,7 +61,7 @@ namespace PlayHouse.Service.Session
                 }
                 catch (Exception e)
                 {
-                    _log.Error("Exception while parsing packet",typeof(PacketParser).Name,e);
+                    LOG.Error("Exception while parsing packet",this.GetType(),e);
                 }
             }
 
