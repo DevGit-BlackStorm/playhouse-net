@@ -12,5 +12,6 @@ namespace PlayHouse.Communicator
 
         public static int ADDRESS_RESOLVER_INITIAL_DELAY { get; internal set; } = 1000;
         public static int ADDRESS_RESOLVER_PERIOD { get; internal set; } = 3000;
+        public const int SessionBufferSize = 4 * 1024;
     }
 }

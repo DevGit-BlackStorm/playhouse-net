@@ -273,7 +273,7 @@ namespace PlayHouse.Communicator.Message
             Header header = new Header(StageTimer.Descriptor.Name);
             RouteHeader routeHeader = RouteHeader.Of(header);
 
-            return new RoutePacket(routeHeader, Payload.Empty())
+            return new RoutePacket(routeHeader, XPayload.Empty())
             {
                 RouteHeader = { StageId = stageId, IsBase = true },
                 TimerId = timerId,
@@ -324,7 +324,7 @@ namespace PlayHouse.Communicator.Message
         public IPayload MovePayload()
         {
             IPayload temp = _payload;
-            _payload =  Payload.Empty();
+            _payload =  XPayload.Empty();
             return temp;
         }
 

@@ -37,23 +37,29 @@ namespace PlayHouse.Communicator.Message
         public IPayload MovePayload()
         {
             IPayload temp = _payload;
-            _payload = Payload.Empty();
+            _payload = XPayload.Empty();
             return temp;
         }
 
-        internal int GetMsgSeq()
+        public int GetMsgSeq()
         {
-            throw new NotImplementedException();
+            return Header.MsgSeq;
         }
 
-        internal object MsgName()
+        public string GetMsgName()
         {
-            throw new NotImplementedException();
+            return Header.MsgName;
+        }
+          
+
+        public string ServiceId()
+        {
+            return Header.ServiceId;
         }
 
-        internal ReplyPacket ToReplyPacket()
+        public  Packet ToPacket()
         {
-            throw new NotImplementedException();
+            return new Packet(Header.MsgName, MovePayload());
         }
     }
 

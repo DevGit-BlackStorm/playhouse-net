@@ -33,7 +33,7 @@ namespace PlayHouse.Communicator.Message
         public Packet(string msgName = "")
         {
             this.MsgName = msgName;
-            this._payload = Payload.Empty();
+            this._payload = XPayload.Empty();
         }
 
         public Packet(string msgName, IPayload payload) : this(msgName)
@@ -56,7 +56,7 @@ namespace PlayHouse.Communicator.Message
         {
             
             IPayload temp = _payload;
-            _payload = Payload.Empty() ;
+            _payload = XPayload.Empty() ;
             return temp;
         }
 
@@ -79,7 +79,7 @@ namespace PlayHouse.Communicator.Message
             this._payload = payload;
         }
 
-        public ReplyPacket(int errorCode = 0, string msgName = ""):this(errorCode,msgName,Payload.Empty()){}
+        public ReplyPacket(int errorCode = 0, string msgName = ""):this(errorCode,msgName,XPayload.Empty()){}
 
         public ReplyPacket(int errorCode, IMessage message) : this(errorCode, message.Descriptor.Name, new IMessagePayload(message)) { }
         public ReplyPacket(IMessage message) : this(0, message.Descriptor.Name, new IMessagePayload(message)) { }
@@ -99,7 +99,7 @@ namespace PlayHouse.Communicator.Message
         public IPayload MovePayload()
         {
             IPayload temp = _payload;
-            _payload = Payload.Empty();
+            _payload = XPayload.Empty();
             return temp;
         }
 

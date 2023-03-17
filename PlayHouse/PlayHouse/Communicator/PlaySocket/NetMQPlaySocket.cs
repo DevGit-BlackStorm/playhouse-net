@@ -78,7 +78,7 @@ namespace PlayHouse.Communicator.PlaySocket
                 var header = RouteHeaderMsg.Parser.ParseFrom(message[1].Buffer);
                 var payload = message[2].Buffer;
 
-                var routePacket = RoutePacket.Of(new RouteHeader(header),new Payload(payload));
+                var routePacket = RoutePacket.Of(new RouteHeader(header),new XPayload(payload));
                 routePacket.RouteHeader.From = target;
                 return routePacket;
             }

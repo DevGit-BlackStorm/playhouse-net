@@ -13,23 +13,23 @@ namespace PlayHouse.Communicator.Message
         byte[] Data();
     }
 
-    public class Payload : IPayload
+    public class XPayload : IPayload
     {
         //private ByteString? message;
         private PooledBuffer _data;
 
-        public Payload(PooledBuffer buffer) {
+        public XPayload(PooledBuffer buffer) {
             _data = buffer;
         }
 
-        public Payload(byte[] payload)
+        public XPayload(byte[] payload)
         {
             _data = new PooledBuffer(payload);
         }
 
-        public static Payload Empty()
+        public static XPayload Empty()
         {
-            return new Payload(new PooledBuffer());
+            return new XPayload(new PooledBuffer());
         }
 
         public byte[] Data()

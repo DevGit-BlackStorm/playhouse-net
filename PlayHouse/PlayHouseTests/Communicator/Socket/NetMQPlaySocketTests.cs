@@ -42,7 +42,7 @@ namespace PlayHouse.Communicator.Socket.Tests
         [Fact]
         public void Send_Emtpy_Frame()
         {
-            var sendRoutePacket = RoutePacket.Of(RouteHeader.Of(new HeaderMsg()), Payload.Empty());
+            var sendRoutePacket = RoutePacket.Of(RouteHeader.Of(new HeaderMsg()), XPayload.Empty());
             clientSocket!.Send(serverBindEndpoint, sendRoutePacket);
 
             RoutePacket? recvPacket = null;
