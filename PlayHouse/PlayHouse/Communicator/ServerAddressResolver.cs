@@ -40,10 +40,10 @@ namespace PlayHouse.Communicator
                 {
                     storageClient.UpdateServerInfo(new XServerInfo(
                         bindEndpoint,
-                        service.ServiceType(),
-                        service.ServiceId(),
-                        service.ServerState(),
-                        service.WeightPoint(),
+                        service.GetServiceType(),
+                        service.GetServiceId(),
+                        service.GetServerState(),
+                        service.GetWeightPoint(),
                         DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
                     ));
 

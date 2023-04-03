@@ -11,7 +11,7 @@ namespace PlayHouse
         void Debug(string message, string className);
         void Info(string message, string className);
         void Warn(string message, string className);
-        void Error(string message, string className, Exception? ex = null);
+        void Error(string? message, string className, Exception? ex = null);
         void Trace(string message, string className);
         void Fatal(string message, string className);
     }
@@ -53,7 +53,7 @@ namespace PlayHouse
             Console.WriteLine($"{GetTimeStamp()} WARN: ({className}) - {message}");
         }
 
-        public void Error(string message, string className, Exception? ex = null)
+        public void Error(string? message, string className, Exception? ex = null)
         {
             if (ex != null)
             {
@@ -114,7 +114,7 @@ namespace PlayHouse
             }
         }
 
-        public static void Error(string message, Type clazz)
+        public static void Error(string? message, Type clazz)
         {
             if (LogLevel.Error >= _logLevel)
             {
@@ -122,7 +122,7 @@ namespace PlayHouse
             }
         }
 
-        public static void Error(string message, Type clazz, Exception ex)
+        public static void Error(string? message, Type clazz, Exception ex)
         {
             if (LogLevel.Error >= _logLevel)
             {

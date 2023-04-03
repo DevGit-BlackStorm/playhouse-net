@@ -4,27 +4,31 @@ package playhouse.protocol;
 
 /**
 client packet
-1byte header size + header + body
+1byte header size + 2byte body size + header + body
+
+header
+2byte - bodysize
+2byte - serviceId
+2byte - msg_id
+2byte - msg_seq
+2byte - error_code
+
  */
 
-message HeaderMsg {
-  string service_id = 1;
-  int32 msg_seq = 2;
-  string msg_name = 3;  
-  int32 error_code = 4;
 
-}
 
+ /*
 message PacketMsg {
   HeaderMsg header_msg = 1;
   bytes message = 2;
 }
+*/
 
 
 enum BaseErrorCode{
   SUCCESS = 0;
-  SYSTEM_ERROR = 1;
-  UNCHECKED_CONTENTS_ERROR = 2;
-  REQUEST_TIMEOUT = 3;
+  SYSTEM_ERROR = -1;
+  UNCHECKED_CONTENTS_ERROR = -2;
+  REQUEST_TIMEOUT = -3;
 
 }

@@ -61,7 +61,7 @@ namespace PlayHouse.Communicator
             return serverInfo;
         }
 
-        public XServerInfo FindRoundRobinServer(string serviceId)
+        public XServerInfo FindRoundRobinServer(short serviceId)
         {
             var list = _serverInfoList
                 .Where(x => x.State == ServerState.RUNNING && x.ServiceId == serviceId)

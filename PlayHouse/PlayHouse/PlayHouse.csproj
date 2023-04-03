@@ -21,7 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Protocol\Protocol.csproj" />
+    <ProjectReference Include="..\..\..\playhouse-net-common\CommonLib\CommonLib\CommonLib.csproj" />
+    <ProjectReference Include="..\Protocol\Common.csproj" />
   </ItemGroup>
 
 </Project>

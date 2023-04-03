@@ -1,8 +1,8 @@
-﻿using FluentAssertions;
+﻿using CommonLib;
+using FluentAssertions;
 using Org.Ulalax.Playhouse.Protocol;
 using Playhouse.Protocol;
 using PlayHouse.Communicator.Message;
-using PlayHouse.Communicator.Message.buffer;
 using PlayHouse.Communicator.PlaySocket;
 using Xunit;
 
@@ -12,7 +12,6 @@ namespace PlayHouse.Communicator.Socket.Tests
     [Collection("NetMQPlaySocketTests")]
     public class NetMQPlaySocketTests : IDisposable
     {
-
         
         private string serverBindEndpoint = "";
         private string clientBindEndpoint = "";
@@ -75,8 +74,8 @@ namespace PlayHouse.Communicator.Socket.Tests
             {
                 ErrorCode = 0,
                 MsgSeq = 1,
-                ServiceId = "session",
-                MsgName = "TestMsg"
+                ServiceId = (short)ServiceType.SESSION,
+                MsgId = TestMsg.Descriptor.Index
             };
 
             var routeHeader = RouteHeader.Of(header);
@@ -89,6 +88,7 @@ namespace PlayHouse.Communicator.Socket.Tests
             while (receiveRoutePacket == null)
             {
                 receiveRoutePacket = serverSocket!.Receive();
+                Thread.Sleep(10);
             }
 
 

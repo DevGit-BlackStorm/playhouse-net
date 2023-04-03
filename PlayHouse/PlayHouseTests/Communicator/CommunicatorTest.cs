@@ -5,6 +5,7 @@ using PlayHouse.Communicator.PlaySocket;
 using PlayHouse;
 using Xunit;
 using FluentAssertions;
+using CommonLib;
 
 namespace PlayHouseTests.Communicator
 {
@@ -21,6 +22,9 @@ namespace PlayHouseTests.Communicator
     [Collection("ZSocketCommunicateTest")]
     public class CommunicatorTest
     {
+        public CommunicatorTest() { 
+            PooledBuffer.Init();
+        }
         [Fact]
         public void Should_communicate_between_Session_and_Api()
         {
@@ -75,12 +79,12 @@ namespace PlayHouseTests.Communicator
             Thread.Sleep(100);
 
             var message = new HeaderMsg();
-            sessionClient.Send(apiEndpoint, RoutePacket.ClientOf("session", 0, new Packet(message)));
+            sessionClient.Send(apiEndpoint, RoutePacket.ClientOf((short)ServiceType.SESSION, 0, new Packet(message)));
 
             Thread.Sleep(200);
 
             apiListener.Results.Count.Should().Be(1);
-            apiListener.Results[0].MsgName().Should().Be("HeaderMsg");
+            apiListener.Results[0].GetMsgId().Should().Be((short)HeaderMsg.Descriptor.Index);
 
             ////////// api to session ///////////////
 
@@ -89,12 +93,13 @@ namespace PlayHouseTests.Communicator
 
             Thread.Sleep(100);
 
-            apiClient.Send(sessionEndpoint, RoutePacket.ClientOf("api", 0, new Packet("apiPacket")));
+            short messagId = 100;
+            apiClient.Send(sessionEndpoint, RoutePacket.ClientOf((short)ServiceType.API, 0, new Packet(messagId)));
 
             Thread.Sleep(200);
 
             sessionListener.Results.Count.Should().Be(1);
-            sessionListener.Results[0].MsgName().Should().Be("apiPacket");
+            sessionListener.Results[0].GetMsgId().Should().Be(messagId);
 
         }
     }

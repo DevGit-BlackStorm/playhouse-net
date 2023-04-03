@@ -5,11 +5,14 @@ using Xunit;
 
 namespace PlayHouseTests.Communicator
 {
+ 
     public class ServerInfoCenterFuncSpecTest
     {
         private XServerInfoCenter _serverInfoCenter;
         private long _curTime;
         private List<XServerInfo> _serverList;
+
+
 
         public ServerInfoCenterFuncSpecTest()
         {
@@ -17,17 +20,17 @@ namespace PlayHouseTests.Communicator
             _curTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             _serverList = new List<XServerInfo>
             {
-                XServerInfo.Of("tcp://127.0.0.1:0001", ServiceType.API, "api", ServerState.RUNNING, 1, _curTime),
-                XServerInfo.Of("tcp://127.0.0.1:0002", ServiceType.Play, "play", ServerState.RUNNING, 1, _curTime),
-                XServerInfo.Of("tcp://127.0.0.1:0003", ServiceType.SESSION, "session", ServerState.RUNNING, 1, _curTime),
+                XServerInfo.Of("tcp://127.0.0.1:0001", ServiceType.API, (short)ServiceType.API, ServerState.RUNNING, 1, _curTime),
+                XServerInfo.Of("tcp://127.0.0.1:0002", ServiceType.Play, (short)ServiceType.Play, ServerState.RUNNING, 1, _curTime),
+                XServerInfo.Of("tcp://127.0.0.1:0003", ServiceType.SESSION, (short)ServiceType.SESSION, ServerState.RUNNING, 1, _curTime),
 
-                XServerInfo.Of("tcp://127.0.0.1:0011", ServiceType.API, "api", ServerState.RUNNING, 11, _curTime),
-                XServerInfo.Of("tcp://127.0.0.1:0012", ServiceType.Play, "play", ServerState.RUNNING, 11, _curTime),
-                XServerInfo.Of("tcp://127.0.0.1:0013", ServiceType.SESSION, "session", ServerState.RUNNING, 11, _curTime),
+                XServerInfo.Of("tcp://127.0.0.1:0011", ServiceType.API, (short)ServiceType.API, ServerState.RUNNING, 11, _curTime),
+                XServerInfo.Of("tcp://127.0.0.1:0012", ServiceType.Play, (short)ServiceType.Play, ServerState.RUNNING, 11, _curTime),
+                XServerInfo.Of("tcp://127.0.0.1:0013", ServiceType.SESSION, (short)ServiceType.SESSION, ServerState.RUNNING, 11, _curTime),
 
-                XServerInfo.Of("tcp://127.0.0.1:0021", ServiceType.API, "api", ServerState.RUNNING, 21, _curTime),
-                XServerInfo.Of("tcp://127.0.0.1:0022", ServiceType.Play, "play", ServerState.RUNNING, 21, _curTime),
-                XServerInfo.Of("tcp://127.0.0.1:0023", ServiceType.SESSION, "session", ServerState.RUNNING, 21, _curTime)
+                XServerInfo.Of("tcp://127.0.0.1:0021", ServiceType.API, (short)ServiceType.API, ServerState.RUNNING, 21, _curTime),
+                XServerInfo.Of("tcp://127.0.0.1:0022", ServiceType.Play, (short)ServiceType.Play, ServerState.RUNNING, 21, _curTime),
+                XServerInfo.Of("tcp://127.0.0.1:0023", ServiceType.SESSION, (short)ServiceType.SESSION, ServerState.RUNNING, 21, _curTime)
             };
         }
 
@@ -39,7 +42,7 @@ namespace PlayHouseTests.Communicator
             updatedList.Should().HaveCount(_serverList.Count);
 
             var update = new List<XServerInfo>{
-                XServerInfo.Of("tcp://127.0.0.1:0001", ServiceType.API, "api", ServerState.DISABLE, 11, _curTime)
+                XServerInfo.Of("tcp://127.0.0.1:0001", ServiceType.API, (short)ServiceType.API, ServerState.DISABLE, 11, _curTime)
             };
 
             updatedList = _serverInfoCenter.Update(update);
@@ -53,7 +56,7 @@ namespace PlayHouseTests.Communicator
             _serverInfoCenter.Update(_serverList);
 
             var update = new List<XServerInfo>{
-                XServerInfo.Of("tcp://127.0.0.1:0011", ServiceType.API, "api", ServerState.RUNNING, 1, _curTime - 61000)
+                XServerInfo.Of("tcp://127.0.0.1:0011", ServiceType.API, (short)ServiceType.API, ServerState.RUNNING, 1, _curTime - 61000)
             };
 
             var updatedList = _serverInfoCenter.Update(update);
@@ -85,14 +88,14 @@ namespace PlayHouseTests.Communicator
             _serverInfoCenter.Update(_serverList);
 
             // Play service should return servers in order 0012 -> 0022 -> 0002
-            _serverInfoCenter.FindRoundRobinServer("play").BindEndpoint.Should().Be("tcp://127.0.0.1:0012");
-            _serverInfoCenter.FindRoundRobinServer("play").BindEndpoint.Should().Be("tcp://127.0.0.1:0022");
-            _serverInfoCenter.FindRoundRobinServer("play").BindEndpoint.Should().Be("tcp://127.0.0.1:0002");
+            _serverInfoCenter.FindRoundRobinServer((short)ServiceType.Play).BindEndpoint.Should().Be("tcp://127.0.0.1:0012");
+            _serverInfoCenter.FindRoundRobinServer((short)ServiceType.Play).BindEndpoint.Should().Be("tcp://127.0.0.1:0022");
+            _serverInfoCenter.FindRoundRobinServer((short)ServiceType.Play).BindEndpoint.Should().Be("tcp://127.0.0.1:0002");
 
             // Session service should return servers in order 0013 -> 0023 -> 0003
-            _serverInfoCenter.FindRoundRobinServer("session").BindEndpoint.Should().Be("tcp://127.0.0.1:0013");
-            _serverInfoCenter.FindRoundRobinServer("session").BindEndpoint.Should().Be("tcp://127.0.0.1:0023");
-            _serverInfoCenter.FindRoundRobinServer("session").BindEndpoint.Should().Be("tcp://127.0.0.1:0003");
+            _serverInfoCenter.FindRoundRobinServer((short)ServiceType.SESSION).BindEndpoint.Should().Be("tcp://127.0.0.1:0013");
+            _serverInfoCenter.FindRoundRobinServer((short)ServiceType.SESSION).BindEndpoint.Should().Be("tcp://127.0.0.1:0023");
+            _serverInfoCenter.FindRoundRobinServer((short)ServiceType.SESSION).BindEndpoint.Should().Be("tcp://127.0.0.1:0003");
         }
 
         [Fact]

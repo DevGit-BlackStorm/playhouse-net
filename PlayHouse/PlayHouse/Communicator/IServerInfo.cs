@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace PlayHouse.Communicator
 {
+
     public enum ServerState
     {
         RUNNING,
@@ -13,11 +14,12 @@ namespace PlayHouse.Communicator
         DISABLE
     }
 
+
     public interface IServerInfo
     {
         string BindEndpoint();
         ServiceType ServiceType();
-        string ServiceId();
+        short ServiceId();
         ServerState State();
         //int WeightingPoint();
         long TimeStamp();

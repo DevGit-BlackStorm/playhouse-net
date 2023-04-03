@@ -10,10 +10,10 @@ namespace PlayHouse.Communicator.Message
     public class ClientPacket : IBasePacket
     {
 
-        public static ClientPacket Of(HeaderMsg headerMsg,IPayload payload)
-        {
-            return new ClientPacket(Header.Of(headerMsg), payload);
-        }
+        //public static ClientPacket Of(HeaderMsg headerMsg,IPayload payload)
+        //{
+        //    return new ClientPacket(Header.Of(headerMsg), payload);
+        //}
 
         public Header Header { get; set; }
         public IPayload Payload;
@@ -23,7 +23,7 @@ namespace PlayHouse.Communicator.Message
             Header = header;
             Payload = payload;
         }
-        public byte[] Data()
+        public (byte[], int) Data()
         {
             return Payload.Data();
         }
@@ -41,26 +41,27 @@ namespace PlayHouse.Communicator.Message
             return temp;
         }
 
-        public int GetMsgSeq()
+        public short GetMsgSeq()
         {
             return Header.MsgSeq;
         }
 
-        public string GetMsgName()
+        public short GetMsgId()
         {
-            return Header.MsgName;
+            return Header.MsgId;
         }
           
 
-        public string ServiceId()
+        public short ServiceId()
         {
             return Header.ServiceId;
         }
 
         public  Packet ToPacket()
         {
-            return new Packet(Header.MsgName, MovePayload());
+            return new Packet(Header.MsgId, MovePayload());
         }
+        
     }
 
 

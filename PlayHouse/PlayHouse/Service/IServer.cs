@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PlayHouse.Service.Session.network
+namespace PlayHouse.Service
 {
-    internal interface ISessionNetwork
+    public interface IServer
     {
         void Start();
         void Stop();
+        void AwaitTermination();
     }
-        
+
 }

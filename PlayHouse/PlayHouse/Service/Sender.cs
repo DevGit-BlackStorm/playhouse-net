@@ -10,9 +10,9 @@ namespace PlayHouse.Service
 {
     public interface ISystemPanel
     {
-        IServerInfo RandomServerInfo(string serviceId);
+        IServerInfo RandomServerInfo(short serviceId);
         IServerInfo ServerInfo(string endpoint);
-        List<IServerInfo> ServerList();
+        IList<IServerInfo> ServerList();
         void Pause();
         void Resume();
         void Shutdown();
@@ -21,7 +21,7 @@ namespace PlayHouse.Service
 
     public interface ICommonSender
     {
-        string ServiceId();
+        short ServiceId();
         void Reply(ReplyPacket reply);
         void SendToClient(string sessionEndpoint, int sid, Packet packet);
         void SendToApi(string apiEndpoint, string sessionInfo, Packet packet);
@@ -43,7 +43,7 @@ namespace PlayHouse.Service
 
     public interface IApiCommonSender : ICommonSender
     {
-        void UpdateSession(string sessionEndpoint, int sid, string serviceId, string sessionInfo);
+        void UpdateSession(string sessionEndpoint, int sid, short serviceId, string sessionInfo);
 
         CreateStageResult CreateStage(string playEndpoint, string stageType, Packet packet);
         JoinStageResult JoinStage(string playEndpoint,
@@ -70,7 +70,7 @@ namespace PlayHouse.Service
         void SendToClient(Packet packet);
         void SessionClose();
 
-        void UpdateSession(string serviceId, string sessionInfo);
+        void UpdateSession(short serviceId, string sessionInfo);
     }
 
     public delegate Task<T> AsyncPreCallback<T>();

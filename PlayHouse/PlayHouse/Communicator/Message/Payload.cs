@@ -1,15 +1,14 @@
 ﻿
-using PlayHouse.Communicator.Message.buffer;
-
 namespace PlayHouse.Communicator.Message
 {
     using Google.Protobuf;
     using System.IO;
     using System;
+    using CommonLib;
 
     public interface IPayload : IDisposable
     {
-        byte[] Data();
+        (byte[],int) Data();
         void Output(Stream outputStream);
     }
 
@@ -22,9 +21,9 @@ namespace PlayHouse.Communicator.Message
             _proto = proto;
         }
 
-        public byte[] Data()
+        public (byte[],int) Data()
         {
-            return _proto.ToByteArray();
+            return (_proto.ToByteArray(),_proto.CalculateSize());
         }
 
         public void Output(Stream outputStream)
@@ -46,9 +45,9 @@ namespace PlayHouse.Communicator.Message
             _byteString = byteString;
         }
 
-        public byte[] Data()
+        public (byte[],int) Data()
         {
-            return _byteString.ToByteArray();
+            return (_byteString.ToByteArray(),_byteString.Length);
         }
 
         public void Output(Stream outputStream)
@@ -63,9 +62,9 @@ namespace PlayHouse.Communicator.Message
 
     public class EmptyPayload : IPayload
     {
-        public byte[] Data()
+        public (byte[],int) Data()
         {
-            return Array.Empty<byte>();
+            return (Array.Empty<byte>(),0);
         }
 
         public void Output(Stream outputStream)
@@ -86,14 +85,14 @@ namespace PlayHouse.Communicator.Message
             _buffer = buffer;
         }
 
-        public byte[] Data()
+        public (byte[], int) Data()
         {
-            return _buffer.Data;
+            return (_buffer.Data,_buffer.Size);
         }
 
         public void Output(Stream outputStream)
         {
-            outputStream.Write(_buffer.Data, 0, _buffer.Data.Length);
+            outputStream.Write(_buffer.Data, 0, _buffer.Size);
         }
 
         public void Dispose()

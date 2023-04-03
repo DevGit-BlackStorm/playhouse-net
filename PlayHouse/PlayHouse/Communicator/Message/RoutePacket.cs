@@ -1,39 +1,41 @@
-﻿using Google.Protobuf;
-using NetMQ.Sockets;
+﻿using CommonLib;
+using Google.Protobuf;
 using Playhouse.Protocol;
+using System.Net;
 
 namespace PlayHouse.Communicator.Message
 {
      public class Header
     {
-        public string MsgName { get; set; } = "";
-        public int ErrorCode { get; set; } = 0;
-        public int MsgSeq { get; set; } = 0;
-        public string ServiceId { get; set; } = "";
+        public short ServiceId { get; set; } = -1;
+        public short MsgId { get; set; } = -1;
+        public short MsgSeq { get; set; } = 0;
+        public short ErrorCode { get; set; } = 0;
+        
+        
 
-        public Header(String msgName = "", int errorCode = 0, int msgSeq = 0, String serviceId = "")
+        public Header(short serviceId = -1,short msgId = -1, short msgSeq = 0,short errorCode = 0 )
         {
-            MsgName = msgName;
+            MsgId = msgId;
             ErrorCode = errorCode;
             MsgSeq = msgSeq;
             ServiceId = serviceId;
 
         }
 
-        public static Header Of(HeaderMsg headerMsg)
+         static public Header Of(HeaderMsg headerMsg)
         {
-            return new Header(headerMsg.MsgName, headerMsg.ErrorCode, headerMsg.MsgSeq, headerMsg.ServiceId);
-
+            return new Header((short)headerMsg.ServiceId, (short)headerMsg.MsgId, (short)headerMsg.MsgSeq, (short)headerMsg.ErrorCode);
         }
 
-        public HeaderMsg ToMsg()
+        public  HeaderMsg ToMsg()
         {
-            return new HeaderMsg
+            return new HeaderMsg()
             {
-                ServiceId = this.ServiceId,
-                MsgSeq = this.MsgSeq,
-                MsgName = this.MsgName,
-                ErrorCode = this.ErrorCode,
+                ServiceId = ServiceId,
+                MsgId = MsgId,
+                MsgSeq = MsgSeq,
+                ErrorCode = ErrorCode,
             };
         }
     }
@@ -58,11 +60,7 @@ namespace PlayHouse.Communicator.Message
             this.Header = header;
         }
 
-        public RouteHeader(HeaderMsg headerMsg)
-            : this(Header.Of(headerMsg))
-        {
-        }
-
+       
         public RouteHeader(RouteHeaderMsg headerMsg)
             : this(Header.Of(headerMsg.HeaderMsg))
         {
@@ -82,9 +80,9 @@ namespace PlayHouse.Communicator.Message
             return ToMsg().ToByteArray();
         }
 
-        public string MsgName()
+        public short MsgId()
         {
-            return Header.MsgName;
+            return Header.MsgId;
         }
 
         public RouteHeaderMsg ToMsg()
@@ -111,9 +109,9 @@ namespace PlayHouse.Communicator.Message
             return new RouteHeader(header);
         }
 
-        public static RouteHeader TimerOf(long stageId, string msgName)
+        public static RouteHeader TimerOf(long stageId, short msgId)
         {
-            return new RouteHeader(new Header(msgName))
+            return new RouteHeader(new Header(msgId: msgId))
             {
                 StageId = stageId
             };
@@ -136,8 +134,8 @@ namespace PlayHouse.Communicator.Message
             this._payload = payload;
         }
 
-        public string MsgName() { return RouteHeader.MsgName(); }
-        public string ServiceId() { return RouteHeader.Header.ServiceId; }
+        public short GetMsgId() { return RouteHeader.MsgId(); }
+        public short ServiceId() { return RouteHeader.Header.ServiceId; }
         public bool IsBackend() { return RouteHeader.IsBackend; }
 
         
@@ -149,12 +147,12 @@ namespace PlayHouse.Communicator.Message
 
         public ClientPacket ToClientPacket()
         {
-            return ClientPacket.Of(RouteHeader.Header.ToMsg(), MovePayload());
+            return  new ClientPacket(RouteHeader.Header, MovePayload());
         }
 
         public Packet ToPacket()
         {
-            return new Packet(MsgName(), MovePayload());
+            return new Packet(GetMsgId(), MovePayload());
         }
 
         public bool IsBase()
@@ -167,7 +165,7 @@ namespace PlayHouse.Communicator.Message
             return RouteHeader.AccountId;
         }
 
-        public void SetMsgSeq(int msgSeq)
+        public void SetMsgSeq(short msgSeq)
         {
             RouteHeader.Header.MsgSeq = msgSeq;
         }
@@ -226,7 +224,7 @@ namespace PlayHouse.Communicator.Message
 
         public static RoutePacket SystemOf(Packet packet, bool isBase)
         {
-            Header header = new Header(packet.MsgName);
+            Header header = new Header(msgId: packet.MsgId);
             RouteHeader routeHeader = RouteHeader.Of(header);
             routeHeader.IsSystem = true;
             routeHeader.IsBase = isBase;
@@ -235,7 +233,7 @@ namespace PlayHouse.Communicator.Message
 
         public static RoutePacket ApiOf(string sessionInfo, Packet packet, bool isBase, bool isBackend)
         {
-            Header header = new Header(packet.MsgName);
+            Header header = new Header(msgId:packet.MsgId);
             RouteHeader routeHeader = RouteHeader.Of(header);
             routeHeader.SessionInfo = sessionInfo;
             routeHeader.IsBase = isBase;
@@ -245,7 +243,7 @@ namespace PlayHouse.Communicator.Message
 
         public static RoutePacket SessionOf(int sid, Packet packet, bool isBase, bool isBackend)
         {
-            Header header = new Header(packet.MsgName);
+            Header header = new Header(msgId:packet.MsgId);
             RouteHeader routeHeader = RouteHeader.Of(header);
             routeHeader.Sid = sid;
             routeHeader.IsBase = isBase;    
@@ -256,7 +254,7 @@ namespace PlayHouse.Communicator.Message
 
         public static RoutePacket AddTimerOf(TimerMsg.Types.Type type, long stageId, long timerId, TimerCallback timerCallback, TimeSpan initialDelay, TimeSpan period, int count = 0)
         {
-            Header header = new Header(TimerMsg.Descriptor.Name);
+            Header header = new Header(msgId:(short)TimerMsg.Descriptor.Index);
             RouteHeader routeHeader = RouteHeader.Of(header);
             routeHeader.StageId = stageId;
             routeHeader.IsBase = true;
@@ -278,7 +276,7 @@ namespace PlayHouse.Communicator.Message
 
         public static RoutePacket StageTimerOf(long stageId, long timerId, TimerCallback timerCallback)
         {
-            Header header = new Header(StageTimer.Descriptor.Name);
+            Header header = new Header(msgId: (short)StageTimer.Descriptor.Index);
             RouteHeader routeHeader = RouteHeader.Of(header);
 
             return new RoutePacket(routeHeader, new EmptyPayload())
@@ -291,7 +289,7 @@ namespace PlayHouse.Communicator.Message
 
         public static RoutePacket StageOf(long stageId, long accountId, Packet packet, bool isBase, bool isBackend)
         {
-            Header header = new Header(packet.MsgName);
+            Header header = new Header(msgId: packet.MsgId);
             RouteHeader routeHeader = RouteHeader.Of(header);
             routeHeader.StageId = stageId;
             routeHeader.AccountId = accountId;
@@ -300,9 +298,9 @@ namespace PlayHouse.Communicator.Message
             return new RoutePacket(routeHeader, packet.MovePayload());
         }
 
-        public static RoutePacket ReplyOf(string serviceId, int msgSeq, ReplyPacket reply)
+        public static RoutePacket ReplyOf(short serviceId, short msgSeq, ReplyPacket reply)
         {
-            Header header = new(reply.MsgName)
+            Header header = new(reply.MsgId)
             {
                 ServiceId = serviceId,
                 MsgSeq = msgSeq
@@ -316,9 +314,9 @@ namespace PlayHouse.Communicator.Message
             return routePacket;
         }
 
-        public static RoutePacket ClientOf(string serviceId, int sid, Packet packet)
+        public static RoutePacket ClientOf(short serviceId, int sid, Packet packet)
         {
-            Header header = new(packet.MsgName)
+            Header header = new(msgId:packet.MsgId)
             {
                 ServiceId = serviceId
             };
@@ -329,41 +327,35 @@ namespace PlayHouse.Communicator.Message
             return new RoutePacket(routeHeader, packet.MovePayload());
         }
 
-        public void WriteClientPacketBytes(PreAllocByteArrayOutputStream stream)
+        public void WriteClientPacketBytes(RingBuffer buffer)
         {
             ClientPacket clientPacket = ToClientPacket();
-            WriteClientPacketBytes(clientPacket,stream);
+            WriteClientPacketBytes(clientPacket, buffer);
         }
 
 
-        public static  void WriteClientPacketBytes(ClientPacket clientPacket, PreAllocByteArrayOutputStream outputStream)
+        public static  void WriteClientPacketBytes(ClientPacket clientPacket, RingBuffer buffer)
         {
-            var header = clientPacket.Header.ToMsg();
-            var payload = clientPacket.Payload;
 
-            int headerSize = header.CalculateSize();
+            int offset = (int)buffer.Count;
 
-            if (headerSize > ConstOption.HEADER_SIZE)
+            int bodyIndex = buffer.WriteInt16(0);
+            buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.ServiceId()));
+            buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.GetMsgId()));
+            buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.GetMsgSeq()));
+            buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.Header.ErrorCode));
+
+            RingBufferStream stream = new RingBufferStream(buffer);
+            clientPacket.Payload.Output(stream);
+
+            int bodySize = buffer.Count - (offset + 10);
+
+            if (bodySize > ConstOption.MAX_PACKET_SIZE)
             {
-                throw new CommunicatorException($"Header size is over {header}");
+                throw new Exception($"body size is over : {bodySize}");
             }
 
-            outputStream.WriteByte((byte)headerSize);
-
-            // Prepare body size
-            int index = outputStream.WriteShort(0);
-            // Header
-            header.WriteTo(outputStream);
-            // Body
-            payload.Output(outputStream);
-
-            int bodySize = outputStream.WrittenDataLength() - (1 + 2 + headerSize);
-
-            LOG.Info($"headerSize:{headerSize}, bodySize:{bodySize}", typeof(RoutePacket));
-            // Write body size
-            outputStream.ReplaceShort(index, bodySize);
-
-            LOG.Info($"body:{BitConverter.ToString(outputStream.ToArray()).Replace("-", ",")}", typeof(RoutePacket));
+            buffer.ReplaceInt16(bodyIndex, XBitConverter.ToNetworkOrder((short)bodySize));
         }
 
 
@@ -379,7 +371,7 @@ namespace PlayHouse.Communicator.Message
             return _payload;
         }
 
-        public byte[] Data()
+        public (byte[], int) Data()
         {
             return _payload.Data();
         }
@@ -391,7 +383,7 @@ namespace PlayHouse.Communicator.Message
 
         public  ReplyPacket ToReplyPacket()
         {
-            return new  ReplyPacket(RouteHeader.Header.ErrorCode,RouteHeader.MsgName(),MovePayload()); 
+            return new  ReplyPacket(RouteHeader.Header.ErrorCode,RouteHeader.MsgId(),MovePayload()); 
         }
     }
 

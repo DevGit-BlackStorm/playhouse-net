@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace PlayHouse.Communicator
 {
-    interface IServerInfoCenter
+    public interface IServerInfoCenter
     {
         IList<XServerInfo> Update(IList<XServerInfo> serverList);
         XServerInfo FindServer(string endpoint);
-        XServerInfo FindRoundRobinServer(string serviceId);
+        XServerInfo FindRoundRobinServer(short serviceId);
         IList<XServerInfo> GetServerList();
     }
 }

@@ -1,10 +1,8 @@
-﻿using NetCoreServer;
+﻿using CommonLib;
+using NetCoreServer;
 using PlayHouse.Communicator;
 using PlayHouse.Communicator.Message;
-using PlayHouse.Communicator.Message.buffer;
-using System.Net;
 using System.Net.Sockets;
-using System.Text;
 
 namespace PlayHouse.Service.Session.network.tcp
 {
@@ -12,13 +10,15 @@ namespace PlayHouse.Service.Session.network.tcp
     {
         private PacketParser _packetParser;
         private ISessionListener _sessionListener;
-        private PooledBuffer _pooledBuffer;
+        private RingBuffer _buffer = new RingBuffer(1024 * 8 ,1024*64*4);
+        private RingBufferStream _stream;
+            
 
         public XTcpSession(TcpServer server,ISessionListener sessionListener) : base(server)
         {
             _packetParser = new PacketParser();
             _sessionListener = sessionListener;
-            _pooledBuffer = new PooledBuffer(ConstOption.SessionBufferSize);
+            _stream = new RingBufferStream(_buffer);
         }
 
         private int GetSid()
@@ -29,7 +29,7 @@ namespace PlayHouse.Service.Session.network.tcp
         {
             
             LOG.Info($"TCP session with Id {GetSid()} connected!",this.GetType());
-            _sessionListener.OnConnect(GetSid());
+            _sessionListener.OnConnect(GetSid(),this);
 
         }
 
@@ -41,8 +41,8 @@ namespace PlayHouse.Service.Session.network.tcp
 
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
-            _pooledBuffer.Append(buffer, offset, size);
-            List<ClientPacket>  packets = _packetParser.Parse(_pooledBuffer);
+            _stream.Write(buffer, (int)offset, (int)size);
+            List<ClientPacket>  packets = _packetParser.Parse(_buffer);
             foreach (ClientPacket packet in packets) {
                 _sessionListener.OnReceive(GetSid(), packet);
             }
@@ -61,7 +61,11 @@ namespace PlayHouse.Service.Session.network.tcp
 
         public void Send(ClientPacket packet)
         {
-            //base.Send(packet.Data);
+            using (packet)
+            {
+                var (buffer, size) = packet.Data();
+                base.Send(buffer, 0, size);
+            }
         }
     }
     public class TcpSessionServer : TcpServer
@@ -76,28 +80,35 @@ namespace PlayHouse.Service.Session.network.tcp
         {
             return new XTcpSession(this,_sessionListener);
         }
+
+        protected override void OnStarted()
+        {
+            LOG.Info("Server Started",GetType());
+        }
     }
     class TcpSessionNetwork : ISessionNetwork
     {
-        private SessionOption _sessionOption;
-        private ISessionListener _sessionListener;
         private TcpSessionServer _tcpSessionServer;
+        
         public TcpSessionNetwork(SessionOption sessionOption,ISessionListener sessionListener) { 
-            _sessionOption = sessionOption;
-            _sessionListener = sessionListener;
 
             _tcpSessionServer = new TcpSessionServer(IpFinder.FindLocalIp(), sessionOption.SessionPort, sessionListener);
         }
-        public void Restart()
-        {
-            LOG.Info("TcpSessionNetwork Restart", this.GetType());
-            _tcpSessionServer.Restart();
-        }
 
+        
         public void Start()
         {
-            LOG.Info("TcpSessionNetwork Start", this.GetType());
-            _tcpSessionServer.Start();
+            
+            if (_tcpSessionServer.Start())
+            {
+                LOG.Info("TcpSessionNetwork Start", this.GetType());
+            }
+            else
+            {
+                LOG.Fatal("Session Server Start Fail", GetType());
+                Environment.Exit(0);
+            }
+         
         }
 
         public void Stop()

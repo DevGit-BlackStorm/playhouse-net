@@ -22,22 +22,20 @@ namespace PlayHouse.Communicator
             }
         }
 
-        public void Throw(int errorCode)
+        public void Throw(short errorCode)
         {
-            _replyCallback?.Invoke(new ReplyPacket(errorCode,""));
-            _taskCompletionSource?.SetResult(new ReplyPacket(errorCode, ""));
+            _replyCallback?.Invoke(new ReplyPacket(errorCode));
+            _taskCompletionSource?.SetResult(new ReplyPacket(errorCode));
             
         }
     }
     public class RequestCache
     {
-        private ILogger _log ;
         private int _atomicInt;
         private CacheItemPolicy _policy;
 
-        public RequestCache(int timeout,ILogger logger) 
+        public RequestCache(int timeout) 
         {
-            _log = logger;
             _policy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(timeout) };
 
             // Set a callback to be called when the cache item is removed
@@ -71,21 +69,22 @@ namespace PlayHouse.Communicator
             try
             {
                 int msgSeq = routePacket.Header().MsgSeq;
-                string msgName = routePacket.Header().MsgName;
-                ReplyObject replyObject = (ReplyObject)MemoryCache.Default.Get(msgSeq.ToString());
+                short msgId = routePacket.Header().MsgId;
+                string key = msgSeq.ToString();
+                ReplyObject replyObject = (ReplyObject)MemoryCache.Default.Get(key);
 
                 if (replyObject != null)
                 {
                     replyObject.OnReceive(routePacket);
-                    MemoryCache.Default.Remove(msgSeq.ToString());
+                    MemoryCache.Default.Remove(key);
                 }
                 else
                 {
-                    _log.Error($"{msgSeq},${msgName} request is not exist", nameof(RequestCache));
+                    LOG.Error($"{msgSeq},${msgId} request is not exist", this.GetType());
                 }
             }catch (Exception e)
             {
-                _log.Error($"{e.StackTrace}",nameof(RequestCache), e);
+                LOG.Error($"{e.StackTrace}",this.GetType(), e);
             }
             
         }

@@ -1,20 +1,23 @@
 ﻿using NetCoreServer;
-using PlayHouse.Communicator.Message.buffer;
 using PlayHouse.Communicator.Message;
 using PlayHouse.Communicator;
 using System.Net.Sockets;
+using CommonLib;
 
 namespace PlayHouse.Service.Session.network.websocket
 {
-    class XWsSession : WsSession
+    class XWsSession : WsSession, ISession
     {
         private PacketParser _packetParser;
         private ISessionListener _sessionListener;
+        private RingBuffer _buffer = new RingBuffer(1024 * 8, 1024 * 64 * 4);
+        private RingBufferStream _stream;
 
         public XWsSession(WsSessionServer server, ISessionListener sessionListener) : base(server)
         {
             _packetParser = new PacketParser();
             _sessionListener = sessionListener;
+            _stream = new RingBufferStream(_buffer);
         }
 
         private int GetSid()
@@ -25,7 +28,7 @@ namespace PlayHouse.Service.Session.network.websocket
         {
 
             LOG.Info($"Websocket session with Id {GetSid()} connected!", this.GetType());
-            _sessionListener.OnConnect(GetSid());
+            _sessionListener.OnConnect(GetSid(),this);
 
         }
 
@@ -37,10 +40,8 @@ namespace PlayHouse.Service.Session.network.websocket
 
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
-            var pooledBuffer = new PooledBuffer(size);
-            pooledBuffer.Append(buffer, offset, size);
-
-            List<ClientPacket> packets = _packetParser.Parse(pooledBuffer);
+            _stream.Write(buffer, (int)offset, (int)size);
+            List<ClientPacket> packets = _packetParser.Parse(_buffer);
             foreach (ClientPacket packet in packets)
             {
                 _sessionListener.OnReceive(GetSid(), packet);
@@ -52,15 +53,27 @@ namespace PlayHouse.Service.Session.network.websocket
             LOG.Error($"Chat TCP session caught an error with code {error}", this.GetType());
             Disconnect();
         }
+
+        public void ClientDisconnect()
+        {
+            base.Disconnect();
+        }
+
+        public void Send(ClientPacket packet)
+        {
+            using(packet)
+            {
+                var (buffer, size) = packet.Data();
+                base.Send(buffer,0,size);
+            }
+        }
     }
     public class WsSessionServer : WsServer
     {
         private ISessionListener _sessionListener;
-        private ILogger _log;
-        public WsSessionServer(string address, int port, ISessionListener sessionListener, ILogger log) : base(address, port)
+        public WsSessionServer(string address, int port, ISessionListener sessionListener) : base(address, port)
         {
             _sessionListener = sessionListener;
-            _log = log;
         }
 
         protected override WsSession CreateSession()
@@ -70,28 +83,25 @@ namespace PlayHouse.Service.Session.network.websocket
     }
     class WsSessionNetwork : ISessionNetwork
     {
-        private SessionOption _sessionOption;
-        private ISessionListener _sessionListener;
         private WsSessionServer _wsSessionServer;
-        private ILogger _log;
-        public WsSessionNetwork(SessionOption sessionOption, ISessionListener sessionListener, ILogger log)
+        public WsSessionNetwork(SessionOption sessionOption, ISessionListener sessionListener)
         {
-            _sessionOption = sessionOption;
-            _sessionListener = sessionListener;
-            _log = log;
-
-            _wsSessionServer = new WsSessionServer(IpFinder.FindLocalIp(), sessionOption.SessionPort, sessionListener, log);
+            _wsSessionServer = new WsSessionServer(IpFinder.FindLocalIp(), sessionOption.SessionPort, sessionListener);
         }
-        public void Restart()
-        {
-            LOG.Info("WsSessionNetwork Restart", this.GetType());
-            _wsSessionServer.Restart();
-        }
-
+   
+  
         public void Start()
         {
-            LOG.Info("WsSessionNetwork Start", this.GetType());
-            _wsSessionServer.Start();
+            
+            if (_wsSessionServer.Start())
+            {
+                LOG.Info("WsSessionNetwork Start", this.GetType());
+            }
+            else
+            {
+                LOG.Fatal("WsSessionNetwork Start Fail", this.GetType());
+                Environment.Exit(0);
+            }
         }
 
         public void Stop()

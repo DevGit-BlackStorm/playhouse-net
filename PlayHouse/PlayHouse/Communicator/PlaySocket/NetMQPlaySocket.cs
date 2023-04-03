@@ -1,8 +1,9 @@
-﻿using NetMQ;
+﻿using CommonLib;
+using Google.Protobuf;
+using NetMQ;
 using NetMQ.Sockets;
 using Playhouse.Protocol;
 using PlayHouse.Communicator.Message;
-using PlayHouse.Communicator.Message.buffer;
 using System.Text;
 
 namespace PlayHouse.Communicator.PlaySocket
@@ -12,7 +13,7 @@ namespace PlayHouse.Communicator.PlaySocket
     {
         private readonly RouterSocket _socket = new();
         private readonly String _bindEndpoint = "";
-        private PreAllocByteArrayOutputStream _outputStream = new PreAllocByteArrayOutputStream(new byte[ConstOption.MAX_PACKET_SIZE]);
+        private RingBuffer _buffer = new RingBuffer(ConstOption.MAX_PACKET_SIZE);
 
         public NetMQPlaySocket(SocketConfig socketConfig,String bindEndpoint)
         {
@@ -91,27 +92,37 @@ namespace PlayHouse.Communicator.PlaySocket
                 NetMQMessage message = new NetMQMessage();
                 IPayload payload = routerPacket.GetPayload();
 
-                _outputStream.Reset();
+                _buffer.Clear();
                 if (routerPacket.ForClient())
                 {
-                    routerPacket.WriteClientPacketBytes(_outputStream);
+                    routerPacket.WriteClientPacketBytes(_buffer);
                 }
                 else
                 {
-                    payload.Output(_outputStream);
+                    payload.Output(new RingBufferStream(_buffer));
                 }
-
-                
+                                
                 message.Append(new NetMQFrame(Encoding.UTF8.GetBytes(endpoint)));
-                message.Append(new NetMQFrame(routerPacket.RouteHeader.ToByteArray()));
-                message.Append(new NetMQFrame(_outputStream.Array(),_outputStream.WrittenDataLength()));
+                var routerHeaderMsg = routerPacket.RouteHeader.ToMsg();
+
+                var headerSize = routerHeaderMsg.CalculateSize();
+                var headerFrame = new NetMQFrame(headerSize);
+                routerHeaderMsg.WriteTo(new MemoryStream(headerFrame.Buffer));
+
+                message.Append(headerFrame);
+                message.Append(new NetMQFrame(_buffer.Buffer(),_buffer.Count));
 
                 if (!_socket.TrySendMultipartMessage(message))
                 {
-                    LOG.Error($"Send fail to {endpoint}, MsgName:{routerPacket.MsgName}", this.GetType());
+                    LOG.Error($"Send fail to {endpoint}, MsgName:{routerPacket.GetMsgId}", this.GetType());
                 }
             }
             
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
         }
     }
 }

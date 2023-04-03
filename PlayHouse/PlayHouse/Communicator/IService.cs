@@ -19,10 +19,10 @@ namespace PlayHouse.Communicator
         void OnStart();
         void OnReceive(RoutePacket routePacket);
         void OnStop();
-        int WeightPoint();
-        ServerState ServerState();
-        ServiceType ServiceType();
-        string ServiceId();
+        int GetWeightPoint();
+        ServerState GetServerState();
+        ServiceType GetServiceType();
+        short GetServiceId();
         void Pause();
         void Resume();
     }
