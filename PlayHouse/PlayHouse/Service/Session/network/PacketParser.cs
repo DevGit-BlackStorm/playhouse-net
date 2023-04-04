@@ -24,7 +24,7 @@ namespace PlayHouse.Service.Session.network
             {
                 try
                 {
-                    int bodySize = XBitConverter.ToHostOrder(buffer.PeekInt16(0));
+                    int bodySize = XBitConverter.ToHostOrder(buffer.PeekInt16(buffer.ReaderIndex));
 
                     if (bodySize > MAX_PACKET_SIZE)
                     {
