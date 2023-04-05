@@ -355,7 +355,7 @@ namespace PlayHouse.Communicator.Message
                 throw new Exception($"body size is over : {bodySize}");
             }
 
-            buffer.ReplaceInt16(bodyIndex, XBitConverter.ToNetworkOrder((short)bodySize));
+            buffer.SetInt16(bodyIndex, XBitConverter.ToNetworkOrder((short)bodySize));
         }
 
 
