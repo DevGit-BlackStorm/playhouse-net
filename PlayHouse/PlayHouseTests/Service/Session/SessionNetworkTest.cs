@@ -84,7 +84,7 @@ namespace PlayHouse.Service.Session.network
                 await Task.Delay(100);
 
 
-                var connector = new Connector(new ConnectorConfig());
+                var connector = new Connector(new ConnectorConfig() { ReqestTimeout = 0});
 
                 var localIp = IpFinder.FindLocalIp();
 
