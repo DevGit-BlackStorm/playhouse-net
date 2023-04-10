@@ -23,10 +23,7 @@ namespace PlayHouse.Communicator.Message
             Header = header;
             Payload = payload;
         }
-        public (byte[], int) Data()
-        {
-            return Payload.Data();
-        }
+        public ReadOnlySpan<byte> Data => Payload.Data;
 
         public void Dispose()
         {

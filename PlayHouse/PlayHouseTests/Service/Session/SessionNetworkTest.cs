@@ -25,7 +25,7 @@ namespace PlayHouse.Service.Session.network
 
         public void OnReceive(int sid, ClientPacket clientPacket)
         {
-            var testMsg = TestMsg.Parser.ParseFrom(clientPacket.Data());
+            var testMsg = TestMsg.Parser.ParseFrom(clientPacket.Data);
 
             if (testMsg.TestMsg_ == "request")
             {

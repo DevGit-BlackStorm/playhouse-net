@@ -20,7 +20,7 @@ namespace PlayHouse.Communicator.Message
     {
         IPayload MovePayload();
         
-        (byte[],int) Data();
+        ReadOnlySpan<byte> Data { get; }
     }
 
 
@@ -48,10 +48,7 @@ namespace PlayHouse.Communicator.Message
 
         
 
-        public (byte[],int) Data()
-        {
-            return (_payload!.Data());
-        }
+        public ReadOnlySpan<byte> Data=>_payload!.Data;
 
         public IPayload MovePayload()
         {
@@ -92,10 +89,7 @@ namespace PlayHouse.Communicator.Message
         }
 
    
-        public (byte[], int)  Data()
-        {
-            return _payload.Data();
-        }
+        public ReadOnlySpan<byte> Data => _payload.Data;
 
         public IPayload MovePayload()
         {

@@ -336,26 +336,22 @@ namespace PlayHouse.Communicator.Message
 
         public static  void WriteClientPacketBytes(ClientPacket clientPacket, RingBuffer buffer)
         {
+            var body = clientPacket.Payload.Data;
 
-            int offset = (int)buffer.Count;
-
-            int bodyIndex = buffer.WriteInt16(0);
-            buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.ServiceId()));
-            buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.GetMsgId()));
-            buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.GetMsgSeq()));
-            buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.Header.ErrorCode));
-
-            RingBufferStream stream = new RingBufferStream(buffer);
-            clientPacket.Payload.Output(stream);
-
-            int bodySize = buffer.Count - (offset + 10);
+            int bodySize = body.Length;
 
             if (bodySize > ConstOption.MAX_PACKET_SIZE)
             {
                 throw new Exception($"body size is over : {bodySize}");
             }
 
-            buffer.SetInt16(bodyIndex, XBitConverter.ToNetworkOrder((short)bodySize));
+            buffer.WriteInt16(XBitConverter.ToNetworkOrder((short)bodySize));
+            buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.ServiceId()));
+            buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.GetMsgId()));
+            buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.GetMsgSeq()));
+            buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.Header.ErrorCode));
+
+            buffer.Write(clientPacket.Payload.Data);
         }
 
 
@@ -371,10 +367,7 @@ namespace PlayHouse.Communicator.Message
             return _payload;
         }
 
-        public (byte[], int) Data()
-        {
-            return _payload.Data();
-        }
+        public ReadOnlySpan<byte> Data => _payload.Data;
 
         public void Dispose()
         {

@@ -8,8 +8,8 @@ namespace PlayHouse.Communicator.Message
 
     public interface IPayload : IDisposable
     {
-        (byte[],int) Data();
-        void Output(Stream outputStream);
+        ReadOnlySpan<byte> Data { get; }
+        //void Output(Stream outputStream);
     }
 
     public class ProtoPayload : IPayload
@@ -19,21 +19,22 @@ namespace PlayHouse.Communicator.Message
         public ProtoPayload(IMessage proto)
         {
             _proto = proto;
+           
         }
 
-        public (byte[],int) Data()
-        {
-            return (_proto.ToByteArray(),_proto.CalculateSize());
-        }
+        public ReadOnlySpan<byte> Data => _proto.ToByteArray();
 
-        public void Output(Stream outputStream)
-        {
-            _proto.WriteTo(outputStream);
-        }
+        //public void Output(Stream outputStream)
+        //{
+        //    _proto.WriteTo(outputStream);
+        //}
 
         public void Dispose()
         {
         }
+
+        
+        
     }
 
     public class ByteStringPayload : IPayload
@@ -45,35 +46,32 @@ namespace PlayHouse.Communicator.Message
             _byteString = byteString;
         }
 
-        public (byte[],int) Data()
-        {
-            return (_byteString.ToByteArray(),_byteString.Length);
-        }
-
-        public void Output(Stream outputStream)
-        {
-            _byteString.WriteTo(outputStream);
-        }
+        
+        //public void Output(Stream outputStream)
+        //{
+        //    _byteString.WriteTo(outputStream);
+        //}
 
         public void Dispose()
         {
         }
+
+        public ReadOnlySpan<byte> Data => _byteString.ToByteArray();
     }
 
     public class EmptyPayload : IPayload
     {
-        public (byte[],int) Data()
-        {
-            return (Array.Empty<byte>(),0);
-        }
 
-        public void Output(Stream outputStream)
-        {
-        }
+        //public void Output(Stream outputStream)
+        //{
+        //}
 
         public void Dispose()
         {
         }
+
+        public ReadOnlySpan<byte> Data => new ReadOnlySpan<byte>();
+        
     }
 
     public class PooledBufferPayload : IPayload
@@ -85,15 +83,17 @@ namespace PlayHouse.Communicator.Message
             _buffer = buffer;
         }
 
-        public (byte[], int) Data()
-        {
-            return (_buffer.Data,_buffer.Size);
-        }
+        public ReadOnlySpan<byte> Data => new ReadOnlySpan<byte>(_buffer.Data, 0, _buffer.Size);
 
-        public void Output(Stream outputStream)
-        {
-            outputStream.Write(_buffer.Data, 0, _buffer.Size);
-        }
+        //public (byte[], int) Data()
+        //{
+        //    return (_buffer.Data,_buffer.Size);
+        //}
+
+        //public void Output(Stream outputStream)
+        //{
+        //    outputStream.Write(_buffer.Data, 0, _buffer.Size);
+        //}
 
         public void Dispose()
         {

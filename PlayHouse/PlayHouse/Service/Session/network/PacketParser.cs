@@ -35,7 +35,7 @@ namespace PlayHouse.Service.Session.network
                     // If the remaining buffer is smaller than the expected packet size, wait for more data
                     if (buffer.Count < bodySize + HEADER_SIZE)
                     {
-                        break;
+                        return packets;
                     }
 
                     buffer.Clear(2);

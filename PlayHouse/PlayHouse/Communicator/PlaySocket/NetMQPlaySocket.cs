@@ -99,7 +99,7 @@ namespace PlayHouse.Communicator.PlaySocket
                 }
                 else
                 {
-                    payload.Output(new RingBufferStream(_buffer));
+                    _buffer.Write(payload.Data);
                 }
                                 
                 message.Append(new NetMQFrame(Encoding.UTF8.GetBytes(endpoint)));

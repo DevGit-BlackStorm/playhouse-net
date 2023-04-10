@@ -157,13 +157,13 @@ namespace PlayHouse.Service.Session
             {
                 if(msgId == AuthenticateMsg.Descriptor.Index) 
                 {
-                    AuthenticateMsg authenticateMsg = AuthenticateMsg.Parser.ParseFrom(packet.Data());
+                    AuthenticateMsg authenticateMsg = AuthenticateMsg.Parser.ParseFrom(packet.Data);
                     Authenticate((short)authenticateMsg.ServiceId, authenticateMsg.AccountId, authenticateMsg.SessionInfo);
                     LOG.Debug($"{_accountId} is authenticated", this.GetType());
                 }
                 else if(msgId != UpdateSessionInfoMsg.Descriptor.Index)
                 {
-                    UpdateSessionInfoMsg updatedSessionInfo = UpdateSessionInfoMsg.Parser.ParseFrom(packet.Data());
+                    UpdateSessionInfoMsg updatedSessionInfo = UpdateSessionInfoMsg.Parser.ParseFrom(packet.Data);
                     UpdateSessionInfo((short)updatedSessionInfo.ServiceId, updatedSessionInfo.SessionInfo);
                     LOG.Debug($"sessionInfo of {_accountId} is updated with {updatedSessionInfo}", this.GetType());
 
@@ -175,7 +175,7 @@ namespace PlayHouse.Service.Session
                 }
                 else if(msgId != JoinStageMsg.Descriptor.Index)
                 {
-                    JoinStageMsg joinStageMsg = JoinStageMsg.Parser.ParseFrom(packet.Data());
+                    JoinStageMsg joinStageMsg = JoinStageMsg.Parser.ParseFrom(packet.Data);
                     string playEndpoint = joinStageMsg.PlayEndpoint;
                     long stageId = joinStageMsg.StageId;
                     UpdateRoomInfo(playEndpoint, stageId);

@@ -63,8 +63,7 @@ namespace PlayHouse.Service.Session.network.websocket
         {
             using(packet)
             {
-                var (buffer, size) = packet.Data();
-                base.Send(buffer,0,size);
+                base.Send(packet.Data);
             }
         }
     }

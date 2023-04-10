@@ -95,7 +95,7 @@ namespace PlayHouse.Communicator.Socket.Tests
             receiveRoutePacket.RouteHeader.Header.ToMsg().Should().Be(header);
             receiveRoutePacket.RouteHeader.From.Should().Be(clientBindEndpoint);
 
-            var receiveBody = TestMsg.Parser.ParseFrom(receiveRoutePacket.Data());
+            var receiveBody = TestMsg.Parser.ParseFrom(receiveRoutePacket.Data);
 
             receiveBody.Should().Be(message);           
         }
