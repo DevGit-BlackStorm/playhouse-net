@@ -43,7 +43,7 @@ namespace PlayHouse.Service.Session
             ControlContext.BaseSender = baseSenderImpl;
             ControlContext.SystemPanel = systemPanelImpl;
 
-            var sessionService = new SessionService(
+            var sessionService = new SessionProcessor(
                 serviceId,
                 _sessionOption,
                 serverInfoCenter,

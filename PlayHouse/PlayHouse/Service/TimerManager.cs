@@ -15,10 +15,10 @@ namespace PlayHouse.Service
 
     public class TimerManager
     {
-        private readonly IService _service;
+        private readonly IProcessor _service;
         private readonly Dictionary<long, Timer> _timers = new Dictionary<long, Timer>();
 
-        public TimerManager(IService service)
+        public TimerManager(IProcessor service)
         {
             _service = service;
         }

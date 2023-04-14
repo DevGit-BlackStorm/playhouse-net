@@ -1,19 +1,11 @@
 ﻿using FluentAssertions;
-using Org.BouncyCastle.Utilities;
 using PlayHouse.Communicator.Message;
 using PlayHouse.Communicator;
 using Playhouse.Protocol;
 using PlayHouse.Service.Session;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Channels;
-using System.Threading.Tasks;
 using Xunit;
 using Moq;
 using PlayHouse.Service.Session.network;
-using Google.Protobuf.WellKnownTypes;
 
 namespace PlayHouseTests.Service.Session
 {
@@ -77,13 +69,11 @@ namespace PlayHouseTests.Service.Session
         {
             // api 서버로부터 authenticate 패킷을 받을 경우 인증 확인 및 session info 정보 확인
             long accountId = 1000L;
-            string sessionInfo = "session infos";
 
             var message = new AuthenticateMsg()
             {
                 ServiceId = _idApi,
                 AccountId = accountId,
-                SessionInfo = sessionInfo
             };
             var routePacket = RoutePacket.SessionOf(_sid, new Packet(message), true, true);
 
@@ -91,7 +81,6 @@ namespace PlayHouseTests.Service.Session
             sessionClient.OnReceive(routePacket);
 
             sessionClient.IsAuthenticated.Should().BeTrue();
-            sessionClient.GetSessionInfo(_idApi).Should().Be(sessionInfo);
         }
 
       

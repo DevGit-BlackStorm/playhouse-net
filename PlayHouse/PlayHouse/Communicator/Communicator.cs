@@ -56,7 +56,7 @@ namespace PlayHouse.Communicator
         private readonly CommunicatorOption _option;
         private readonly RequestCache _requestCache;
         private readonly XServerInfoCenter _serverInfoCenter;
-        private readonly IService _service;
+        private readonly IProcessor _service;
         private IStorageClient _storageClient;
         private readonly BaseSender _baseSender;
         private readonly BaseSystemPanel _systemPanel;
@@ -72,7 +72,7 @@ namespace PlayHouse.Communicator
             CommunicatorOption option,
             RequestCache requestCache,
             XServerInfoCenter serverInfoCenter,
-            IService service,
+            IProcessor service,
             IStorageClient storageClient,
             BaseSender baseSender,
             BaseSystemPanel systemPanel,

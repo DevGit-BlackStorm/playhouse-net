@@ -15,13 +15,13 @@ namespace PlayHouse.Communicator
         private readonly string bindEndpoint;
         private readonly XServerInfoCenter serverInfoCenter;
         private readonly XClientCommunicator communicateClient;
-        private readonly IService service;
+        private readonly IProcessor service;
         private readonly IStorageClient storageClient;
 
         private Timer? _timer;
 
         public ServerAddressResolver(string bindEndpoint, XServerInfoCenter serverInfoCenter,
-            XClientCommunicator communicateClient, IService service, IStorageClient storageClient)
+            XClientCommunicator communicateClient, IProcessor service, IStorageClient storageClient)
         {
             this.bindEndpoint = bindEndpoint;
             this.serverInfoCenter = serverInfoCenter;

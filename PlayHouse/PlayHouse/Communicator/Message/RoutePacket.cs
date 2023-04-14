@@ -11,15 +11,17 @@ namespace PlayHouse.Communicator.Message
         public short MsgId { get; set; } = -1;
         public short MsgSeq { get; set; } = 0;
         public short ErrorCode { get; set; } = 0;
+        public byte  StageIndex { get; set; } = 0;
         
         
 
-        public Header(short serviceId = -1,short msgId = -1, short msgSeq = 0,short errorCode = 0 )
+        public Header(short serviceId = -1,short msgId = -1, short msgSeq = 0,short errorCode = 0 ,byte stageIndex = 0)
         {
             MsgId = msgId;
             ErrorCode = errorCode;
             MsgSeq = msgSeq;
             ServiceId = serviceId;
+            StageIndex = stageIndex;
 
         }
 
@@ -43,7 +45,6 @@ namespace PlayHouse.Communicator.Message
     {
         public Header Header { get; }
         public int Sid { get; set; } = -1;
-        public string SessionInfo { get; set; } = "";
         public bool IsSystem { get; set; } = false;
         public bool IsBase { get; set; } = false;
         public bool IsBackend { get; set; } = false;
@@ -65,7 +66,6 @@ namespace PlayHouse.Communicator.Message
             : this(Header.Of(headerMsg.HeaderMsg))
         {
             Sid = headerMsg.Sid;
-            SessionInfo = headerMsg.SessionInfo;
             IsSystem = headerMsg.IsSystem;
             IsBase = headerMsg.IsBase;
             IsBackend = headerMsg.IsBackend;
@@ -90,7 +90,6 @@ namespace PlayHouse.Communicator.Message
             var message = new RouteHeaderMsg();
             message.HeaderMsg = Header.ToMsg();
             message.Sid = Sid;
-            message.SessionInfo = SessionInfo;
             message.IsSystem = IsSystem;
             message.IsBackend = IsBackend;
             message.IsReply = IsReply;
@@ -231,11 +230,10 @@ namespace PlayHouse.Communicator.Message
             return new RoutePacket(routeHeader, packet.MovePayload());
         }
 
-        public static RoutePacket ApiOf(string sessionInfo, Packet packet, bool isBase, bool isBackend)
+        public static RoutePacket ApiOf(Packet packet, bool isBase, bool isBackend)
         {
             Header header = new Header(msgId:packet.MsgId);
             RouteHeader routeHeader = RouteHeader.Of(header);
-            routeHeader.SessionInfo = sessionInfo;
             routeHeader.IsBase = isBase;
             routeHeader.IsBackend = isBackend;
             return new RoutePacket(routeHeader, packet.MovePayload());
@@ -350,6 +348,7 @@ namespace PlayHouse.Communicator.Message
             buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.GetMsgId()));
             buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.GetMsgSeq()));
             buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.Header.ErrorCode));
+            buffer.Write(clientPacket.Header.StageIndex);
 
             buffer.Write(clientPacket.Payload.Data);
         }

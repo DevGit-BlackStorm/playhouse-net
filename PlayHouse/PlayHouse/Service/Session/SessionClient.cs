@@ -4,9 +4,31 @@ using Playhouse.Protocol;
 using PlayHouse.Service.Session.network;
 using Google.Protobuf;
 using System;
+using System.Runtime.InteropServices;
 
 namespace PlayHouse.Service.Session
 {
+    public class TargetAddress
+    {
+        public string Endpoint { get; }
+        public long StageId { get; }
+
+        public TargetAddress(string endpoint, long stageId = 0)
+        {
+            Endpoint = endpoint;
+            StageId = stageId;
+        }
+    }
+    class StageIndexGenerator
+    {
+        private byte _byteValue = 0;
+
+        public byte IncrementByte()
+        {
+            _byteValue = (byte)((_byteValue + 1) & 0xff);
+            return _byteValue;
+        }
+    }
 
     public class SessionClient
     {
@@ -23,11 +45,13 @@ namespace PlayHouse.Service.Session
 
         public  bool IsAuthenticated { get; private set; } = false;
         private HashSet<string> _signInURIs = new HashSet<string>();
-        private Dictionary<short, string> _sessionData = new Dictionary<short, string>();
+        //private Dictionary<short, string> _sessionData = new Dictionary<short, string>();
         private long _accountId = 0;
-        private long _stageId = 0;
-        private string _playEndpoint = "";
-        private short _authenticateServiceId;
+
+        private Dictionary<byte, TargetAddress> _playEndpoints = new Dictionary<byte, TargetAddress>();
+        private short _authenticateServiceId = 0;
+        private string _authServerEndpoint = "";
+        private StageIndexGenerator _stageIndexGenerator = new StageIndexGenerator();
 
         public SessionClient(
             short serviceId, 
@@ -54,43 +78,47 @@ namespace PlayHouse.Service.Session
         }
 
 
-        private void Authenticate(short serviceId, long accountId, string sessionInfo)
+        private void Authenticate(short serviceId, string apiEndpoint, long accountId)
         {
-            _accountId = accountId;
-            UpdateSessionInfo(serviceId, sessionInfo);
-            IsAuthenticated = true;
-            _authenticateServiceId = serviceId;
+            this._accountId = accountId;
+            this.IsAuthenticated = true;
+            this._authenticateServiceId = serviceId;
+            this._authServerEndpoint = apiEndpoint;
         }
 
-        private void UpdateSessionInfo(short serviceId, string sessionInfo)
+        private byte UpdateStageInfo(string playEndpoint, long stageId)
         {
-            _sessionData[serviceId] = sessionInfo;
+            byte? stageIndex = null;
+            foreach (var action in _playEndpoints)
+            {
+                if (action.Value.StageId == stageId)
+                {
+                    stageIndex = action.Key;
+                    break;
+                }
+            }
+            if (stageIndex == null)
+            {
+                stageIndex = _stageIndexGenerator.IncrementByte();
+            }
+            _playEndpoints[stageIndex.Value] = new TargetAddress(playEndpoint, stageId);
+            return stageIndex.Value;
         }
 
         public void Disconnect()
         {
             if (IsAuthenticated)
             {
-                foreach (var serverInfo in _targetServiceCache.GetTargetedServers())
+                IServerInfo serverInfo = FindSuitableServer(_authenticateServiceId, _authServerEndpoint);
+                Packet disconnectPacket = new Packet(new DisconnectNoticeMsg
                 {
-                    Packet disconnectPacket = new Packet(new DisconnectNoticeMsg
-                    {
-                        AccountId = _accountId
-                    });
-
-                    if (serverInfo.ServiceType == ServiceType.API)
-                    {
-                        string sessionInfo = GetSessionInfo(serverInfo.ServiceId);
-                        _sessionSender.SendToBaseApi(serverInfo.BindEndpoint, sessionInfo, disconnectPacket);
-                    }
-                    else if (serverInfo.ServiceType == ServiceType.Play)
-                    {
-                        _sessionSender.SendToBaseStage(serverInfo.BindEndpoint, _stageId, _accountId, disconnectPacket);
-                    }
-                    else
-                    {
-                        LOG.Error($"has invalid type session data : {serverInfo.ServiceType}", this.GetType());
-                    }
+                    AccountId = _accountId
+                });
+                _sessionSender.SendToBaseApi(serverInfo.BindEndpoint(), disconnectPacket);
+                foreach (var targetId in _playEndpoints.Values)
+                {
+                    IServerInfo targetServer = _serviceInfoCenter.FindServer(targetId.Endpoint);
+                    _sessionSender.SendToBaseStage(targetServer.BindEndpoint(), targetId.StageId, _accountId, disconnectPacket);
                 }
             }
         }
@@ -118,35 +146,56 @@ namespace PlayHouse.Service.Session
                 }
             }
         }
-
+        private IServerInfo FindSuitableServer(short serviceId, string endpoint)
+        {
+            IServerInfo serverInfo = _serviceInfoCenter.FindServer(endpoint);
+            if (serverInfo.State() != ServerState.RUNNING)
+            {
+                serverInfo = _serviceInfoCenter.FindServerByAccountId(serviceId, _accountId);
+            }
+            return serverInfo;
+        }
+               
         private void RelayTo(short serviceId, ClientPacket clientPacket)
         {
-            string sessionInfo = GetSessionInfo(serviceId);
-            var serverInfo = _targetServiceCache.FindServer(serviceId);
-            string endpoint = serverInfo.BindEndpoint;
-            ServiceType type = serverInfo.ServiceType;
-            short msgSeq = clientPacket.Header.MsgSeq;
+            ServiceType type = _targetServiceCache.FindTypeBy(serviceId);
+
+            IServerInfo? serverInfo = null;
 
             switch (type)
             {
                 case ServiceType.API:
-                    _sessionSender.RelayToApi(endpoint, _sid, sessionInfo, clientPacket.ToPacket(), msgSeq);
+                    if (string.IsNullOrEmpty(_authServerEndpoint))
+                    {
+                        serverInfo = _serviceInfoCenter.FindRoundRobinServer(serviceId);
+                    }
+                    else
+                    {
+                        serverInfo = FindSuitableServer(serviceId, _authServerEndpoint);
+                    }
+                    _sessionSender.RelayToApi(serverInfo.BindEndpoint(), _sid, _accountId, clientPacket);
                     break;
+
                 case ServiceType.Play:
-                    _sessionSender.RelayToRoom(endpoint, _stageId, _sid, _accountId, sessionInfo, clientPacket.ToPacket(), msgSeq);
+                    var targetId = _playEndpoints[clientPacket.Header.StageIndex];
+                    if (targetId == null)
+                    {
+                        LOG.Error($"Target Stage is not exist - service type:{type}, msgId:{clientPacket.GetMsgId()}", this.GetType());
+                    }
+                    else
+                    {
+                        serverInfo = _serviceInfoCenter.FindServer(targetId.Endpoint);
+                        _sessionSender.RelayToStage(serverInfo.BindEndpoint(), targetId.StageId, _sid, _accountId, clientPacket);
+                    }
                     break;
+
                 default:
-                    LOG.Error($"Invalid Service Type request {type},{clientPacket.GetMsgId()}", this.GetType());
+                    LOG.Error($"Invalid Service Type request - service type:{type}, msgId:{clientPacket.GetMsgId()}", this.GetType());
                     break;
             }
-
-            LOG.Debug($"session relayTo {type}:{endpoint}, sessionInfo:{sessionInfo}, msgName:{clientPacket.GetMsgId()}", this.GetType());
         }
 
-        public string GetSessionInfo(short serviceId)
-        {
-            return _sessionData.GetValueOrDefault(serviceId) ?? "";
-        }
+   
 
         public void OnReceive(RoutePacket packet)
         {
@@ -158,33 +207,29 @@ namespace PlayHouse.Service.Session
                 if(msgId == AuthenticateMsg.Descriptor.Index) 
                 {
                     AuthenticateMsg authenticateMsg = AuthenticateMsg.Parser.ParseFrom(packet.Data);
-                    Authenticate((short)authenticateMsg.ServiceId, authenticateMsg.AccountId, authenticateMsg.SessionInfo);
+                    var apiEndpoint = packet.RouteHeader.From;
+                    Authenticate((short)authenticateMsg.ServiceId, apiEndpoint,authenticateMsg.AccountId);
                     LOG.Debug($"{_accountId} is authenticated", this.GetType());
-                }
-                else if(msgId != UpdateSessionInfoMsg.Descriptor.Index)
-                {
-                    UpdateSessionInfoMsg updatedSessionInfo = UpdateSessionInfoMsg.Parser.ParseFrom(packet.Data);
-                    UpdateSessionInfo((short)updatedSessionInfo.ServiceId, updatedSessionInfo.SessionInfo);
-                    LOG.Debug($"sessionInfo of {_accountId} is updated with {updatedSessionInfo}", this.GetType());
-
                 }
                 else if(msgId != SessionCloseMsg.Descriptor.Index)
                 {
                     _session.ClientDisconnect();
                     LOG.Debug($"{_accountId} is required to session close", this.GetType());
                 }
-                else if(msgId != JoinStageMsg.Descriptor.Index)
+                else if(msgId != JoinStageInfoUpdateReq.Descriptor.Index)
                 {
-                    JoinStageMsg joinStageMsg = JoinStageMsg.Parser.ParseFrom(packet.Data);
+                    JoinStageInfoUpdateReq joinStageMsg = JoinStageInfoUpdateReq.Parser.ParseFrom(packet.Data);
                     string playEndpoint = joinStageMsg.PlayEndpoint;
                     long stageId = joinStageMsg.StageId;
-                    UpdateRoomInfo(playEndpoint, stageId);
+                    var stageIndex = UpdateStageInfo(playEndpoint, stageId);
                     LOG.Debug($"{_accountId} is roomInfo updated:{playEndpoint},{stageId} $", this.GetType());
                 }
                 else if (msgId != LeaveStageMsg.Descriptor.Index)
                 {
-                    ClearRoomInfo();
-                    LOG.Debug($"{_accountId} is roomInfo clear:{_playEndpoint},{_stageId} $", this.GetType());
+                    var stageId = LeaveStageMsg.Parser.ParseFrom(packet.Data).StageId;
+                    ClearRoomInfo(stageId);
+                    LOG.Debug($"stage info clear - accountId: {_accountId}, stageId: {stageId}", this.GetType());
+
                 }
                 else
                 {
@@ -198,16 +243,23 @@ namespace PlayHouse.Service.Session
             }
         }
 
-        private void UpdateRoomInfo(string playEndpoint, long stageId)
-        {
-            _playEndpoint = playEndpoint;
-            _stageId = stageId;
-        }
 
-        private void ClearRoomInfo()
+
+        private void ClearRoomInfo(long stageId)
         {
-            _playEndpoint = "";
-            _stageId = 0;
+            byte? stageIndex = null;
+            foreach (var action in _playEndpoints)
+            {
+                if (action.Value.StageId == stageId)
+                {
+                    stageIndex = action.Key;
+                    break;
+                }
+            }
+            if (stageIndex != null)
+            {
+                _playEndpoints.Remove(stageIndex.Value);
+            }
         }
 
         private void SendToClient(ClientPacket clientPacket)

@@ -14,7 +14,7 @@ namespace PlayHouse.Communicator
         Play
     }
 
-    public interface IService
+    public interface IProcessor
     {
         void OnStart();
         void OnReceive(RoutePacket routePacket);

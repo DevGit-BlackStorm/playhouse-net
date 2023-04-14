@@ -1,17 +1,11 @@
 ﻿using PlayHouse.Communicator.Message;
 using PlayHouse.Communicator;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Threading.Channels;
 using PlayHouse.Service.Session.network;
 
 namespace PlayHouse.Service.Session
 {
-    public class SessionService : IService, ISessionListener
+    public class SessionProcessor : IProcessor, ISessionListener
     {
         private readonly short serviceId;
         private readonly SessionOption sessionOption;
@@ -30,7 +24,7 @@ namespace PlayHouse.Service.Session
         private Thread? clientMessageLoopThread;
         private Thread? serverMessageLoopThread;
 
-        public SessionService(short serviceId, SessionOption sessionOption, IServerInfoCenter serverInfoCenter,
+        public SessionProcessor(short serviceId, SessionOption sessionOption, IServerInfoCenter serverInfoCenter,
                                IClientCommunicator clientCommunicator, RequestCache requestCache, int sessionPort, bool showQps)
         {
             this.serviceId = serviceId;

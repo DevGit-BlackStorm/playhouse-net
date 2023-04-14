@@ -22,7 +22,7 @@ namespace PlayHouse.Communicator
             LastUpdate = lastUpdate;
         }
 
-        public static XServerInfo Of(string bindEndpoint, IService service)
+        public static XServerInfo Of(string bindEndpoint, IProcessor service)
         {
             return new XServerInfo(
                 bindEndpoint,

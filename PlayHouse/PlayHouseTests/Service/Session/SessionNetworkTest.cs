@@ -63,6 +63,10 @@ namespace PlayHouse.Service.Session.network
         [Fact]
         public async Task ClientAndSessionCommunicate()
         {
+            const short SESSION = 1;
+            const short API = 2;
+            
+
             var useWebSocketArray = new bool[] { false,true};
 
             foreach (var useWebSocket in useWebSocketArray)
@@ -94,12 +98,12 @@ namespace PlayHouse.Service.Session.network
                 await Task.Delay(100);
                 serverListener.ResultValue.Should().Be("onConnect");
 
-                connector.Send((short)ServiceType.API, new Packet(new TestMsg { TestMsg_ = "test" }));
+                connector.Send(new TargetId(API), new Packet(new TestMsg { TestMsg_ = "test" }));
 
                 await Task.Delay(100);
 
 
-                var replyPacket = await connector.Request(1, new Packet(new TestMsg { TestMsg_ = "request" }));
+                var replyPacket = await connector.Request(new TargetId(SESSION), new Packet(new TestMsg { TestMsg_ = "request" }));
 
                 using (replyPacket)
                 {
@@ -107,7 +111,7 @@ namespace PlayHouse.Service.Session.network
                 }
                 
 
-                replyPacket = await connector.Request(1, new Packet(new TestMsg { TestMsg_ = "request" }));
+                replyPacket = await connector.Request(new TargetId(SESSION), new Packet(new TestMsg { TestMsg_ = "request" }));
 
                 using (replyPacket)
                 {

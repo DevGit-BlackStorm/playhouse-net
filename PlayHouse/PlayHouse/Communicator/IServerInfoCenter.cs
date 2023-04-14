@@ -12,5 +12,7 @@ namespace PlayHouse.Communicator
         XServerInfo FindServer(string endpoint);
         XServerInfo FindRoundRobinServer(short serviceId);
         IList<XServerInfo> GetServerList();
+        XServerInfo FindServerByAccountId(short serviceId, long accountId);
+        ServiceType FindServerType(short serviceId);
     }
 }

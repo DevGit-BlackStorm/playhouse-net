@@ -93,23 +93,23 @@ namespace PlayHouse.Service
             return _reqCache.GetSequence();
         }
 
-        public void SendToApi(string apiEndpoint, string sessionInfo, Packet packet)
+        public void SendToApi(string apiEndpoint, Packet packet)
         {
-            RoutePacket routePacket = RoutePacket.ApiOf(sessionInfo, packet, false, true);
+            RoutePacket routePacket = RoutePacket.ApiOf( packet, false, true);
             _clientCommunicator.Send(apiEndpoint, routePacket);
         }
 
-        public void RelayToApi(string apiEndpoint, int sid, string sessionInfo, Packet packet, short msgSeq)
+        public void RelayToApi(string apiEndpoint, int sid, Packet packet, short msgSeq)
         {
-            RoutePacket routePacket = RoutePacket.ApiOf(sessionInfo, packet, false, false);
+            RoutePacket routePacket = RoutePacket.ApiOf( packet, false, false);
             routePacket.RouteHeader.Sid = sid;
             routePacket.RouteHeader.Header.MsgSeq = msgSeq;
             _clientCommunicator.Send(apiEndpoint, routePacket);
         }
 
-        public void SendToBaseApi(string apiEndpoint, string sessionInfo, Packet packet)
+        public void SendToBaseApi(string apiEndpoint,Packet packet)
         {
-            RoutePacket routePacket = RoutePacket.ApiOf(sessionInfo, packet, true, true);
+            RoutePacket routePacket = RoutePacket.ApiOf( packet, true, true);
             _clientCommunicator.Send(apiEndpoint, routePacket);
         }
 
@@ -125,32 +125,32 @@ namespace PlayHouse.Service
             _clientCommunicator.Send(playEndpoint, routePacket);
         }
 
-        public void RequestToApi(string apiEndpoint, Packet packet, string sessionInfo, ReplyCallback replyCallback)
+        public void RequestToApi(string apiEndpoint, Packet packet, ReplyCallback replyCallback)
         {
             short seq = (short)GetSequence();
             _reqCache.Put(seq, new ReplyObject(replyCallback));
-            RoutePacket routePacket = RoutePacket.ApiOf(sessionInfo, packet, false, true);
+            RoutePacket routePacket = RoutePacket.ApiOf(packet, false, true);
             routePacket.SetMsgSeq(seq);
             _clientCommunicator.Send(apiEndpoint, routePacket);
         }
 
-        public async Task<ReplyPacket> RequestToApi(string apiEndpoint, string sessionInfo, Packet packet)
+        public async Task<ReplyPacket> RequestToApi(string apiEndpoint, Packet packet)
         {
-            return await AsyncToApi(apiEndpoint, sessionInfo, packet).Task;
+            return await AsyncToApi(apiEndpoint,  packet).Task;
         }
 
-        public TaskCompletionSource<ReplyPacket> AsyncToApi(string apiEndpoint, string sessionInfo, Packet packet)
+        public TaskCompletionSource<ReplyPacket> AsyncToApi(string apiEndpoint, Packet packet)
         {
             short seq = (short)GetSequence();
             var deferred = new TaskCompletionSource<ReplyPacket>();
             _reqCache.Put(seq, new ReplyObject(null, deferred));
-            RoutePacket routePacket = RoutePacket.ApiOf(sessionInfo, packet, false, true);
+            RoutePacket routePacket = RoutePacket.ApiOf(packet, false, true);
             routePacket.SetMsgSeq(seq);
             _clientCommunicator.Send(apiEndpoint, routePacket);
             return deferred;
         }
 
-        public void RequestToRoom(string playEndpoint, long stageId, long accountId, Packet packet, ReplyCallback replyCallback)
+        public void RequestToStage(string playEndpoint, long stageId, long accountId, Packet packet, ReplyCallback replyCallback)
         {
             short seq = (short)GetSequence();
             _reqCache.Put(seq, new ReplyObject(replyCallback));
@@ -187,7 +187,7 @@ namespace PlayHouse.Service
             return await AsyncToStage(playEndpoint, stageId, accountId, packet).Task;
         }
 
-        public async Task<ReplyPacket> RequestToBaseRoom(string playEndpoint, long stageId, long accountId, Packet packet)
+        public async Task<ReplyPacket> RequestToBaseStage(string playEndpoint, long stageId, long accountId, Packet packet)
         {
             short seq = (short)GetSequence();
             var deferred = new TaskCompletionSource<ReplyPacket>();
@@ -225,15 +225,15 @@ namespace PlayHouse.Service
             }
         }
 
-        public void RelayToRoom(string playEndpoint, long stageId, int sid, long accountId, string sessionInfo, Packet packet, short msgSeq)
-        {
-            RoutePacket routePacket = RoutePacket.ApiOf(sessionInfo, packet, false, false);
-            routePacket.RouteHeader.StageId = stageId;
-            routePacket.RouteHeader.AccountId = accountId;
-            routePacket.RouteHeader.Header.MsgSeq = msgSeq;
-            routePacket.RouteHeader.Sid = sid;
-            _clientCommunicator.Send(playEndpoint, routePacket);
-        }
+        //public void RelayToRoom(string playEndpoint, long stageId, int sid, long accountId, Packet packet, short msgSeq)
+        //{
+        //    RoutePacket routePacket = RoutePacket.ApiOf(packet, false, false);
+        //    routePacket.RouteHeader.StageId = stageId;
+        //    routePacket.RouteHeader.AccountId = accountId;
+        //    routePacket.RouteHeader.Header.MsgSeq = msgSeq;
+        //    routePacket.RouteHeader.Sid = sid;
+        //    _clientCommunicator.Send(playEndpoint, routePacket);
+        //}
 
         public void SessionClose(string sessionEndpoint, int sid)
         {

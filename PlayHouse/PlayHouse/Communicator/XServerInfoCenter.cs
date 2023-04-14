@@ -86,5 +86,34 @@ namespace PlayHouse.Communicator
         {
             return _serverInfoList;
         }
+
+        public XServerInfo FindServerByAccountId(short serviceId, long accountId)
+        {
+            var list = _serverInfoList
+                .Where(info => info.State.Equals(ServerState.RUNNING) && info.ServiceId == serviceId)
+                .ToList();
+
+            if (list.Count == 0)
+            {
+                throw new CommunicatorException.NotExistServerInfo();
+            }
+
+            int index = (int)(accountId % list.Count);
+            return list[index];
+        }
+
+        public ServiceType FindServerType(short serviceId)
+        {
+            var list = _serverInfoList
+                .Where(info => info.ServiceId == serviceId)
+                .ToList();
+
+            if (list.Count == 0)
+            {
+                throw new CommunicatorException.NotExistServerInfo();
+            }
+
+            return list.First().ServiceType;
+        }
     }
 }

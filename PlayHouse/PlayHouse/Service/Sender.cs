@@ -1,10 +1,6 @@
 ﻿using PlayHouse.Communicator.Message;
 using PlayHouse.Communicator;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PlayHouse.Service
 {
@@ -24,15 +20,15 @@ namespace PlayHouse.Service
         short ServiceId();
         void Reply(ReplyPacket reply);
         void SendToClient(string sessionEndpoint, int sid, Packet packet);
-        void SendToApi(string apiEndpoint, string sessionInfo, Packet packet);
+        void SendToApi(string apiEndpoint, Packet packet);
         void SendToStage(string playEndpoint, long stageId, long accountId, Packet packet);
 
-        void RequestToApi(string apiEndpoint, Packet packet, string sessionInfo, ReplyCallback replyCallback);
-        void RequestToRoom(string playEndpoint, long stageId, long accountId, Packet packet, ReplyCallback replyCallback);
-        Task<ReplyPacket> RequestToApi(string apiEndpoint, string sessionInfo, Packet packet);
+        void RequestToApi(string apiEndpoint, Packet packet, ReplyCallback replyCallback);
+        void RequestToStage(string playEndpoint, long stageId, long accountId, Packet packet, ReplyCallback replyCallback);
+        Task<ReplyPacket> RequestToApi(string apiEndpoint, Packet packet);
         Task<ReplyPacket> RequestToStage(string playEndpoint, long stageId, long accountId, Packet packet);
 
-        TaskCompletionSource<ReplyPacket> AsyncToApi(string apiEndpoint, string sessionInfo, Packet packet);
+        TaskCompletionSource<ReplyPacket> AsyncToApi(string apiEndpoint, Packet packet);
         TaskCompletionSource<ReplyPacket> AsyncToStage(string playEndpoint, long stageId, long accountId, Packet packet);
 
         void SendToSystem(string endpoint, Packet packet);
@@ -43,8 +39,8 @@ namespace PlayHouse.Service
 
     public interface IApiCommonSender : ICommonSender
     {
-        void UpdateSession(string sessionEndpoint, int sid, short serviceId, string sessionInfo);
 
+        long AccountId();
         CreateStageResult CreateStage(string playEndpoint, string stageType, Packet packet);
         JoinStageResult JoinStage(string playEndpoint,
                       long stageId,
@@ -62,7 +58,7 @@ namespace PlayHouse.Service
     }
     public interface IApiSender : IApiCommonSender
     {
-        void Authenticate(long accountId, string sessionInfo);
+        void Authenticate(long accountId);
         string SessionEndpoint();
         int Sid();
 
@@ -70,7 +66,6 @@ namespace PlayHouse.Service
         void SendToClient(Packet packet);
         void SessionClose();
 
-        void UpdateSession(short serviceId, string sessionInfo);
     }
 
     public delegate Task<T> AsyncPreCallback<T>();

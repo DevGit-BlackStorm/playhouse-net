@@ -6,11 +6,11 @@ import "common.proto";
 
 message HeaderMsg {
   int32 service_id = 1;
-  int32 msg_id = 2;  
+  int32 msg_id = 2;
   int32 msg_seq = 3;
   int32 error_code = 4;
+  int32 stage_index = 5;
 }
-
 message RouteHeaderMsg {
   HeaderMsg header_msg = 1;
   int32 sid = 2;
@@ -18,10 +18,9 @@ message RouteHeaderMsg {
   bool is_reply = 4;
   bool is_base = 5;
   bool is_backend = 6;
-  string session_info = 7;
-  int64 stage_id = 8;
-  int64 account_id = 9;
-  bool for_client = 10;
+  int64 stage_id = 7;
+  int64 account_id = 8;
+  bool for_client = 9;
 }
 
 message RoutePacketMsg {
@@ -42,13 +41,12 @@ message ServerInfoMsg{
 message AuthenticateMsg {
   int32 service_id = 1;
   int64 account_id = 2;
-  string session_info = 3;
 }
 
-message UpdateSessionInfoMsg {
-  int32 service_id = 1;
-  string session_info = 2;
-}
+//message UpdateSessionInfoMsg {
+//  int32 service_id = 1;
+//  string session_info = 2;
+//}
 
 
 message SessionCloseMsg {
@@ -65,9 +63,9 @@ message DisconnectNoticeMsg {
 
 message CreateJoinStageReq {
   string stageType = 1;
-  string create_payload_name = 2;
+  int32 create_payload_id = 2;
   bytes create_payload = 3;
-  string join_payload_name =4;
+  int32 join_payload_id =4;
   bytes join_payload = 5;
   string sessionEndpoint = 6;
   int32 sid = 7;
@@ -75,23 +73,22 @@ message CreateJoinStageReq {
 
 message CreateJoinStageRes {
   bool isCreated =1;
-  string create_payload_name = 2;
+  int32 create_payload_id = 2;
   bytes create_payload = 3;
-  string join_payload_name =4;
+  int32 join_payload_id =4;
   bytes join_payload = 5;
+  int32 stage_idx = 6;
 }
 
 message CreateStageReq {
   string stage_type = 1;
-//  int64 accountId = 2;
-  string payload_name = 3;
-  bytes payload = 4;
+  int32 payload_id = 2;
+  bytes payload = 3;
 }
 
 message CreateStageRes {
-  int64 stage_id =1;
-  string payload_name = 2;
-  bytes payload = 3;
+  int32 payload_id = 1;
+  bytes payload = 2;
 }
 
 message JoinStageReq {
@@ -99,23 +96,25 @@ message JoinStageReq {
 //  int64 accountId = 2;
   string sessionEndpoint = 1;
   int32 sid = 2;
-  string payload_name = 3;
+  int32 payload_id = 3;
   bytes payload = 4;
 }
 
-message JoinStageMsg{
+message JoinStageRes {
+  int32 payload_id = 1;
+  bytes payload = 2;
+  int32 stage_idx = 3;
+}
+
+message JoinStageInfoUpdateReq{
   string playEndpoint = 1;
   int64 stage_id = 2;
-
-
 }
-
-message JoinStageRes {
-  string payload_name = 1;
-  bytes payload = 2;
+message JoinStageInfoUpdateRes{
+  int32 stage_idx = 1;
 }
-
 message LeaveStageMsg {
+  int64 stage_id = 1;
 }
 
 //message LeaveStageRes {
@@ -125,12 +124,12 @@ message LeaveStageMsg {
 //}
 
 message DeleteStageReq {
-  string payload_name = 1;
+  int32 payload_id = 1;
   bytes payload = 2;
 }
 
 message DeleteStageRes {
-  string payload_name = 1;
+  int32 payload_id = 1;
   bytes payload = 2;
 }
 message SessionClose {

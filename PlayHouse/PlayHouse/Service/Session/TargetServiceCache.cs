@@ -2,33 +2,24 @@
 
 namespace PlayHouse.Service.Session
 {
-    internal class TargetServiceCache
+    class TargetServiceCache
     {
-        private readonly IServerInfoCenter serverInfoCenter;
-        private readonly Dictionary<short, XServerInfo> targetedService = new Dictionary<short, XServerInfo>();
+        private readonly IServerInfoCenter _serverInfoCenter;
+        private readonly Dictionary<short, ServiceType> _targetedService = new Dictionary<short, ServiceType>();
 
         public TargetServiceCache(IServerInfoCenter serverInfoCenter)
         {
-            this.serverInfoCenter = serverInfoCenter;
+            _serverInfoCenter = serverInfoCenter;
         }
 
-        public XServerInfo FindServer(short serviceId)
+        public ServiceType FindTypeBy(short serviceId)
         {
-            if (targetedService.TryGetValue(serviceId, out var findServer) && findServer.IsValid())
+            if (!_targetedService.TryGetValue(serviceId, out ServiceType type))
             {
-                return findServer;
+                type = _serverInfoCenter.FindServerType(serviceId);
+                _targetedService[serviceId] = type;
             }
-            else
-            {
-                findServer = serverInfoCenter.FindRoundRobinServer(serviceId);
-                targetedService[serviceId] = findServer;
-                return findServer;
-            }
-        }
-
-        public List<XServerInfo> GetTargetedServers()
-        {
-            return targetedService.Values.ToList();
+            return type;
         }
     }
 

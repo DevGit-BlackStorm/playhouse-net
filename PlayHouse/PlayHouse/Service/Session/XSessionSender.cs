@@ -5,35 +5,33 @@ namespace PlayHouse.Service.Session
 {
     public class XSessionSender : BaseSender, ISessionSender
     {
-        private short serviceId;
-        private IClientCommunicator clientCommunicator;
-        private RequestCache reqCache;
+        private IClientCommunicator _clientCommunicator;
 
         public XSessionSender(short serviceId, IClientCommunicator clientCommunicator, RequestCache reqCache):base(serviceId, clientCommunicator,reqCache)
         {
-            this.serviceId = serviceId;
-            this.clientCommunicator = clientCommunicator;
-            this.reqCache = reqCache;
+            this._clientCommunicator = clientCommunicator;
         }
 
-        public void RelayToRoom(string playEndpoint, long stageId, int sid, long accountId, string sessionInfo, ClientPacket packet, short msgSeq)
+        public void RelayToStage(string playEndpoint, long stageId, int sid, long accountId, ClientPacket packet)
         {
-            var routePacket = RoutePacket.ApiOf(sessionInfo, packet.ToPacket(), false, false);
+            var routePacket = RoutePacket.ApiOf(packet.ToPacket(), false, false);
             routePacket.RouteHeader.StageId = stageId;
             routePacket.RouteHeader.AccountId = accountId;
-            routePacket.RouteHeader.Header.MsgSeq = msgSeq;
+            routePacket.RouteHeader.Header.MsgSeq = packet.GetMsgSeq();
             routePacket.RouteHeader.Sid = sid;
             routePacket.RouteHeader.ForClient = true;
-            clientCommunicator.Send(playEndpoint, routePacket);
+            _clientCommunicator.Send(playEndpoint, routePacket);
         }
 
-        public void RelayToApi(string apiEndpoint, int sid, string sessionInfo, ClientPacket packet, short msgSeq)
+        public void RelayToApi(string apiEndpoint, int sid, long accountId, ClientPacket packet)
         {
-            var routePacket = RoutePacket.ApiOf(sessionInfo, packet.ToPacket(), false, false);
+            var routePacket = RoutePacket.ApiOf( packet.ToPacket(), false, false);
             routePacket.RouteHeader.Sid = sid;
-            routePacket.RouteHeader.Header.MsgSeq = msgSeq;
+            routePacket.RouteHeader.Header.MsgSeq = packet.GetMsgSeq();
             routePacket.RouteHeader.ForClient = true;
-            clientCommunicator.Send(apiEndpoint, routePacket);
+            routePacket.RouteHeader.AccountId = accountId;
+
+            _clientCommunicator.Send(apiEndpoint, routePacket);
         }
     }
 
