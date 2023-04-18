@@ -67,6 +67,27 @@ namespace PlayHouseTests.Communicator
             serverInfo.TimeOver().Should().BeTrue();
         }
 
+        [Fact]
+        public void Test_Get_NodeId()
+        {
+            RedisStorageClient redisClient = new RedisStorageClient(_redisContainer.Hostname, _redisContainer.GetMappedPublicPort(port));
+            redisClient.Connect();
+
+            for(int i=0; i < 4095; i++)
+            {
+                redisClient.GetNodeId($"{i}").Should().Be(i+1);
+            }
+
+            redisClient.GetNodeId("0").Should().Be(1);
+
+            Action act = () =>
+            {
+                redisClient.GetNodeId("4096");
+            };
+
+            act.Should().Throw<ArgumentException>();
+        }
+
       
     }
 

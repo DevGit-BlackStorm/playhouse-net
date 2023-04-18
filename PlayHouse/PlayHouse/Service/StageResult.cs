@@ -22,12 +22,10 @@ namespace PlayHouse.Service
 
     public class CreateStageResult : StageResult
     {
-        public long StageId { get; }
         public Packet CreateStageRes { get; }
 
-        public CreateStageResult(int errorCode, long stageId, Packet createStageRes) : base(errorCode)
+        public CreateStageResult(int errorCode, Packet createStageRes) : base(errorCode)
         {
-            StageId = stageId;
             CreateStageRes = createStageRes;
         }
     }
@@ -35,10 +33,12 @@ namespace PlayHouse.Service
     public class JoinStageResult : StageResult
     {
         public Packet JoinStageRes { get; }
+        public int StageIndex { get; }
 
-        public JoinStageResult(int errorCode, Packet joinStageRes) : base(errorCode)
+        public JoinStageResult(int errorCode,int stageIndex, Packet joinStageRes) : base(errorCode)
         {
             JoinStageRes = joinStageRes;
+            StageIndex = stageIndex;
         }
     }
 

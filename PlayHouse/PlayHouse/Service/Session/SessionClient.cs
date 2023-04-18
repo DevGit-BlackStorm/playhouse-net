@@ -126,7 +126,7 @@ namespace PlayHouse.Service.Session
         public void OnReceive(ClientPacket clientPacket)
         {
             short serviceId = clientPacket.ServiceId();
-            short msgId = clientPacket.GetMsgId();
+            int msgId = clientPacket.GetMsgId();
 
             if (IsAuthenticated)
             {

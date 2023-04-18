@@ -8,7 +8,7 @@ namespace PlayHouse.Service
     public class BaseSystem
     {
         private readonly IServerSystem _serverSystem;
-        private readonly BaseSender _baseSender;
+        private readonly XSender _baseSender;
 
         private readonly Thread _thread;
         private readonly ConcurrentQueue<RoutePacket> _msgQueue;
@@ -19,7 +19,7 @@ namespace PlayHouse.Service
         private const short RESUME = -102;
         private const short STOP = -103;
 
-        public BaseSystem(IServerSystem serverSystem, BaseSender baseSender)
+        public BaseSystem(IServerSystem serverSystem, XSender baseSender)
         {
             _serverSystem = serverSystem;
             _baseSender = baseSender;

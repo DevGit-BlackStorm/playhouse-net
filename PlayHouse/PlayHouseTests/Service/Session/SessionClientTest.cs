@@ -6,6 +6,7 @@ using PlayHouse.Service.Session;
 using Xunit;
 using Moq;
 using PlayHouse.Service.Session.network;
+using Google.Protobuf.WellKnownTypes;
 
 namespace PlayHouseTests.Service.Session
 {
@@ -14,7 +15,6 @@ namespace PlayHouseTests.Service.Session
         private IServerInfoCenter _serviceCenter;
         private RequestCache _reqCache;
         private IClientCommunicator _clientCommunicator;
-        private List<RoutePacket> _resultList;
         private List<string> _urls;
         private int _sid = 1;
         private ISession _session;
@@ -25,17 +25,19 @@ namespace PlayHouseTests.Service.Session
 
         public SessionClientTest()
         {
-            _serviceCenter = Mock.Of<IServerInfoCenter>();
+            _serviceCenter = new XServerInfoCenter();
+
+            _serviceCenter.Update(new List<XServerInfo>
+            { XServerInfo.Of("tcp://127.0.0.1:0021", ServiceType.API, _idApi, ServerState.RUNNING, 21, DateTimeOffset.Now.ToUnixTimeMilliseconds()) });
+
             _session = Mock.Of<ISession>();
             _reqCache = new RequestCache(0);
-            _resultList = new List<RoutePacket>();
-            _clientCommunicator = new SpyClientCommunicator(_resultList);
+            _clientCommunicator = Mock.Of<IClientCommunicator>();
             _urls = new List<string>();
         }
 
         public void Dispose()
         {
-            _resultList.Clear();
         }
 
         [Fact]
@@ -52,16 +54,12 @@ namespace PlayHouseTests.Service.Session
         {
             short messageId = 2;
             _urls.Add($"{_idApi}:{messageId}");
-
-            Mock.Get(_serviceCenter)
-                .Setup(s => s.FindRoundRobinServer(_idApi))
-                .Returns(XServerInfo.Of("tcp://127.0.0.1:0021", ServiceType.API, _idApi, ServerState.RUNNING, 21, DateTimeOffset.Now.ToUnixTimeMilliseconds()));
-
+            
             var sessionClient = new SessionClient(_idSession, _sid, _serviceCenter, _session, _clientCommunicator, _urls, _reqCache);
             var clientPacket = new ClientPacket(new Header(serviceId: _idApi,msgId:messageId), new EmptyPayload());
             sessionClient.OnReceive(clientPacket);
 
-            _resultList.Should().HaveCount(1);
+            Mock.Get(_clientCommunicator).Verify(c => c.Send(It.IsAny<string>(),It.IsAny<RoutePacket>()),Times.Once());
         }
 
         [Fact]

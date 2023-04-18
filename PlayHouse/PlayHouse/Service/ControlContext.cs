@@ -8,7 +8,7 @@ namespace PlayHouse.Service
 {
     public static class ControlContext
     {
-        public static ICommonSender? BaseSender { get; set; }
+        public static ISender? BaseSender { get; set; }
         public static ISystemPanel? SystemPanel { get; set; }
     }
 

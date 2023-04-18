@@ -9,7 +9,7 @@ using Playhouse.Protocol;
 
 namespace PlayHouse.Service
 {
-    public class BaseSender : ICommonSender
+    public class XSender : ISender
     {
         private readonly short _serviceId;
         private readonly IClientCommunicator _clientCommunicator;
@@ -17,7 +17,7 @@ namespace PlayHouse.Service
 
         protected RouteHeader? _currentHeader;
 
-        public BaseSender(short serviceId, IClientCommunicator clientCommunicator, RequestCache reqCache)
+        public XSender(short serviceId, IClientCommunicator clientCommunicator, RequestCache reqCache)
         {
             _serviceId = serviceId;
             _clientCommunicator = clientCommunicator;

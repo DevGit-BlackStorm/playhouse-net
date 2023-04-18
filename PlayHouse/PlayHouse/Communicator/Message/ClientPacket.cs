@@ -43,7 +43,7 @@ namespace PlayHouse.Communicator.Message
             return Header.MsgSeq;
         }
 
-        public short GetMsgId()
+        public int GetMsgId()
         {
             return Header.MsgId;
         }

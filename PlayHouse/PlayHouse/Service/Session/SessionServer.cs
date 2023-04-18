@@ -37,8 +37,8 @@ namespace PlayHouse.Service.Session
 
             var serverInfoCenter = new XServerInfoCenter();
 
-            var baseSenderImpl = new BaseSender(serviceId, communicateClient, requestCache);
-            var systemPanelImpl = new BaseSystemPanel(serverInfoCenter, communicateClient);
+            var baseSenderImpl = new XSender(serviceId, communicateClient, requestCache);
+            var systemPanelImpl = new XSystemPanel(serverInfoCenter, communicateClient, storageClient.GetNodeId(bindEndpoint));
 
             ControlContext.BaseSender = baseSenderImpl;
             ControlContext.SystemPanel = systemPanelImpl;

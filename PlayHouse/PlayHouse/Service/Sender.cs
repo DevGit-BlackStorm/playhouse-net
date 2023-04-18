@@ -13,9 +13,10 @@ namespace PlayHouse.Service
         void Resume();
         void Shutdown();
         ServerState ServerState();
+        long GenerateUUID();
     }
 
-    public interface ICommonSender
+    public interface ISender
     {
         short ServiceId();
         void Reply(ReplyPacket reply);
@@ -37,19 +38,19 @@ namespace PlayHouse.Service
         void SessionClose(string sessionEndpoint, int sid);
     }
 
-    public interface IApiCommonSender : ICommonSender
+    public interface IApiCommonSender : ISender
     {
 
         long AccountId();
-        CreateStageResult CreateStage(string playEndpoint, string stageType, Packet packet);
-        JoinStageResult JoinStage(string playEndpoint,
+        Task<CreateStageResult> CreateStage(string playEndpoint, string stageType, long stageId, Packet packet);
+        Task<JoinStageResult> JoinStage(string playEndpoint,
                       long stageId,
                       long accountId,
                       string sessionEndpoint,
                       int sid,
                       Packet packet
         );
-        CreateJoinStageResult CreateJoinStage(string playEndpoint, string stageType, long stageId,
+        Task<CreateJoinStageResult> CreateJoinStage(string playEndpoint, string stageType, long stageId,
                             Packet createPacket,
                             long accountId, string sessionEndpoint, int sid,
                             Packet joinPacket
@@ -62,16 +63,21 @@ namespace PlayHouse.Service
         string SessionEndpoint();
         int Sid();
 
-        string SessionInfo();
-        void SendToClient(Packet packet);
-        void SessionClose();
+        void SendToClient(Packet packet)
+        {
+            SendToClient(SessionEndpoint(), Sid(),packet);
+        }
+        void SessionClose()
+        {
+            SessionClose(SessionEndpoint(), Sid());
+        }
 
     }
 
     public delegate Task<T> AsyncPreCallback<T>();
     public delegate Task AsyncPostCallback<T>(T result);
 
-    public interface IStageSender : ICommonSender
+    public interface IStageSender : ISender
     {
         long StageId();
         string StageType();
@@ -89,6 +95,6 @@ namespace PlayHouse.Service
         string GetFromEndpoint();
     }
 
-    public interface ISessionSender : ICommonSender { }
+    public interface ISessionSender : ISender { }
 
 }

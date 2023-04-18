@@ -7,57 +7,57 @@ namespace PlayHouse.Service.Session
 {
     public class SessionProcessor : IProcessor, ISessionListener
     {
-        private readonly short serviceId;
-        private readonly SessionOption sessionOption;
-        private readonly IServerInfoCenter serverInfoCenter;
-        private readonly IClientCommunicator clientCommunicator;
-        private readonly RequestCache requestCache;
-        private readonly int sessionPort;
-        private readonly bool showQps;
+        private readonly short _serviceId;
+        private readonly SessionOption _sessionOption;
+        private readonly IServerInfoCenter _serverInfoCenter;
+        private readonly IClientCommunicator _clientCommunicator;
+        private readonly RequestCache _requestCache;
+        private readonly int _sessionPort;
+        private readonly bool _showQps;
 
-        private readonly ConcurrentDictionary<int, SessionClient> clients = new ConcurrentDictionary<int, SessionClient>();
-        private readonly AtomicEnumWrapper<ServerState> state = new AtomicEnumWrapper<ServerState>(ServerState.DISABLE);
-        private readonly SessionNetwork sessionNetwork;
-        private readonly PerformanceTester performanceTester;
-        private readonly ConcurrentQueue<(int, ClientPacket)> clientQueue = new ConcurrentQueue<(int, ClientPacket)>();
-        private readonly ConcurrentQueue<RoutePacket> serverQueue = new ConcurrentQueue<RoutePacket>();
-        private Thread? clientMessageLoopThread;
-        private Thread? serverMessageLoopThread;
+        private readonly ConcurrentDictionary<int, SessionClient> _clients = new ConcurrentDictionary<int, SessionClient>();
+        private readonly AtomicEnumWrapper<ServerState> _state = new AtomicEnumWrapper<ServerState>(ServerState.DISABLE);
+        private readonly SessionNetwork _sessionNetwork;
+        private readonly PerformanceTester _performanceTester;
+        private readonly ConcurrentQueue<(int, ClientPacket)> _clientQueue = new ConcurrentQueue<(int, ClientPacket)>();
+        private readonly ConcurrentQueue<RoutePacket> _serverQueue = new ConcurrentQueue<RoutePacket>();
+        private Thread? _clientMessageLoopThread;
+        private Thread? _serverMessageLoopThread;
 
         public SessionProcessor(short serviceId, SessionOption sessionOption, IServerInfoCenter serverInfoCenter,
                                IClientCommunicator clientCommunicator, RequestCache requestCache, int sessionPort, bool showQps)
         {
-            this.serviceId = serviceId;
-            this.sessionOption = sessionOption;
-            this.serverInfoCenter = serverInfoCenter;
-            this.clientCommunicator = clientCommunicator;
-            this.requestCache = requestCache;
-            this.sessionPort = sessionPort;
-            this.showQps = showQps;
+            this._serviceId = serviceId;
+            this._sessionOption = sessionOption;
+            this._serverInfoCenter = serverInfoCenter;
+            this._clientCommunicator = clientCommunicator;
+            this._requestCache = requestCache;
+            this._sessionPort = sessionPort;
+            this._showQps = showQps;
 
-            sessionNetwork = new SessionNetwork(sessionOption, this);
-            performanceTester = new PerformanceTester(showQps, "client");
+            _sessionNetwork = new SessionNetwork(sessionOption, this);
+            _performanceTester = new PerformanceTester(showQps, "client");
         }
 
         public void OnStart()
         {
-            state.Value = ServerState.RUNNING;
-            performanceTester.Start();
+            _state.Value = ServerState.RUNNING;
+            _performanceTester.Start();
 
-            sessionNetwork.Start();
+            _sessionNetwork.Start();
 
-            clientMessageLoopThread = new Thread(ClientMessageLoop) { Name = "session:client-message-loop" };
-            clientMessageLoopThread.Start();
+            _clientMessageLoopThread = new Thread(ClientMessageLoop) { Name = "session:client-message-loop" };
+            _clientMessageLoopThread.Start();
 
-            serverMessageLoopThread = new Thread(ServerMessageLoop) { Name = "session:server-message-loop" };
-            serverMessageLoopThread.Start();
+            _serverMessageLoopThread = new Thread(ServerMessageLoop) { Name = "session:server-message-loop" };
+            _serverMessageLoopThread.Start();
         }
 
         private void ClientMessageLoop()
         {
-            while (state.Value != ServerState.DISABLE)
+            while (_state.Value != ServerState.DISABLE)
             {
-                while (clientQueue.TryDequeue(out var message))
+                while (_clientQueue.TryDequeue(out var message))
                 {
                     var sessionId = message.Item1;
                     var clientPacket = message.Item2;
@@ -65,7 +65,7 @@ namespace PlayHouse.Service.Session
                     using (clientPacket)
                     {
                         LOG.Debug($"SessionService:onReceive {clientPacket.GetMsgId()} : from client", this.GetType());
-                        if (!clients.TryGetValue(sessionId, out var sessionClient))
+                        if (!_clients.TryGetValue(sessionId, out var sessionClient))
                         {
                             LOG.Error($"sessionId is not exist {sessionId},{clientPacket.GetMsgId()}", this.GetType());
                         }
@@ -81,15 +81,15 @@ namespace PlayHouse.Service.Session
 
         private void ServerMessageLoop()
         {
-            while (state.Value != ServerState.DISABLE)
+            while (_state.Value != ServerState.DISABLE)
             {
-                while (serverQueue.TryDequeue(out var routePacket))
+                while (_serverQueue.TryDequeue(out var routePacket))
                 {
                     using (routePacket)
                     {
                         var sessionId = routePacket.RouteHeader.Sid;
                         var packetName = routePacket.GetMsgId();
-                        if (!clients.TryGetValue(sessionId, out var sessionClient))
+                        if (!_clients.TryGetValue(sessionId, out var sessionClient))
                         {
                             LOG.Error($"sessionId is already disconnected  {sessionId},{packetName}", this.GetType());
                         }
@@ -105,24 +105,24 @@ namespace PlayHouse.Service.Session
 
         public void OnReceive(RoutePacket routePacket)
         {
-            serverQueue.Enqueue(routePacket);
+            _serverQueue.Enqueue(routePacket);
         }
 
         public void OnStop()
         {
-            performanceTester.Stop();
-            state.Value = ServerState.DISABLE;
-            sessionNetwork.Stop();
+            _performanceTester.Stop();
+            _state.Value = ServerState.DISABLE;
+            _sessionNetwork.Stop();
         }
 
         public int GetWeightPoint()
         {
-            return clients.Count;
+            return _clients.Count;
         }
 
         public ServerState GetServerState()
         {
-            return state.Value;
+            return _state.Value;
         }
 
         public ServiceType GetServiceType()
@@ -132,31 +132,31 @@ namespace PlayHouse.Service.Session
 
         public short GetServiceId()
         {
-            return serviceId;
+            return _serviceId;
         }
 
         public void Pause()
         {
-            state.Value = ServerState.PAUSE;
+            _state.Value = ServerState.PAUSE;
         }
 
         public void Resume()
         {
-            state.Value = ServerState.RUNNING;
+            _state.Value = ServerState.RUNNING;
         }
 
         public void OnConnect(int sid,ISession session)
         {
-            if (!clients.ContainsKey(sid))
+            if (!_clients.ContainsKey(sid))
             {
-                clients[sid] = new SessionClient(
-                    serviceId,
+                _clients[sid] = new SessionClient(
+                    _serviceId,
                     sid,
-                    serverInfoCenter,
+                    _serverInfoCenter,
                     session,
-                    clientCommunicator,
-                    sessionOption.Urls,
-                    requestCache);
+                    _clientCommunicator,
+                    _sessionOption.Urls,
+                    _requestCache);
             }
             else
             {
@@ -166,15 +166,15 @@ namespace PlayHouse.Service.Session
 
         public void OnReceive(int sid, ClientPacket clientPacket)
         {
-            clientQueue.Enqueue((sid, clientPacket));
+            _clientQueue.Enqueue((sid, clientPacket));
         }
 
         public void OnDisconnect(int sid)
         {
-            if (clients.TryGetValue(sid, out var sessionClient))
+            if (_clients.TryGetValue(sid, out var sessionClient))
             {
                 sessionClient.Disconnect();
-                clients.TryRemove(sid, out _);
+                _clients.TryRemove(sid, out _);
             }
             else
             {

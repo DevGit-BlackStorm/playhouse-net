@@ -1,5 +1,6 @@
 ﻿using Playhouse.Protocol;
 using PlayHouse.Communicator.Message;
+using System.Collections.Specialized;
 using System.Runtime.Caching;
 
 namespace PlayHouse.Communicator
@@ -33,6 +34,7 @@ namespace PlayHouse.Communicator
     {
         private int _atomicInt;
         private CacheItemPolicy _policy;
+        private MemoryCache _cache;
 
         public RequestCache(int timeout) 
         {
@@ -46,6 +48,11 @@ namespace PlayHouse.Communicator
                     replyObject.Throw((int)BaseErrorCode.RequestTimeout);
                 }
             });
+
+            var cacheSettings = new NameValueCollection();
+            cacheSettings.Add("CacheMemoryLimitMegabytes", "10");
+            cacheSettings.Add("PhysicalMemoryLimitPercentage", "1");
+            _cache = new MemoryCache("RequestCache", cacheSettings);
         }
 
         public int GetSequence()
@@ -69,7 +76,7 @@ namespace PlayHouse.Communicator
             try
             {
                 int msgSeq = routePacket.Header().MsgSeq;
-                short msgId = routePacket.Header().MsgId;
+                int msgId = routePacket.Header().MsgId;
                 string key = msgSeq.ToString();
                 ReplyObject replyObject = (ReplyObject)MemoryCache.Default.Get(key);
 

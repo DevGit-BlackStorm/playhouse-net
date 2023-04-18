@@ -3,7 +3,7 @@ using PlayHouse.Communicator.Message;
 
 namespace PlayHouse.Service.Session
 {
-    public class XSessionSender : BaseSender, ISessionSender
+    public class XSessionSender : XSender, ISessionSender
     {
         private IClientCommunicator _clientCommunicator;
 

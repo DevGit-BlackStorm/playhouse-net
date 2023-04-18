@@ -10,7 +10,7 @@ namespace PlayHouse.Service
     public interface IServerSystem
     {
         ISystemPanel SystemPanel { get; }
-        ICommonSender BaseSender { get; }
+        ISender BaseSender { get; }
         Task OnStart();
         Task OnDispatch(Packet packet);
         Task OnStop();

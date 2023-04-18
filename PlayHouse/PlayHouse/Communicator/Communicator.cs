@@ -4,7 +4,7 @@ using System.Net;
 
 namespace PlayHouse.Communicator
 {
-    public delegate IServerSystem ServerSystemFactory(ISystemPanel systemPanel, ICommonSender baseSender);
+    public delegate IServerSystem ServerSystemFactory(ISystemPanel systemPanel, ISender baseSender);
     public class CommunicatorOption
     {
         public string BindEndpoint { get; }
@@ -58,8 +58,8 @@ namespace PlayHouse.Communicator
         private readonly XServerInfoCenter _serverInfoCenter;
         private readonly IProcessor _service;
         private IStorageClient _storageClient;
-        private readonly BaseSender _baseSender;
-        private readonly BaseSystemPanel _systemPanel;
+        private readonly XSender _baseSender;
+        private readonly XSystemPanel _systemPanel;
         private readonly XServerCommunicator _communicateServer;
         private readonly XClientCommunicator _communicateClient;
 
@@ -74,8 +74,8 @@ namespace PlayHouse.Communicator
             XServerInfoCenter serverInfoCenter,
             IProcessor service,
             IStorageClient storageClient,
-            BaseSender baseSender,
-            BaseSystemPanel systemPanel,
+            XSender baseSender,
+            XSystemPanel systemPanel,
             XServerCommunicator communicateServer,
             XClientCommunicator communicateClient)
         {

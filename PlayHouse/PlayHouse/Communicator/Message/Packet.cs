@@ -28,23 +28,23 @@ namespace PlayHouse.Communicator.Message
 
     public class Packet : IBasePacket
     {
-        public short MsgId;
+        public int MsgId;
         private IPayload _payload;
 
-        public Packet(short msgId = -1)
+        public Packet(int msgId = -1)
         {
             this.MsgId = msgId;
             this._payload =new EmptyPayload();
         }
 
-        public Packet(short msgId, IPayload payload) : this(msgId)
+        public Packet(int msgId, IPayload payload) : this(msgId)
         {
             _payload = payload;
         }
           
 
         public Packet(IMessage message) : this((short)message.Descriptor.Index, new ProtoPayload(message)) { }
-        public Packet(short msgId, ByteString message) : this(msgId, new ByteStringPayload(message)) { }
+        public Packet(int msgId, ByteString message) : this(msgId, new ByteStringPayload(message)) { }
 
         
 
@@ -67,17 +67,17 @@ namespace PlayHouse.Communicator.Message
     public class ReplyPacket : IBasePacket
     {
         public short ErrorCode { get; private set; }
-        public short MsgId { get; private set; }
+        public int MsgId { get; private set; }
         private IPayload _payload;
 
-        public ReplyPacket(short errorCode, short msgId, IPayload payload)
+        public ReplyPacket(short errorCode, int msgId, IPayload payload)
         {
             this.ErrorCode = errorCode;
             this.MsgId = msgId;
             this._payload = payload;
         }
 
-        public ReplyPacket(short errorCode = 0, short msgId = -1):this(errorCode,msgId,new EmptyPayload()){}
+        public ReplyPacket(short errorCode = 0, int msgId = -1):this(errorCode,msgId,new EmptyPayload()){}
 
         public ReplyPacket(short errorCode, IMessage message) : this(errorCode, (short)message.Descriptor.Index, new ProtoPayload(message)) { }
         public ReplyPacket(IMessage message) : this(0, (short)message.Descriptor.Index, new ProtoPayload(message)) { }
