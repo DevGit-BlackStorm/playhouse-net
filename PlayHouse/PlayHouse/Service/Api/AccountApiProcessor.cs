@@ -31,7 +31,7 @@ namespace PlayHouse.Service.Api
             _apiCallBack = apiCallBack;
         }
 
-        public void Dispatch(RoutePacket routePacket)
+        public async Task Dispatch(RoutePacket routePacket)
         {
             _msgQueue.Enqueue(routePacket);
 
@@ -41,39 +41,38 @@ namespace PlayHouse.Service.Api
                 {
                     if (_msgQueue.TryDequeue(out var item))
                     {
-                        Task.Run(() => {
-                            var routeHeader = item.RouteHeader;
+                        
+                        var routeHeader = item.RouteHeader;
 
-                            if (routeHeader.IsBase)
+                        if (routeHeader.IsBase)
+                        {
+                            if (routeHeader.GetMsgId() == DisconnectNoticeMsg.Descriptor.Index)
                             {
-                                if (routeHeader.GetMsgId() == DisconnectNoticeMsg.Descriptor.Index)
-                                {
-                                    var disconnectNoticeMsg = DisconnectNoticeMsg.Parser.ParseFrom(item.Data);
-                                    _apiCallBack.OnDisconnect(disconnectNoticeMsg.AccountId);
-                                }
-                                else
-                                {
-                                    LOG.Error($"Invalid base Api packet: {routeHeader.GetMsgId()}", this.GetType());
-                                }
+                                var disconnectNoticeMsg = DisconnectNoticeMsg.Parser.ParseFrom(item.Data);
+                                _apiCallBack.OnDisconnect(disconnectNoticeMsg.AccountId);
                             }
                             else
                             {
-                                var apiSender = new AllApiSender(_serviceId, _clientCommunicator, _requestCache);
-                                apiSender.SetCurrentPacketHeader(routeHeader);
-
-                                try
-                                {
-                                    _apiReflection.CallMethod(routeHeader, item.ToPacket(), routeHeader.IsBase, apiSender);
-                                }
-                                catch (Exception e)
-                                {
-                                    apiSender.ErrorReply(routePacket.RouteHeader, (short)BaseErrorCode.UncheckedContentsError);
-                                    LOG.Error(e.StackTrace, this.GetType(), e);
-                                }
+                                LOG.Error($"Invalid base Api packet: {routeHeader.GetMsgId()}", this.GetType());
                             }
+                        }
+                        else
+                        {
+                            var apiSender = new AllApiSender(_serviceId, _clientCommunicator, _requestCache);
+                            apiSender.SetCurrentPacketHeader(routeHeader);
 
-                            return Task.CompletedTask;
-                        });
+                            try
+                            {
+                                var task = (Task)_apiReflection.CallMethod(routeHeader, item.ToPacket(), routeHeader.IsBase, apiSender)!;
+                                await task;
+                            }
+                            catch (Exception e)
+                            {
+                                apiSender.ErrorReply(routePacket.RouteHeader, (short)BaseErrorCode.UncheckedContentsError);
+                                LOG.Error(e.StackTrace, this.GetType(), e);
+                            }
+                        }
+                        
                     }
                     else
                     {

@@ -51,6 +51,7 @@ namespace PlayHouse.Service.Session
 
             _serverMessageLoopThread = new Thread(ServerMessageLoop) { Name = "session:server-message-loop" };
             _serverMessageLoopThread.Start();
+            
         }
 
         private void ClientMessageLoop()

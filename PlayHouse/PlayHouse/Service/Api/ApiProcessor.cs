@@ -61,7 +61,10 @@ namespace PlayHouse.Service.Api
         public void OnStart()
         {
             _state.Value = ServerState.RUNNING;
-            _apiReflection.CallInitMethod(_systemPanel, sender);
+
+            var task = (Task)_apiReflection.CallInitMethod(_systemPanel, sender);
+            task.Wait();
+
             _threadLoop.Start();
         }
 
@@ -90,22 +93,26 @@ namespace PlayHouse.Service.Api
 
                                 _cache.Add(new CacheItem(routeHeader.AccountId.ToString(), accountApiProcessor),_policy);
                             }
-                            accountApiProcessor!.Dispatch(routePacket!);
+
+                             Task.Run( async ()  => {
+                                 await accountApiProcessor!.Dispatch(routePacket!).ConfigureAwait(false);
+                             });
+                            
                         }
                         else
                         {
                             var apiSender = new AllApiSender(_serviceId, _clientCommunicator, _requestCache);
                             apiSender.SetCurrentPacketHeader(routeHeader);
-                            
-                            ThreadPool.QueueUserWorkItem(state =>
+
+                            _ = Task.Run(async () =>
                             {
                                 try
                                 {
-                                    _apiReflection.CallMethod(
+                                    await _apiReflection.CallMethod(
                                         routeHeader,
                                         routePacket.ToPacket(),
                                         routePacket.IsBackend(),
-                                        apiSender);
+                                        apiSender).ConfigureAwait(false);
                                 }
                                 catch (Exception e)
                                 {

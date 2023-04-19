@@ -7,19 +7,20 @@ namespace PlayHouseTests.Service.Api.plain
 {
     internal class TestApiService : IApiService
     {
-        private ISystemPanel _systemPanel;
-        private ISender _sender;
+        private ISystemPanel? _systemPanel;
+        private ISender? _sender;
 
         public TestApiService()
         {
 
         }
 
-        public void Init(ISystemPanel systemPanel, ISender sender)
+        public async Task Init(ISystemPanel systemPanel, ISender sender)
         {
             _systemPanel = systemPanel;
             _sender = sender;
             ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Init"] = "OK";
+            await Task.CompletedTask;
 
         }
         public void Handles(IHandlerRegister register)
@@ -33,16 +34,18 @@ namespace PlayHouseTests.Service.Api.plain
             return new TestApiService();
         }
 
-        public void Test1(Packet packet, IApiSender apiSender)
+        public async Task Test1(Packet packet, IApiSender apiSender)
         {
             var message = ApiTestMsg1.Parser.ParseFrom(packet.Data);
             ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Test1"] = message.TestMsg;
+            await Task.CompletedTask;
         }
 
-        public void Test2(Packet packet, IApiSender apiSender)
+        public async Task Test2(Packet packet, IApiSender apiSender)
         {
             var message = ApiTestMsg2.Parser.ParseFrom(packet.Data);
             ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Test2"] = message.TestMsg;
+            await Task.CompletedTask;
         }
     }
 }

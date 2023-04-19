@@ -12,19 +12,20 @@ namespace PlayHouseTests.Service.Api.plain
 {
     internal class TestApiBackendService : IApiBackendService
     {
-        private ISystemPanel _systemPanel;
-        private ISender _sender;
+        private ISystemPanel? _systemPanel;
+        private ISender? _sender;
 
         public TestApiBackendService()
         {
 
         }
 
-        public void Init(ISystemPanel systemPanel, ISender sender)
+        public async Task Init(ISystemPanel systemPanel, ISender sender)
         {
             _systemPanel = systemPanel;
             _sender = sender;
             ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Init"] =  "OK";
+            await Task.CompletedTask;
 
         }
         public void Handles(IBackendHandlerRegister register)
@@ -38,16 +39,18 @@ namespace PlayHouseTests.Service.Api.plain
             return  new TestApiBackendService();
         }
 
-        public void Test1(Packet packet, IApiBackendSender apiSender)
+        public async Task Test1(Packet packet, IApiBackendSender apiSender)
         {
             var message = ApiTestMsg1.Parser.ParseFrom(packet.Data);
             ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Test1"] = message.TestMsg;
+            await Task.CompletedTask;
         }
 
-        public void Test2(Packet packet, IApiBackendSender apiSender)
+        public async Task Test2(Packet packet, IApiBackendSender apiSender)
         {
             var message = ApiTestMsg2.Parser.ParseFrom(packet.Data);
             ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Test2"] = message.TestMsg;
+            await Task.CompletedTask;
         }
     }
 }

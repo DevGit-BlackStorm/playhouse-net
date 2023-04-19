@@ -105,7 +105,7 @@ namespace PlayHouse.Service.Api
             ExtractHandlerMethod(reflections);
         }
 
-        public void CallInitMethod(ISystemPanel systemPanel, ISender sender)
+        public async Task CallInitMethod(ISystemPanel systemPanel, ISender sender)
         {
             foreach (var targetMethod in _initMethods)
             {
@@ -113,7 +113,8 @@ namespace PlayHouse.Service.Api
                 {
                     if (!_instances.ContainsKey(targetMethod.ClassName)) throw new ApiException.NotRegisterApiInstance(targetMethod.ClassName);
                     var apiInstance = _instances[targetMethod.ClassName];
-                    targetMethod.Method.Invoke(apiInstance.Instance, new object[] { systemPanel, sender });
+                    var task =  (Task)targetMethod.Method.Invoke(apiInstance.Instance, new object[] { systemPanel, sender })!;
+                    await task;
                 }
                 catch (Exception e)
                 {
@@ -123,7 +124,7 @@ namespace PlayHouse.Service.Api
             }
         }
 
-        public void CallMethod(RouteHeader routeHeader, Packet packet, bool isBackend, AllApiSender apiSender)
+        public async Task CallMethod(RouteHeader routeHeader, Packet packet, bool isBackend, AllApiSender apiSender)
         {
             var msgId = routeHeader.GetMsgId();
             var targetMethod = isBackend ? (_backendMethods.ContainsKey(msgId) ? _backendMethods[msgId] : null) : (_methods.ContainsKey(msgId) ? _methods[msgId] : null);
@@ -136,11 +137,13 @@ namespace PlayHouse.Service.Api
             {
                 if (isBackend)
                 {
-                    targetMethod.Method.Invoke(targetInstance.Instance, new object[] { packet, apiSender as IApiBackendSender });
+                    var task = (Task)targetMethod.Method.Invoke(targetInstance.Instance, new object[] { packet, apiSender as IApiBackendSender })!;
+                    await task;
                 }
                 else
                 {
-                    targetMethod.Method.Invoke(targetInstance.Instance, new object[] { packet, apiSender as IApiSender });
+                    var task = (Task)targetMethod.Method.Invoke(targetInstance.Instance, new object[] { packet, apiSender as IApiSender })!;
+                    await task;
                 }
             }
             catch (Exception e)
@@ -169,7 +172,7 @@ namespace PlayHouse.Service.Api
         private void RegisterInitMethod(Reflections reflections)
         {
             //var apiServiceReflections = new Reflections(typeof(IApiService));
-            reflections.GetMethodsBySignature("Init", typeof(void), typeof(ISystemPanel), typeof(ISender)).ForEach(el => {
+            reflections.GetMethodsBySignature("Init", typeof(Task), typeof(ISystemPanel), typeof(ISender)).ForEach(el => {
                 _initMethods.Add(new ApiMethod(0, el.DeclaringType!.FullName!, el));
             });
 

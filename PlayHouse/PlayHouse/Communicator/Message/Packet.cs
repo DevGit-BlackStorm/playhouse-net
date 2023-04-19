@@ -31,7 +31,7 @@ namespace PlayHouse.Communicator.Message
         public int MsgId;
         private IPayload _payload;
 
-        public Packet(int msgId = -1)
+        public Packet(int msgId = 0)
         {
             this.MsgId = msgId;
             this._payload =new EmptyPayload();
@@ -43,7 +43,7 @@ namespace PlayHouse.Communicator.Message
         }
           
 
-        public Packet(IMessage message) : this((short)message.Descriptor.Index, new ProtoPayload(message)) { }
+        public Packet(IMessage message) : this(message.Descriptor.Index, new ProtoPayload(message)) { }
         public Packet(int msgId, ByteString message) : this(msgId, new ByteStringPayload(message)) { }
 
         
@@ -77,10 +77,10 @@ namespace PlayHouse.Communicator.Message
             this._payload = payload;
         }
 
-        public ReplyPacket(short errorCode = 0, int msgId = -1):this(errorCode,msgId,new EmptyPayload()){}
+        public ReplyPacket(short errorCode = 0, int msgId = 0):this(errorCode,msgId,new EmptyPayload()){}
 
-        public ReplyPacket(short errorCode, IMessage message) : this(errorCode, (short)message.Descriptor.Index, new ProtoPayload(message)) { }
-        public ReplyPacket(IMessage message) : this(0, (short)message.Descriptor.Index, new ProtoPayload(message)) { }
+        public ReplyPacket(short errorCode, IMessage message) : this(errorCode, message.Descriptor.Index, new ProtoPayload(message)) { }
+        public ReplyPacket(IMessage message) : this(0, message.Descriptor.Index, new ProtoPayload(message)) { }
         
 
         public bool IsSuccess()

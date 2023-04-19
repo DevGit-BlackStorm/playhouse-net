@@ -44,7 +44,7 @@ namespace PlayHouse.Communicator.Message
     public class RouteHeader
     {
         public Header Header { get; }
-        public int Sid { get; set; } = -1;
+        public int Sid { get; set; } = 0;
         public bool IsSystem { get; set; } = false;
         public bool IsBase { get; set; } = false;
         public bool IsBackend { get; set; } = false;

@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace PlayHouse.Service.Api
 {
-    public delegate void ApiHandler(Packet packet, IApiSender apiSender);
-    public delegate void ApiBackendHandler(Packet packet, IApiBackendSender apiSender);
+    public delegate Task ApiHandler(Packet packet, IApiSender apiSender);
+    public delegate Task ApiBackendHandler(Packet packet, IApiBackendSender apiSender);
 
     public interface IHandlerRegister
     {
@@ -22,14 +22,14 @@ namespace PlayHouse.Service.Api
 
     public interface IApiService
     {
-        void Init(ISystemPanel systemPanel, ISender sender);
+        Task Init(ISystemPanel systemPanel, ISender sender);
         void Handles(IHandlerRegister register);
         IApiService Instance();
     }
 
     public interface IApiBackendService
     {
-        void Init(ISystemPanel systemPanel, ISender sender);
+        Task Init(ISystemPanel systemPanel, ISender sender);
         void Handles(IBackendHandlerRegister register);
         IApiBackendService Instance();
     }

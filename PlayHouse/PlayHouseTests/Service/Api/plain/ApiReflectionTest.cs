@@ -24,21 +24,21 @@ namespace PlayHouseTests.Service.Api.plain
     public  class ApiReflectionTest
     {
         [Fact]
-        public void Test_Init_Method()
+        public async Task Test_Init_Method()
         {
             var apiReflections = new ApiReflection();
             var systemPanel = new Mock<ISystemPanel>();
             var sender = new Mock<ISender>();
 
 
-            apiReflections.CallInitMethod(systemPanel.Object, sender.Object);
+            await apiReflections.CallInitMethod(systemPanel.Object, sender.Object);
 
             ReflectionTestResult.ResultMap["TestApiService_Init"].Should().Be("OK");
             ReflectionTestResult.ResultMap["TestApiBackendService_Init"].Should().Be("OK");
 
         }
 
-        [Fact] public void Test_CALL_Method()
+        [Fact] public async Task Test_CALL_Method()
         {
             var apiReflections = new ApiReflection();
             var systemPanel = new Mock<ISystemPanel>();
@@ -46,24 +46,24 @@ namespace PlayHouseTests.Service.Api.plain
             var apiSender = new AllApiSender(0, new Mock<IClientCommunicator>().Object, new RequestCache(0));
             bool isBackend = false;
 
-            apiReflections.CallInitMethod(systemPanel.Object, sender.Object);
+            await apiReflections.CallInitMethod(systemPanel.Object, sender.Object);
 
             var routePacket = RoutePacket.ApiOf(new Packet(new ApiTestMsg1() { TestMsg = "ApiServiceCall_Test1" }), false, isBackend);
 
-            apiReflections.CallMethod(routePacket.RouteHeader, routePacket.ToPacket(), isBackend, apiSender);
+            await apiReflections.CallMethod(routePacket.RouteHeader, routePacket.ToPacket(), isBackend, apiSender);
 
             ReflectionTestResult.ResultMap["TestApiService_Test1"].Should().Be("ApiServiceCall_Test1");
 
             routePacket = RoutePacket.ApiOf(new Packet(new ApiTestMsg2() { TestMsg = "ApiServiceCall_Test2" }), false, isBackend);
 
-            apiReflections.CallMethod(routePacket.RouteHeader, routePacket.ToPacket(), isBackend, apiSender);
+            await apiReflections.CallMethod(routePacket.RouteHeader, routePacket.ToPacket(), isBackend, apiSender);
 
             ReflectionTestResult.ResultMap["TestApiService_Test2"].Should().Be("ApiServiceCall_Test2");
 
         }
 
         [Fact]
-        public void Test_CALL_Backend_Method()
+        public async Task Test_CALL_Backend_Method()
         {
             var apiReflections = new ApiReflection();
             var systemPanel = new Mock<ISystemPanel>();
@@ -71,17 +71,17 @@ namespace PlayHouseTests.Service.Api.plain
             var apiSender = new AllApiSender(0, new Mock<IClientCommunicator>().Object, new RequestCache(0));
             bool isBackend = true;
 
-            apiReflections.CallInitMethod(systemPanel.Object, sender.Object);
+            await apiReflections.CallInitMethod(systemPanel.Object, sender.Object);
 
             var routePacket = RoutePacket.ApiOf(new Packet(new ApiTestMsg1() { TestMsg = "ApiBackendServiceCall_Test1" }), false, isBackend);
 
-            apiReflections.CallMethod(routePacket.RouteHeader, routePacket.ToPacket(), isBackend, apiSender);
+            await apiReflections.CallMethod(routePacket.RouteHeader, routePacket.ToPacket(), isBackend, apiSender);
 
             ReflectionTestResult.ResultMap["TestApiBackendService_Test1"].Should().Be("ApiBackendServiceCall_Test1");
 
             routePacket = RoutePacket.ApiOf(new Packet(new ApiTestMsg2() { TestMsg = "ApiBackendServiceCall_Test2" }), false, isBackend);
 
-            apiReflections.CallMethod(routePacket.RouteHeader, routePacket.ToPacket(), isBackend, apiSender);
+            await apiReflections.CallMethod(routePacket.RouteHeader, routePacket.ToPacket(), isBackend, apiSender);
 
             ReflectionTestResult.ResultMap["TestApiBackendService_Test2"].Should().Be("ApiBackendServiceCall_Test2");
 
