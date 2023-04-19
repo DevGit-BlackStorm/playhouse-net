@@ -98,12 +98,12 @@ namespace PlayHouse.Service.Session.network
                 await Task.Delay(100);
                 serverListener.ResultValue.Should().Be("onConnect");
 
-                connector.Send(new TargetId(API), new Packet(new TestMsg { TestMsg_ = "test" }));
+                connector.SendToApi(API, new Packet(new TestMsg { TestMsg_ = "test" }));
 
                 await Task.Delay(100);
 
 
-                var replyPacket = await connector.Request(new TargetId(SESSION), new Packet(new TestMsg { TestMsg_ = "request" }));
+                var replyPacket = await connector.RequestToApi(SESSION, new Packet(new TestMsg { TestMsg_ = "request" }));
 
                 using (replyPacket)
                 {
@@ -111,7 +111,7 @@ namespace PlayHouse.Service.Session.network
                 }
                 
 
-                replyPacket = await connector.Request(new TargetId(SESSION), new Packet(new TestMsg { TestMsg_ = "request" }));
+                replyPacket = await connector.RequestToApi(SESSION, new Packet(new TestMsg { TestMsg_ = "request" }));
 
                 using (replyPacket)
                 {

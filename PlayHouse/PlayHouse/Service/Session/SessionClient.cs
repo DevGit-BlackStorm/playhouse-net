@@ -5,6 +5,7 @@ using PlayHouse.Service.Session.network;
 using Google.Protobuf;
 using System;
 using System.Runtime.InteropServices;
+using System.Linq;
 
 namespace PlayHouse.Service.Session
 {
@@ -26,6 +27,10 @@ namespace PlayHouse.Service.Session
         public byte IncrementByte()
         {
             _byteValue = (byte)((_byteValue + 1) & 0xff);
+            if(_byteValue == 0)
+            {
+                _byteValue = IncrementByte();
+            }
             return _byteValue;
         }
     }
@@ -48,7 +53,7 @@ namespace PlayHouse.Service.Session
         //private Dictionary<short, string> _sessionData = new Dictionary<short, string>();
         private long _accountId = 0;
 
-        private Dictionary<byte, TargetAddress> _playEndpoints = new Dictionary<byte, TargetAddress>();
+        private Dictionary<int, TargetAddress> _playEndpoints = new Dictionary<int, TargetAddress>();
         private short _authenticateServiceId = 0;
         private string _authServerEndpoint = "";
         private StageIndexGenerator _stageIndexGenerator = new StageIndexGenerator();
@@ -86,9 +91,9 @@ namespace PlayHouse.Service.Session
             this._authServerEndpoint = apiEndpoint;
         }
 
-        private byte UpdateStageInfo(string playEndpoint, long stageId)
+        private int UpdateStageInfo(string playEndpoint, long stageId)
         {
-            byte? stageIndex = null;
+            int? stageIndex = null;
             foreach (var action in _playEndpoints)
             {
                 if (action.Value.StageId == stageId)
@@ -97,6 +102,19 @@ namespace PlayHouse.Service.Session
                     break;
                 }
             }
+
+            if(stageIndex == null)
+            {
+                for(int i = 1; i < 256; i++)
+                {
+                    if (!_playEndpoints.ContainsKey(i))
+                    {
+                        stageIndex = i;
+                        break;
+                    }
+                }
+            }
+
             if (stageIndex == null)
             {
                 stageIndex = _stageIndexGenerator.IncrementByte();
@@ -247,7 +265,7 @@ namespace PlayHouse.Service.Session
 
         private void ClearRoomInfo(long stageId)
         {
-            byte? stageIndex = null;
+            int? stageIndex = null;
             foreach (var action in _playEndpoints)
             {
                 if (action.Value.StageId == stageId)
@@ -256,6 +274,8 @@ namespace PlayHouse.Service.Session
                     break;
                 }
             }
+
+
             if (stageIndex != null)
             {
                 _playEndpoints.Remove(stageIndex.Value);
