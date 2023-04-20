@@ -2,6 +2,7 @@
 using PlayHouse.Communicator;
 using System.Collections.Concurrent;
 using PlayHouse.Service.Session.network;
+using PlayHouse.Utils;
 
 namespace PlayHouse.Service.Session
 {
@@ -16,13 +17,15 @@ namespace PlayHouse.Service.Session
         private readonly bool _showQps;
 
         private readonly ConcurrentDictionary<int, SessionClient> _clients = new ConcurrentDictionary<int, SessionClient>();
-        private readonly AtomicEnumWrapper<ServerState> _state = new AtomicEnumWrapper<ServerState>(ServerState.DISABLE);
+        private readonly AtomicEnum<ServerState> _state = new AtomicEnum<ServerState>(ServerState.DISABLE);
         private readonly SessionNetwork _sessionNetwork;
         private readonly PerformanceTester _performanceTester;
         private readonly ConcurrentQueue<(int, ClientPacket)> _clientQueue = new ConcurrentQueue<(int, ClientPacket)>();
         private readonly ConcurrentQueue<RoutePacket> _serverQueue = new ConcurrentQueue<RoutePacket>();
         private Thread? _clientMessageLoopThread;
         private Thread? _serverMessageLoopThread;
+
+        public short ServiceId => _serviceId;
 
         public SessionProcessor(short serviceId, SessionOption sessionOption, IServerInfoCenter serverInfoCenter,
                                IClientCommunicator clientCommunicator, RequestCache requestCache, int sessionPort, bool showQps)
@@ -41,7 +44,7 @@ namespace PlayHouse.Service.Session
 
         public void OnStart()
         {
-            _state.Value = ServerState.RUNNING;
+            _state.Set(ServerState.RUNNING);
             _performanceTester.Start();
 
             _sessionNetwork.Start();
@@ -56,7 +59,7 @@ namespace PlayHouse.Service.Session
 
         private void ClientMessageLoop()
         {
-            while (_state.Value != ServerState.DISABLE)
+            while (_state.Get() != ServerState.DISABLE)
             {
                 while (_clientQueue.TryDequeue(out var message))
                 {
@@ -82,7 +85,7 @@ namespace PlayHouse.Service.Session
 
         private void ServerMessageLoop()
         {
-            while (_state.Value != ServerState.DISABLE)
+            while (_state.Get() != ServerState.DISABLE)
             {
                 while (_serverQueue.TryDequeue(out var routePacket))
                 {
@@ -112,7 +115,7 @@ namespace PlayHouse.Service.Session
         public void OnStop()
         {
             _performanceTester.Stop();
-            _state.Value = ServerState.DISABLE;
+            _state.Set(ServerState.DISABLE);
             _sessionNetwork.Stop();
         }
 
@@ -123,7 +126,7 @@ namespace PlayHouse.Service.Session
 
         public ServerState GetServerState()
         {
-            return _state.Value;
+            return _state.Get();
         }
 
         public ServiceType GetServiceType()
@@ -138,12 +141,12 @@ namespace PlayHouse.Service.Session
 
         public void Pause()
         {
-            _state.Value = ServerState.PAUSE;
+            _state.Set(ServerState.PAUSE);
         }
 
         public void Resume()
         {
-            _state.Value = ServerState.RUNNING;
+            _state.Set(ServerState.RUNNING);
         }
 
         public void OnConnect(int sid,ISession session)

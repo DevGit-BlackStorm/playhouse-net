@@ -41,7 +41,7 @@ namespace PlayHouse.Communicator
                     storageClient.UpdateServerInfo(new XServerInfo(
                         bindEndpoint,
                         service.GetServiceType(),
-                        service.GetServiceId(),
+                        service.ServiceId,
                         service.GetServerState(),
                         service.GetWeightPoint(),
                         DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()

@@ -88,10 +88,18 @@ namespace PlayHouse.Service
             return await deferred.Task;
         }
 
-        private int GetSequence()
+        private short GetSequence()
         {
             return _reqCache.GetSequence();
         }
+        public void SendToApi(string apiEndpoint, long accountId, Packet packet)
+        {
+            var routePacket = RoutePacket.ApiOf(packet, isBase: false, isBackend: true);
+            routePacket.RouteHeader.AccountId = accountId;
+            _clientCommunicator.Send(apiEndpoint, routePacket);
+        }
+
+
 
         public void SendToApi(string apiEndpoint, Packet packet)
         {
@@ -137,6 +145,21 @@ namespace PlayHouse.Service
         public async Task<ReplyPacket> RequestToApi(string apiEndpoint, Packet packet)
         {
             return await AsyncToApi(apiEndpoint,  packet).Task;
+        }
+        public async Task<ReplyPacket> RequestToApi(string apiEndpoint,long accountId, Packet packet)
+        {
+            return await AsyncToApi(apiEndpoint, accountId, packet);
+        }
+        public async Task<ReplyPacket> AsyncToApi(string apiEndpoint, long accountId, Packet packet)
+        {
+            short seq = GetSequence();
+            var taskCompletionSource = new TaskCompletionSource<ReplyPacket>();
+            _reqCache.Put(seq, new ReplyObject(taskCompletionSource: taskCompletionSource));
+            var routePacket = RoutePacket.ApiOf(packet, false, true);
+            routePacket.SetMsgSeq(seq);
+            routePacket.RouteHeader.AccountId = accountId;
+            _clientCommunicator.Send(apiEndpoint, routePacket);
+            return await taskCompletionSource.Task;
         }
 
         public TaskCompletionSource<ReplyPacket> AsyncToApi(string apiEndpoint, Packet packet)

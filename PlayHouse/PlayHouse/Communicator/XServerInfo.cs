@@ -27,7 +27,7 @@ namespace PlayHouse.Communicator
             return new XServerInfo(
                 bindEndpoint,
                 service.GetServiceType(),
-                service.GetServiceId(),
+                service.ServiceId,
                 service.GetServerState(),
                 service.GetWeightPoint(),
                 DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()

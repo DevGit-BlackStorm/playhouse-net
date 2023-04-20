@@ -4,6 +4,7 @@ using System;
 
 namespace PlayHouse.Service
 {
+    public delegate Task TimerCallbackTask();
     public interface ISystemPanel
     {
         IServerInfo RandomServerInfo(short serviceId);
@@ -79,15 +80,15 @@ namespace PlayHouse.Service
 
     public interface IStageSender : ISender
     {
-        long StageId();
-        string StageType();
+        public long StageId { get; }
+        public string StageType { get; }
 
-        long AddRepeatTimer(TimeSpan initialDelay, TimeSpan period, TimerCallback timerCallback);
-        long AddCountTimer(TimeSpan initialDelay, int count, TimeSpan period, TimerCallback timerCallback);
+        long AddRepeatTimer(TimeSpan initialDelay, TimeSpan period, TimerCallbackTask timerCallback);
+        long AddCountTimer(TimeSpan initialDelay, int count, TimeSpan period, TimerCallbackTask timerCallback);
         void CancelTimer(long timerId);
         void CloseStage();
 
-        Task<T> AsyncBlock<T>(AsyncPreCallback<T> preCallback, AsyncPostCallback<T>? postCallback = null);
+        Task AsyncBlock<T>(AsyncPreCallback<T> preCallback, AsyncPostCallback<T>? postCallback = null);
     }
 
     public interface IApiBackendSender : IApiCommonSender

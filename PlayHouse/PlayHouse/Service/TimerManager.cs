@@ -11,12 +11,13 @@ namespace PlayHouse.Service
     using System;
     using System.Collections.Generic;
     using System.Threading;
+    using System.Collections.Concurrent;
 
-
+   
     public class TimerManager
     {
         private readonly IProcessor _service;
-        private readonly Dictionary<long, Timer> _timers = new Dictionary<long, Timer>();
+        private readonly ConcurrentDictionary<long, Timer> _timers = new ConcurrentDictionary<long, Timer>();
 
         public TimerManager(IProcessor service)
         {
@@ -33,11 +34,11 @@ namespace PlayHouse.Service
             //_timers[0] = timer;
         }
 
-        public long RegisterRepeatTimer(long stageId, long timerId, long initialDelay, long period, TimerCallback timerCallback)
+        public long RegisterRepeatTimer(long stageId, long timerId, long initialDelay, long period, TimerCallbackTask timerCallback)
         {
-            var timer = new Timer(state =>
+            var timer = new Timer(timerState =>
             {
-                var routePacket = RoutePacket.StageTimerOf(stageId, timerId, timerCallback);
+                var routePacket = RoutePacket.StageTimerOf(stageId, timerId, timerCallback, timerState);
                 _service.OnReceive(routePacket);
             }, null, initialDelay, period);
             
@@ -46,15 +47,15 @@ namespace PlayHouse.Service
             return timerId;
         }
 
-        public long RegisterCountTimer(long stageId, long timerId, long initialDelay, int count, long period, TimerCallback timerCallback)
+        public long RegisterCountTimer(long stageId, long timerId, long initialDelay, int count, long period, TimerCallbackTask timerCallback)
         {
             int remainingCount = count;
 
-            var timer = new Timer(state =>
+            var timer = new Timer(timerState =>
             {
                 if (remainingCount > 0)
                 {
-                    var routePacket = RoutePacket.StageTimerOf(stageId, timerId, timerCallback);
+                    var routePacket = RoutePacket.StageTimerOf(stageId, timerId, timerCallback, timerState);
                      _service.OnReceive(routePacket);
                     remainingCount--;
                 }
@@ -73,7 +74,7 @@ namespace PlayHouse.Service
             if (_timers.TryGetValue(timerId, out Timer? timer))
             {
                 timer.Dispose();
-                _timers.Remove(timerId);
+                _timers.Remove(timerId,out _);
             }
         }
     }

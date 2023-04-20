@@ -30,7 +30,6 @@
 
   <ItemGroup>
     <Folder Include="Communicator\Message\" />
-    <Folder Include="Service\Play\" />
   </ItemGroup>
 
 </Project>

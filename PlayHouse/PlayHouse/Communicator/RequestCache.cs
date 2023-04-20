@@ -1,5 +1,6 @@
 ﻿using Playhouse.Protocol;
 using PlayHouse.Communicator.Message;
+using PlayHouse.Utils;
 using System.Collections.Specialized;
 using System.Runtime.Caching;
 
@@ -11,8 +12,8 @@ namespace PlayHouse.Communicator
         private TaskCompletionSource<ReplyPacket>? _taskCompletionSource= null;
         public ReplyObject(ReplyCallback? callback = null, TaskCompletionSource<ReplyPacket>? taskCompletionSource = null)  
         { 
-            this._replyCallback = callback;
-            this._taskCompletionSource = taskCompletionSource;
+            _replyCallback = callback;
+            _taskCompletionSource = taskCompletionSource;
         }
 
         public void OnReceive(RoutePacket routePacket)
@@ -32,7 +33,7 @@ namespace PlayHouse.Communicator
     }
     public class RequestCache
     {
-        private int _atomicInt;
+        private AtomicShort _sequence = new AtomicShort();
         private CacheItemPolicy _policy;
         private MemoryCache _cache;
 
@@ -55,9 +56,9 @@ namespace PlayHouse.Communicator
             _cache = new MemoryCache("RequestCache", cacheSettings);
         }
 
-        public int GetSequence()
+        public short GetSequence()
         {
-            return Interlocked.Increment(ref _atomicInt);
+            return _sequence.IncrementAndGet();
         }
 
         public void Put(int seq,ReplyObject replyObject)

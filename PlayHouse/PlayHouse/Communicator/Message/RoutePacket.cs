@@ -1,6 +1,7 @@
 ﻿using CommonLib;
 using Google.Protobuf;
 using Playhouse.Protocol;
+using PlayHouse.Service;
 using System.Net;
 
 namespace PlayHouse.Communicator.Message
@@ -124,7 +125,7 @@ namespace PlayHouse.Communicator.Message
         private IPayload _payload;
 
         public long TimerId = 0;
-        public TimerCallback? TimerCallback = null;
+        public TimerCallbackTask? TimerCallback = null;
 
 
         protected RoutePacket(RouteHeader routeHeader, IPayload payload)
@@ -159,10 +160,7 @@ namespace PlayHouse.Communicator.Message
             return RouteHeader.IsBase;
         }
 
-        public long AccountId()
-        {
-            return RouteHeader.AccountId;
-        }
+        public long AccountId => RouteHeader.AccountId;
 
         public void SetMsgSeq(short msgSeq)
         {
@@ -179,10 +177,7 @@ namespace PlayHouse.Communicator.Message
             return RouteHeader.IsReply;
         }
 
-        public long StageId()
-        {
-            return RouteHeader.StageId;
-        }
+        public long StageId => RouteHeader.StageId;
 
         public bool IsSystem()
         {
@@ -250,7 +245,7 @@ namespace PlayHouse.Communicator.Message
             return new RoutePacket(routeHeader, packet.MovePayload());
         }
 
-        public static RoutePacket AddTimerOf(TimerMsg.Types.Type type, long stageId, long timerId, TimerCallback timerCallback, TimeSpan initialDelay, TimeSpan period, int count = 0)
+        public static RoutePacket AddTimerOf(TimerMsg.Types.Type type, long stageId, long timerId, TimerCallbackTask timerCallback, TimeSpan initialDelay, TimeSpan period, int count = 0)
         {
             Header header = new Header(msgId:(short)TimerMsg.Descriptor.Index);
             RouteHeader routeHeader = RouteHeader.Of(header);
@@ -272,7 +267,7 @@ namespace PlayHouse.Communicator.Message
             };
         }
 
-        public static RoutePacket StageTimerOf(long stageId, long timerId, TimerCallback timerCallback)
+        public static RoutePacket StageTimerOf(long stageId, long timerId, TimerCallbackTask timerCallback, object? timerState)
         {
             Header header = new Header(msgId: StageTimer.Descriptor.Index);
             RouteHeader routeHeader = RouteHeader.Of(header);
@@ -281,7 +276,7 @@ namespace PlayHouse.Communicator.Message
             {
                 RouteHeader = { StageId = stageId, IsBase = true },
                 TimerId = timerId,
-                TimerCallback = timerCallback
+                TimerCallback = timerCallback,
             };
         }
 
@@ -368,6 +363,8 @@ namespace PlayHouse.Communicator.Message
 
         public ReadOnlySpan<byte> Data => _payload.Data;
 
+        public object? TimerObject { get; private set; }
+
         public void Dispose()
         {
             _payload.Dispose();
@@ -379,4 +376,26 @@ namespace PlayHouse.Communicator.Message
         }
     }
 
- }
+    public class AsyncBlockPacket<T> : RoutePacket
+    {
+        public AsyncPostCallback<T> AsyncPostCallback { get; }
+        public T Result { get; }
+
+        private AsyncBlockPacket(AsyncPostCallback<T> asyncPostCallback, T result, RouteHeader routeHeader) : base(routeHeader, new EmptyPayload())
+        {
+            AsyncPostCallback = asyncPostCallback;
+            Result = result;
+        }
+
+        public static RoutePacket Of(long stageId, AsyncPostCallback<T> asyncPostCallback, T result)
+        {
+            var header = new Header(msgId: AsyncBlock.Descriptor.Index);
+            var routeHeader = RouteHeader.Of(header);
+            var packet = new AsyncBlockPacket<T>(asyncPostCallback, result, routeHeader);
+            packet.RouteHeader.StageId = stageId;
+            packet.RouteHeader.IsBase = true;
+            return packet;
+        }
+    }
+
+}

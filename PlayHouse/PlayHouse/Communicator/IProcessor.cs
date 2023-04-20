@@ -16,13 +16,13 @@ namespace PlayHouse.Communicator
 
     public interface IProcessor
     {
+        short ServiceId { get; }
         void OnStart();
         void OnReceive(RoutePacket routePacket);
         void OnStop();
         int GetWeightPoint();
         ServerState GetServerState();
         ServiceType GetServiceType();
-        short GetServiceId();
         void Pause();
         void Resume();
     }

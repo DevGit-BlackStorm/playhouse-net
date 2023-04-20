@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using PlayHouse.Service.Session;
 using System.Runtime.Caching;
 using System.Threading;
 using System.Collections.Specialized;
 using Playhouse.Protocol;
+using PlayHouse.Utils;
 
 namespace PlayHouse.Service.Api
 {
@@ -23,13 +23,15 @@ namespace PlayHouse.Service.Api
         private readonly ISender sender;
         private readonly XSystemPanel _systemPanel;
 
-        private readonly AtomicEnumWrapper<ServerState> _state = new AtomicEnumWrapper<ServerState>(ServerState.DISABLE);
+        private readonly AtomicEnum<ServerState> _state = new AtomicEnum<ServerState>(ServerState.DISABLE);
         private readonly ApiReflection _apiReflection;
         private readonly ConcurrentQueue<RoutePacket> _msgQueue = new ConcurrentQueue<RoutePacket>();
 
         private readonly MemoryCache _cache;
         private CacheItemPolicy _policy;
         private Thread _threadLoop;
+
+        public short ServiceId => _serviceId;
 
         public ApiProcessor(
             short serviceId,
@@ -60,7 +62,7 @@ namespace PlayHouse.Service.Api
 
         public void OnStart()
         {
-            _state.Value = ServerState.RUNNING;
+            _state.Set(ServerState.RUNNING);
 
             var task = (Task)_apiReflection.CallInitMethod(_systemPanel, sender);
             task.Wait();
@@ -71,7 +73,7 @@ namespace PlayHouse.Service.Api
         private  void MessageLoop()
         {
 
-            while (_state.Value != ServerState.DISABLE)
+            while (_state.Get() != ServerState.DISABLE)
             {
                 if (_msgQueue.TryDequeue(out var routePacket))
                 {
@@ -89,7 +91,7 @@ namespace PlayHouse.Service.Api
                                     _requestCache,
                                     _clientCommunicator,
                                     _apiReflection,
-                                    _apiOption.ApiCallBackHandler);
+                                    _apiOption.ApiCallBackHandler!);
 
                                 _cache.Add(new CacheItem(routeHeader.AccountId.ToString(), accountApiProcessor),_policy);
                             }
@@ -140,7 +142,7 @@ namespace PlayHouse.Service.Api
 
         public void OnStop()
         {
-            _state.Value = ServerState.DISABLE;
+            _state.Set( ServerState.DISABLE);
         }
 
         public int GetWeightPoint()
@@ -150,7 +152,7 @@ namespace PlayHouse.Service.Api
 
         public ServerState GetServerState()
         {
-            return _state.Value;
+            return _state.Get();
         }
 
         public ServiceType GetServiceType()
@@ -160,11 +162,11 @@ namespace PlayHouse.Service.Api
 
         public void Pause()
         {
-            _state.Value = ServerState.PAUSE;
+            _state.Set(ServerState.PAUSE);
         }
         public void Resume()
         {
-            _state.Value = ServerState.RUNNING;
+            _state.Set(ServerState.RUNNING);
         }
 
         public short GetServiceId()

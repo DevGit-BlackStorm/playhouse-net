@@ -240,7 +240,7 @@ namespace PlayHouse.Service.Session
                     string playEndpoint = joinStageMsg.PlayEndpoint;
                     long stageId = joinStageMsg.StageId;
                     var stageIndex = UpdateStageInfo(playEndpoint, stageId);
-                    LOG.Debug($"{_accountId} is roomInfo updated:{playEndpoint},{stageId} $", this.GetType());
+                    LOG.Debug($"{_accountId} is stageInfo updated:{playEndpoint},{stageId} $", this.GetType());
                 }
                 else if (msgId != LeaveStageMsg.Descriptor.Index)
                 {

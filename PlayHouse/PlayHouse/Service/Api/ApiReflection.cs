@@ -26,17 +26,7 @@ namespace PlayHouse.Service.Api
         }
     }
 
-    class Pair<TFirst, TSecond>
-    {
-        public TFirst First { get; }
-        public TSecond Second { get; }
-
-        public Pair(TFirst first, TSecond second)
-        {
-            First = first;
-            Second = second;
-        }
-    }
+  
 
     class Reflections
     {
@@ -74,7 +64,7 @@ namespace PlayHouse.Service.Api
                 .Where(type => type.IsClass && !type.IsAbstract && subTypes.Any(subType => subType.IsAssignableFrom(type)))
                 .ToArray();
         }
-        public List<Pair<string,Object>> InvokeMethodByName(string methodName, params object[] arguments)
+        public List<(string,Object)> InvokeMethodByName(string methodName, params object[] arguments)
         {
             return _findTypes
                 .SelectMany(type => type.GetMethods())
@@ -83,7 +73,7 @@ namespace PlayHouse.Service.Api
                 {
                     var instance = Activator.CreateInstance(m.DeclaringType!);
                     var result = m.Invoke(instance, arguments);
-                    return new Pair<string, Object>(m.DeclaringType!.FullName!, result!) ;
+                    return  (m.DeclaringType!.FullName!, result!) ;
                 })
                 .ToList();
         }
@@ -156,7 +146,7 @@ namespace PlayHouse.Service.Api
         private void ExtractInstance(Reflections reflections)
         {
 
-            reflections.InvokeMethodByName("Instance").ForEach(instance=>_instances.Add(instance.First,new ApiInstance(instance.Second)));
+            reflections.InvokeMethodByName("Instance").ForEach(instance=>_instances.Add(instance.Item1,new ApiInstance(instance.Item2)));
 
             //reflections.InvokeMethodByName<IApiBackendService>("Instance").ForEach(instance => _instances.Add(instance.First, new ApiInstance(instance.Second)));
 

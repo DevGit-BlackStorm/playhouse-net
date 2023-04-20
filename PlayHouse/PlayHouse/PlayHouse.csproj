@@ -16,10 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Service\Play\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\..\playhouse-net-common\CommonLib\CommonLib\CommonLib.csproj" />
     <ProjectReference Include="..\Protocol\Common.csproj" />
   </ItemGroup>

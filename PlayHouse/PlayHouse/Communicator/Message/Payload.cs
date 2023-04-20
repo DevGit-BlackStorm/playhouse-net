@@ -19,7 +19,11 @@ namespace PlayHouse.Communicator.Message
         public ProtoPayload(IMessage proto)
         {
             _proto = proto;
-           
+        }
+
+        public IMessage GetProto()
+        {
+            return _proto;
         }
 
         public ReadOnlySpan<byte> Data => _proto.ToByteArray();
