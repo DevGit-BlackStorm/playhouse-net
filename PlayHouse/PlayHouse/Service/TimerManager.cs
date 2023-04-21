@@ -24,15 +24,7 @@ namespace PlayHouse.Service
             _service = service;
         }
 
-        public void Start()
-        {
-            //var timer = new Timer(async state =>
-            //{
-            //    // Log room state here
-            //    await Task.CompletedTask;
-            //}, null, 1000, 5000);
-            //_timers[0] = timer;
-        }
+
 
         public long RegisterRepeatTimer(long stageId, long timerId, long initialDelay, long period, TimerCallbackTask timerCallback)
         {

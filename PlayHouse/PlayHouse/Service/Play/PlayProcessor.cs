@@ -50,7 +50,6 @@ namespace PlayHouse.Service.Play
         {
             _state.Set(ServerState.RUNNING);
             _threadForCoroutine.Start();
-            _timerManager.Start();
         }
 
         public void RemoveRoom(long stageId)
