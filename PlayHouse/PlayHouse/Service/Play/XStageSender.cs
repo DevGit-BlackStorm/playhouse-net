@@ -103,14 +103,18 @@ namespace PlayHouse.Service.Play
             _playProcessor.OnReceive(packet2);
         }
 
-        public async Task AsyncBlock<T>(AsyncPreCallback<T> preCallback, AsyncPostCallback<T>? postCallback)
+        public async Task AsyncBlock<T>(AsyncPreCallback<T> preCallback, AsyncPostCallback? postCallback = null)
         {
-            var result = await preCallback.Invoke();
-            if (postCallback != null)
+            await Task.Run(async () =>
             {
-                var packet = AsyncBlockPacket<T>.Of(_stageId, postCallback, result);
-                _playProcessor.OnReceive(packet);
-            }
+                var result = await preCallback.Invoke();
+                if (postCallback != null)
+                {
+                    var packet = AsyncBlockPacket.Of(_stageId, postCallback, result!);
+                    _playProcessor.OnReceive(packet);
+                }
+            });
+            
         }
 
         public bool HasTimer(long timerId) => _timerIds.Contains(timerId);

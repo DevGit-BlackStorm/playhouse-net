@@ -12,7 +12,7 @@ namespace PlayHouse.Service.Play.Base
     public class BaseStage
     {
         private long _stageId;
-        private PlayProcessor _playService;
+        private PlayProcessor _playProcessor;
         private IClientCommunicator _clientCommunicator;
         private RequestCache _reqCache;
         private IServerInfoCenter _serverInfoCenter;
@@ -20,30 +20,36 @@ namespace PlayHouse.Service.Play.Base
         private BaseStageCmdHandler _msgHandler = new BaseStageCmdHandler();
         private ConcurrentQueue<RoutePacket> _msgQueue = new ConcurrentQueue<RoutePacket>();
         private AtomicBoolean _isUsing = new AtomicBoolean(false);
+        private ISessionUpdater _sessionUpdater;
 
         public XStageSender StageSender => _stageSender;
 
         private IStage<IActor>? _stage; 
         public bool IsCreated { get; private set; }
 
-        public BaseStage(long stageId, PlayProcessor playService, IClientCommunicator clientCommunicator,
-                         RequestCache reqCache, IServerInfoCenter serverInfoCenter,
-                         XStageSender? stageSender = null)
+        public BaseStage(long stageId, 
+                         PlayProcessor playProcessor, 
+                         IClientCommunicator clientCommunicator,
+                         RequestCache reqCache, 
+                         IServerInfoCenter serverInfoCenter,
+                         ISessionUpdater sessionUpdater,
+                         XStageSender stageSender )
         {
             _stageId = stageId;
-            _playService = playService;
+            _playProcessor = playProcessor;
             _clientCommunicator = clientCommunicator;
             _reqCache = reqCache;
             _serverInfoCenter = serverInfoCenter;
-            _stageSender = stageSender ?? new XStageSender(playService.ServiceId, stageId, playService, clientCommunicator, reqCache);
+            _stageSender = stageSender;
+            _sessionUpdater = sessionUpdater;
 
 
-            _msgHandler.Register(CreateStageReq.Descriptor.Index, new CreateStageCmd(playService));
-            _msgHandler.Register(JoinStageReq.Descriptor.Index, new JoinStageCmd(playService));
-            _msgHandler.Register(CreateJoinStageReq.Descriptor.Index, new CreateJoinStageCmd(playService));
-            _msgHandler.Register(StageTimer.Descriptor.Index, new StageTimerCmd(playService));
-            _msgHandler.Register(DisconnectNoticeMsg.Descriptor.Index, new DisconnectNoticeCmd(playService));
-            _msgHandler.Register(AsyncBlock.Descriptor.Index, new AsyncBlockCmd(playService));
+            _msgHandler.Register(CreateStageReq.Descriptor.Index, new CreateStageCmd(playProcessor));
+            _msgHandler.Register(JoinStageReq.Descriptor.Index, new JoinStageCmd(playProcessor));
+            _msgHandler.Register(CreateJoinStageReq.Descriptor.Index, new CreateJoinStageCmd(playProcessor));
+            _msgHandler.Register(StageTimer.Descriptor.Index, new StageTimerCmd(playProcessor));
+            _msgHandler.Register(DisconnectNoticeMsg.Descriptor.Index, new DisconnectNoticeCmd(playProcessor));
+            _msgHandler.Register(AsyncBlock.Descriptor.Index, new AsyncBlockCmd(playProcessor));
         }
 
         private async Task Dispatch(RoutePacket routePacket)
@@ -58,7 +64,7 @@ namespace PlayHouse.Service.Play.Base
                 else
                 {
                     long accountId = routePacket.AccountId;
-                    var baseUser = _playService.FindUser(accountId);
+                    var baseUser = _playProcessor.FindUser(accountId);
                     if (baseUser != null)
                     {
                         await _stage!.OnDispatch(baseUser.Actor, new Packet(routePacket.GetMsgId(), routePacket.MovePayload()));
@@ -109,7 +115,7 @@ namespace PlayHouse.Service.Play.Base
 
         public async Task<ReplyPacket> Create(string stageType, Packet packet)
         {
-            _stage = _playService.CreateContentRoom(stageType, _stageSender);
+            _stage = _playProcessor.CreateContentRoom(stageType, _stageSender);
             _stageSender.SetStageType(stageType);
             var outcome = await _stage.OnCreate(packet);
             IsCreated = true;
@@ -118,15 +124,15 @@ namespace PlayHouse.Service.Play.Base
 
         public async Task<(ReplyPacket, int)> Join(long accountId, string sessionEndpoint, int sid, string apiEndpoint, Packet packet)
         {
-            BaseActor? baseUser = _playService.FindUser(accountId);
+            BaseActor? baseUser = _playProcessor.FindUser(accountId);
 
             if (baseUser == null)
             {
                 XActorSender userSender = new XActorSender(accountId, sessionEndpoint, sid, apiEndpoint, this, _serverInfoCenter);
-                IActor user = _playService.CreateContentUser(_stageSender.StageType, userSender);
+                IActor user = _playProcessor.CreateContentUser(_stageSender.StageType, userSender);
                 baseUser = new BaseActor(user, userSender);
-                baseUser.Actor.OnCreate();
-                _playService.AddUser(baseUser);
+                await baseUser.Actor.OnCreate();
+                _playProcessor.AddUser(baseUser);
             }
             else
             {
@@ -138,28 +144,17 @@ namespace PlayHouse.Service.Play.Base
 
             if (!outcome.IsSuccess())
             {
-                _playService.RemoveUser(accountId);
+                _playProcessor.RemoveUser(accountId);
             }
             else
             {
-                stageIndex = await UpdateSessionRoomInfo(sessionEndpoint, sid);
+                stageIndex = await _sessionUpdater.UpdateStageInfo(sessionEndpoint, sid);
             }
 
             return new (outcome, stageIndex);
         }
 
-        private async Task<int> UpdateSessionRoomInfo(string sessionEndpoint, int sid)
-        {
-            var joinStageInfoUpdateReq = new JoinStageInfoUpdateReq()
-            {
-                StageId = this.StageId,
-                PlayEndpoint = _playService.Endpoint(),
-            };
 
-            var res = await _stageSender.RequestToBaseSession(sessionEndpoint, sid, new Packet(joinStageInfoUpdateReq));
-            var result = JoinStageInfoUpdateRes.Parser.ParseFrom(res.Data);
-            return result.StageIdx;
-        }
 
         public void Reply(ReplyPacket packet)
         {
@@ -168,7 +163,7 @@ namespace PlayHouse.Service.Play.Base
 
         public void LeaveStage(long accountId, string sessionEndpoint, int sid)
         {
-            this._playService.RemoveUser(accountId);
+            this._playProcessor.RemoveUser(accountId);
             var request = new LeaveStageMsg();
             this._stageSender.SendToBaseSession(sessionEndpoint, sid,new Packet(request));
         }
@@ -201,7 +196,7 @@ namespace PlayHouse.Service.Play.Base
         {
             try
             {
-                BaseActor? baseUser = _playService.FindUser(accountId);
+                BaseActor? baseUser = _playProcessor.FindUser(accountId);
 
                 if (baseUser != null)
                 {
@@ -221,7 +216,7 @@ namespace PlayHouse.Service.Play.Base
 
         public async Task OnDisconnect(long accountId)
         {
-            var baseUser = _playService.FindUser(accountId);
+            var baseUser = _playProcessor.FindUser(accountId);
 
             if (baseUser != null)
             {

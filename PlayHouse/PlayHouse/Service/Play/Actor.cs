@@ -9,7 +9,7 @@ namespace PlayHouse.Service.Play
     public interface IActor
     {
         IActorSender ActorSender { get; }
-        void OnCreate();
-        void OnDestroy();
+        Task OnCreate();
+        Task OnDestroy();
     }
 }

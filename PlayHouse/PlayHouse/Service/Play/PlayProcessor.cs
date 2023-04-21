@@ -69,7 +69,9 @@ namespace PlayHouse.Service.Play
         }
         private BaseStage MakeBaseRoom(long stageId)
         {
-            var baseStage = new BaseStage(stageId, this, _clientCommunicator, _requestCache, _serverInfoCenter);
+            var stageSender =  new XStageSender(ServiceId, stageId, this, _clientCommunicator, _requestCache);
+            var sessionUpdator = new XSessionUpdater(Endpoint(), stageSender);
+            var baseStage = new BaseStage(stageId, this, _clientCommunicator, _requestCache, _serverInfoCenter,sessionUpdator,stageSender);
             _baseRooms[stageId] = baseStage;
             return baseStage;
         }
@@ -253,11 +255,13 @@ namespace PlayHouse.Service.Play
 
         public BaseActor? FindUser(long accountId)
         {
-            return _baseUsers[accountId];
+            if(_baseUsers.TryGetValue(accountId, out var user)) return user;
+            return null;
         }
 
         public void AddUser(BaseActor baseActor)
-        {
+        { 
+            
             _baseUsers[baseActor.ActorSender.AccountId()] = baseActor;
         }
 

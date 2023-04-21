@@ -376,22 +376,22 @@ namespace PlayHouse.Communicator.Message
         }
     }
 
-    public class AsyncBlockPacket<T> : RoutePacket
+    public class AsyncBlockPacket : RoutePacket
     {
-        public AsyncPostCallback<T> AsyncPostCallback { get; }
-        public T Result { get; }
+        public AsyncPostCallback? AsyncPostCallback { get; }
+        public Object Result { get; }
 
-        private AsyncBlockPacket(AsyncPostCallback<T> asyncPostCallback, T result, RouteHeader routeHeader) : base(routeHeader, new EmptyPayload())
+        private AsyncBlockPacket(AsyncPostCallback? asyncPostCallback, Object result, RouteHeader routeHeader) : base(routeHeader, new EmptyPayload())
         {
             AsyncPostCallback = asyncPostCallback;
             Result = result;
         }
 
-        public static RoutePacket Of(long stageId, AsyncPostCallback<T> asyncPostCallback, T result)
+        public static RoutePacket Of(long stageId, AsyncPostCallback? asyncPostCallback, Object result)
         {
             var header = new Header(msgId: AsyncBlock.Descriptor.Index);
             var routeHeader = RouteHeader.Of(header);
-            var packet = new AsyncBlockPacket<T>(asyncPostCallback, result, routeHeader);
+            var packet = new AsyncBlockPacket(asyncPostCallback, result, routeHeader);
             packet.RouteHeader.StageId = stageId;
             packet.RouteHeader.IsBase = true;
             return packet;

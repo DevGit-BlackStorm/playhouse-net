@@ -76,7 +76,7 @@ namespace PlayHouse.Service
     }
 
     public delegate Task<T> AsyncPreCallback<T>();
-    public delegate Task AsyncPostCallback<T>(T result);
+    public delegate Task AsyncPostCallback(Object result);
 
     public interface IStageSender : ISender
     {
@@ -88,7 +88,7 @@ namespace PlayHouse.Service
         void CancelTimer(long timerId);
         void CloseStage();
 
-        Task AsyncBlock<T>(AsyncPreCallback<T> preCallback, AsyncPostCallback<T>? postCallback = null);
+        Task AsyncBlock<T>(AsyncPreCallback<T> preCallback, AsyncPostCallback? postCallback = null);
     }
 
     public interface IApiBackendSender : IApiCommonSender

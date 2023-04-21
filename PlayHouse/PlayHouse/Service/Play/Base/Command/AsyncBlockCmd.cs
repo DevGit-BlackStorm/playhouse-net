@@ -20,8 +20,8 @@ namespace PlayHouse.Service.Play.Base.Command
 
         public  async Task Execute(BaseStage baseStage, RoutePacket routePacket)
         {
-            AsyncBlockPacket<object> asyncBlock = (AsyncBlockPacket<object>)routePacket;
-            await asyncBlock.AsyncPostCallback(asyncBlock.Result);
+            AsyncBlockPacket asyncBlock = (AsyncBlockPacket)routePacket;
+            await asyncBlock.AsyncPostCallback!.Invoke(asyncBlock.Result);
         }
     }
 
