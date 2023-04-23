@@ -67,7 +67,7 @@ namespace PlayHouse.Service.Play.Base
                     var baseUser = _playProcessor.FindUser(accountId);
                     if (baseUser != null)
                     {
-                        await _stage!.OnDispatch(baseUser.Actor, new Packet(routePacket.GetMsgId(), routePacket.MovePayload()));
+                        await _stage!.OnDispatch(baseUser.Actor, new Packet(routePacket.MsgId, routePacket.MovePayload()));
                     }
                 }
             }

@@ -7,19 +7,19 @@ namespace PlayHouse.Service
     public delegate Task TimerCallbackTask();
     public interface ISystemPanel
     {
-        IServerInfo RandomServerInfo(short serviceId);
-        IServerInfo ServerInfo(string endpoint);
-        IList<IServerInfo> ServerList();
+        IServerInfo GetServerInfoByService(short serviceId);
+        IServerInfo GetServerInfoByEndpoint(string endpoint);
+        IList<IServerInfo> GetServers();
         void Pause();
         void Resume();
         void Shutdown();
-        ServerState ServerState();
+        ServerState GetServerState();
         long GenerateUUID();
     }
 
     public interface ISender
     {
-        short ServiceId();
+        short ServiceId {get;}
         void Reply(ReplyPacket reply);
         void SendToClient(string sessionEndpoint, int sid, Packet packet);
         void SendToApi(string apiEndpoint, Packet packet);
@@ -42,7 +42,7 @@ namespace PlayHouse.Service
     public interface IApiCommonSender : ISender
     {
 
-        long AccountId();
+        long AccountId { get; }
         Task<CreateStageResult> CreateStage(string playEndpoint, string stageType, long stageId, Packet packet);
         Task<JoinStageResult> JoinStage(string playEndpoint,
                       long stageId,
@@ -61,16 +61,16 @@ namespace PlayHouse.Service
     public interface IApiSender : IApiCommonSender
     {
         void Authenticate(long accountId);
-        string SessionEndpoint();
-        int Sid();
+        string SessionEndpoint { get; }
+        int Sid { get; }
 
         void SendToClient(Packet packet)
         {
-            SendToClient(SessionEndpoint(), Sid(),packet);
+            SendToClient(SessionEndpoint, Sid,packet);
         }
         void SessionClose()
         {
-            SessionClose(SessionEndpoint(), Sid());
+            SessionClose(SessionEndpoint, Sid);
         }
 
     }

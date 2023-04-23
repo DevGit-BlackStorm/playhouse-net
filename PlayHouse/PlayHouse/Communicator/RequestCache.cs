@@ -76,8 +76,8 @@ namespace PlayHouse.Communicator
         {
             try
             {
-                int msgSeq = routePacket.Header().MsgSeq;
-                int msgId = routePacket.Header().MsgId;
+                int msgSeq = routePacket.Header.MsgSeq;
+                int msgId = routePacket.Header.MsgId;
                 string key = msgSeq.ToString();
                 ReplyObject replyObject = (ReplyObject)MemoryCache.Default.Get(key);
 

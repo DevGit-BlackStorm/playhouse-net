@@ -17,17 +17,17 @@ namespace PlayHouse.Service
             this._uniqueIdGenerator = new UniqueIdGenerator(NodeId);
         }
 
-        public IServerInfo RandomServerInfo(short serviceId)
+        public IServerInfo GetServerInfoByService(short serviceId)
         {
             return _serverInfoCenter.FindRoundRobinServer(serviceId);
         }
 
-        public IServerInfo ServerInfo(string endpoint)
+        public IServerInfo GetServerInfoByEndpoint(string endpoint)
         {
             return _serverInfoCenter.FindServer(endpoint);
         }
 
-        public IList<IServerInfo> ServerList()
+        public IList<IServerInfo> GetServers()
         {
             return _serverInfoCenter.GetServerList().Cast<IServerInfo>().ToList();
         }
@@ -47,7 +47,7 @@ namespace PlayHouse.Service
             Communicator!.Stop();
         }
 
-        public ServerState ServerState()
+        public ServerState GetServerState()
         {
             return Communicator!.GetServerState();
         }

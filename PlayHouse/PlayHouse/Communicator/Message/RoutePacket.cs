@@ -13,8 +13,6 @@ namespace PlayHouse.Communicator.Message
         public short MsgSeq { get; set; } = 0;
         public short ErrorCode { get; set; } = 0;
         public byte  StageIndex { get; set; } = 0;
-        
-        
 
         public Header(short serviceId = 0,int msgId = 0, short msgSeq = 0,short errorCode = 0 ,byte stageIndex = 0)
         {
@@ -61,7 +59,6 @@ namespace PlayHouse.Communicator.Message
         {
             this.Header = header;
         }
-
        
         public RouteHeader(RouteHeaderMsg headerMsg)
             : this(Header.Of(headerMsg.HeaderMsg))
@@ -81,10 +78,7 @@ namespace PlayHouse.Communicator.Message
             return ToMsg().ToByteArray();
         }
 
-        public int GetMsgId()
-        {
-            return Header.MsgId;
-        }
+        public int MsgId => Header.MsgId;
 
         public RouteHeaderMsg ToMsg()
         {
@@ -127,23 +121,18 @@ namespace PlayHouse.Communicator.Message
         public long TimerId = 0;
         public TimerCallbackTask? TimerCallback = null;
 
-
         protected RoutePacket(RouteHeader routeHeader, IPayload payload)
         {
             this.RouteHeader = routeHeader;
             this._payload = payload;
         }
 
-        public int GetMsgId() { return RouteHeader.GetMsgId(); }
+        public int MsgId => RouteHeader.MsgId;
         public short ServiceId() { return RouteHeader.Header.ServiceId; }
         public bool IsBackend() { return RouteHeader.IsBackend; }
 
-        
  
-        public Header Header()
-        {
-            return RouteHeader.Header;
-        }
+        public Header Header=>RouteHeader.Header;
 
         public ClientPacket ToClientPacket()
         {
@@ -152,7 +141,7 @@ namespace PlayHouse.Communicator.Message
 
         public Packet ToPacket()
         {
-            return new Packet(GetMsgId(), MovePayload());
+            return new Packet(MsgId, MovePayload());
         }
 
         public bool IsBase()
@@ -191,30 +180,17 @@ namespace PlayHouse.Communicator.Message
 
         public static RoutePacket MoveOf(RoutePacket routePacket)
         {
-            //if (routePacket is AsyncBlockPacket)
-            //{
-            //    return routePacket;
-            //}
             RoutePacket movePacket = Of(routePacket.RouteHeader, routePacket.MovePayload());
             movePacket.TimerId = routePacket.TimerId;
             movePacket.TimerCallback = routePacket.TimerCallback;
             return movePacket;
         }
 
-        //public static RoutePacket Of(RoutePacketMsg routePacketMsg)
-        //{
-        //    return new RoutePacket(new RouteHeader(routePacketMsg.RouteHeaderMsg), new ByteStringPayload(routePacketMsg.Message));
-        //}
 
         public static RoutePacket Of(RouteHeader routeHeader, IPayload payload)
         {
             return new RoutePacket(routeHeader, payload);
         }
-
-        //public static RoutePacket Of(RouteHeader routeHeader, IMessage message)
-        //{
-        //    return new RoutePacket(routeHeader, new ProtoPayload(message));
-        //}
 
         public static RoutePacket SystemOf(Packet packet, bool isBase)
         {
@@ -356,10 +332,7 @@ namespace PlayHouse.Communicator.Message
             return temp;
         }
 
-        public IPayload GetPayload()
-        {
-            return _payload;
-        }
+        public IPayload Payload => _payload;
 
         public ReadOnlySpan<byte> Data => _payload.Data;
 
@@ -372,7 +345,7 @@ namespace PlayHouse.Communicator.Message
 
         public  ReplyPacket ToReplyPacket()
         {
-            return new  ReplyPacket(RouteHeader.Header.ErrorCode,RouteHeader.GetMsgId(),MovePayload()); 
+            return new  ReplyPacket(RouteHeader.Header.ErrorCode,RouteHeader.MsgId,MovePayload()); 
         }
     }
 

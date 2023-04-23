@@ -90,7 +90,7 @@ namespace PlayHouse.Communicator.PlaySocket
             using (routerPacket)
             {
                 NetMQMessage message = new NetMQMessage();
-                IPayload payload = routerPacket.GetPayload();
+                IPayload payload = routerPacket.Payload;
 
                 _buffer.Clear();
                 if (routerPacket.ForClient())
@@ -114,7 +114,7 @@ namespace PlayHouse.Communicator.PlaySocket
 
                 if (!_socket.TrySendMultipartMessage(message))
                 {
-                    LOG.Error($"Send fail to {endpoint}, MsgName:{routerPacket.GetMsgId}", this.GetType());
+                    LOG.Error($"Send fail to {endpoint}, MsgName:{routerPacket.MsgId}", this.GetType());
                 }
             }
             

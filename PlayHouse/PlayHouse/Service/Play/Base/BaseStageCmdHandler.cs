@@ -22,7 +22,7 @@ namespace PlayHouse.Service.Play.Base
 
         public async Task Dispatch(BaseStage baseStage, RoutePacket request)
         {
-            int msgId = request.GetMsgId();
+            int msgId = request.MsgId;
             if (request.IsBase())
             {
                 if (_maps.TryGetValue(msgId, out var cmd))

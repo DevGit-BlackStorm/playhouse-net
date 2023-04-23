@@ -83,7 +83,7 @@ namespace PlayHouse.Service.Play
                 {
                     using (routePacket)
                     {
-                        var msgId = routePacket.GetMsgId();
+                        var msgId = routePacket.MsgId;
                         var isBase = routePacket.IsBase();
                         var stageId = routePacket.RouteHeader.StageId;
                         var roomPacket = RoutePacket.MoveOf(routePacket);
@@ -147,7 +147,7 @@ namespace PlayHouse.Service.Play
             else if (msgId == TimerMsg.Descriptor.Index)
             {
                 var timerId = routePacket.TimerId;
-                var protoPayload = (routePacket.GetPayload() as ProtoPayload)!;
+                var protoPayload = (routePacket.Payload as ProtoPayload)!;
                 TimerProcess(stageId, timerId, (protoPayload.GetProto() as TimerMsg)!, routePacket.TimerCallback!);
             }
             else if (msgId == DestroyStage.Descriptor.Index)

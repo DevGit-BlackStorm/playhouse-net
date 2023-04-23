@@ -9,10 +9,6 @@ namespace PlayHouse.Communicator.Message
     using Google.Protobuf;
     using Playhouse.Protocol;
 
-    //public interface IReplyCallback
-    //{
-    //    void OnReceive(ReplyPacket replyPacket);
-    //}
 
     public delegate void ReplyCallback(ReplyPacket replyPacket);
 
@@ -25,10 +21,11 @@ namespace PlayHouse.Communicator.Message
 
 
 
-
     public class Packet : IBasePacket
     {
         public int MsgId;
+        public IPayload Payload => _payload;
+
         private IPayload _payload;
 
         public Packet(int msgId = 0)
@@ -68,6 +65,7 @@ namespace PlayHouse.Communicator.Message
     {
         public short ErrorCode { get; private set; }
         public int MsgId { get; private set; }
+        public IPayload Payload => _payload;
         private IPayload _payload;
 
         public ReplyPacket(short errorCode, int msgId, IPayload payload)

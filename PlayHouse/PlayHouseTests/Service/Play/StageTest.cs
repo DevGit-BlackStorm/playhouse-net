@@ -100,7 +100,7 @@ namespace PlayHouseTests.Service.Play
             // then
             result[0].RouteHeader.Header.ErrorCode.Should().Be((short)BaseErrorCode.Success);
 
-            result[0].GetMsgId().Should().Be(CreateStageRes.Descriptor.Index);
+            result[0].MsgId.Should().Be(CreateStageRes.Descriptor.Index);
             var createStageRes = CreateStageRes.Parser.ParseFrom(result[0].Data);
 
             createStageRes.PayloadId.Should().Be(TestMsg.Descriptor.Index);
@@ -134,7 +134,7 @@ namespace PlayHouseTests.Service.Play
             await stage.Send(createJoinRoom);
 
 
-            result[0].GetMsgId().Should().Be(CreateJoinStageRes.Descriptor.Index);
+            result[0].MsgId.Should().Be(CreateJoinStageRes.Descriptor.Index);
             var createJoinStageRes = CreateJoinStageRes.Parser.ParseFrom(result[0].Data);
 
             createJoinStageRes.IsCreated.Should().BeTrue();
@@ -159,7 +159,7 @@ namespace PlayHouseTests.Service.Play
             await stage.Send(createJoinRoom);
 
             // Assert
-            CreateJoinStageRes.Descriptor.Index.Should().Be(result[0].GetMsgId());
+            CreateJoinStageRes.Descriptor.Index.Should().Be(result[0].MsgId);
             var createJoinStageRes = CreateJoinStageRes.Parser.ParseFrom(result[0].Data);
 
             createJoinStageRes.IsCreated.Should().BeFalse();

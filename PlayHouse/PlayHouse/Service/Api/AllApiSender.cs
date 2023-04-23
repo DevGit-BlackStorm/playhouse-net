@@ -33,10 +33,7 @@ namespace PlayHouse.Service.Api
             return _currentHeader?.From ?? "";
         }
 
-        public int Sid()
-        {
-            return _currentHeader?.Sid ?? 0;
-        }
+        public int Sid => _currentHeader?.Sid ?? 0;
 
         public void Authenticate(long accountId)
         {

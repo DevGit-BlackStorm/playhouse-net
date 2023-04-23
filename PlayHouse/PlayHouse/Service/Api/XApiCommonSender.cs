@@ -24,10 +24,7 @@ namespace PlayHouse.Service.Api
             this.reqCache = reqCache;
         }
 
-        public long AccountId()
-        {
-            return _currentHeader?.AccountId ?? 0;
-        }
+        public long AccountId => _currentHeader?.AccountId ?? 0;
 
         public async Task<CreateStageResult> CreateStage(string playEndpoint, string stageType, long stageId, Packet packet)
         {

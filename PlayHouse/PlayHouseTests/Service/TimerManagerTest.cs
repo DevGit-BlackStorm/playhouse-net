@@ -45,7 +45,7 @@ namespace PlayHouseTests.Service
             var processor = new Mock<IProcessor>();
             var timerManager = new TimerManager(processor.Object);
 
-            var timerId = timerManager.RegisterCountTimer(3, 1, 50, 3, 10, async () => { });
+            var timerId = timerManager.RegisterCountTimer(3, 1, 50, 3, 10, async () => { await Task.CompletedTask; });
 
             timerManager.CancelTimer(timerId);
 

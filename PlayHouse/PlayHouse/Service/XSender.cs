@@ -24,6 +24,8 @@ namespace PlayHouse.Service
             _reqCache = reqCache;
         }
 
+        public short ServiceId => _serviceId;
+
         public void SetCurrentPacketHeader(RouteHeader currentHeader)
         {
             _currentHeader = currentHeader;
@@ -34,11 +36,7 @@ namespace PlayHouse.Service
             _currentHeader = null;
         }
 
-        public short ServiceId()
-        {
-            return _serviceId;
-        }
-
+    
         public void Reply(ReplyPacket reply)
         {
             if (_currentHeader != null)

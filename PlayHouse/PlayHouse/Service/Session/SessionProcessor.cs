@@ -92,7 +92,7 @@ namespace PlayHouse.Service.Session
                     using (routePacket)
                     {
                         var sessionId = routePacket.RouteHeader.Sid;
-                        var packetName = routePacket.GetMsgId();
+                        var packetName = routePacket.MsgId;
                         if (!_clients.TryGetValue(sessionId, out var sessionClient))
                         {
                             LOG.Error($"sessionId is already disconnected  {sessionId},{packetName}", this.GetType());

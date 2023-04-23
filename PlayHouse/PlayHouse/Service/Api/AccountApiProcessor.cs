@@ -46,14 +46,14 @@ namespace PlayHouse.Service.Api
 
                         if (routeHeader.IsBase)
                         {
-                            if (routeHeader.GetMsgId() == DisconnectNoticeMsg.Descriptor.Index)
+                            if (routeHeader.MsgId == DisconnectNoticeMsg.Descriptor.Index)
                             {
                                 var disconnectNoticeMsg = DisconnectNoticeMsg.Parser.ParseFrom(item.Data);
                                 _apiCallBack.OnDisconnect(disconnectNoticeMsg.AccountId);
                             }
                             else
                             {
-                                LOG.Error($"Invalid base Api packet: {routeHeader.GetMsgId()}", this.GetType());
+                                LOG.Error($"Invalid base Api packet: {routeHeader.MsgId}", this.GetType());
                             }
                         }
                         else

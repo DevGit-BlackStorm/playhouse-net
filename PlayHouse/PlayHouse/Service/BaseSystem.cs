@@ -59,7 +59,7 @@ namespace PlayHouse.Service
                             {
                                 if (routePacket.IsBase())
                                 {
-                                    switch (routePacket.GetMsgId())
+                                    switch (routePacket.MsgId)
                                     {
                                         case START:
                                             _serverSystem.OnStart();
@@ -74,14 +74,14 @@ namespace PlayHouse.Service
                                             _serverSystem.OnStop();
                                             break;
                                         default:
-                                            LOG.Error($"Invalid baseSystem packet {routePacket.GetMsgId()}", this.GetType());
+                                            LOG.Error($"Invalid baseSystem packet {routePacket.MsgId}", this.GetType());
                                             break;
                                     }
                                 }
                                 else
                                 {
                                     _baseSender.SetCurrentPacketHeader(routePacket.RouteHeader);
-                                    _serverSystem.OnDispatch(new Packet(routePacket.GetMsgId(), routePacket.MovePayload()));
+                                    _serverSystem.OnDispatch(new Packet(routePacket.MsgId, routePacket.MovePayload()));
                                 }
                             }
                             catch (Exception e)

@@ -217,7 +217,7 @@ namespace PlayHouse.Service.Session
 
         public void OnReceive(RoutePacket packet)
         {
-            int msgId = packet.GetMsgId();
+            int msgId = packet.MsgId;
             bool isBase = packet.IsBase();
 
             if (isBase)

@@ -68,7 +68,7 @@ namespace PlayHouse.Communicator
                 }
                 catch (Exception e)
                 {
-                    LOG.Error($"{_playSocket.Id()} socket send error : {endpoint},{routePacket.GetMsgId}", this.GetType(),e);
+                    LOG.Error($"{_playSocket.Id()} socket send error : {endpoint},{routePacket.MsgId}", this.GetType(),e);
                 }
             });
         }

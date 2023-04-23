@@ -84,7 +84,7 @@ namespace PlayHouseTests.Communicator
             Thread.Sleep(200);
 
             apiListener.Results.Count.Should().Be(1);
-            apiListener.Results[0].GetMsgId().Should().Be((short)HeaderMsg.Descriptor.Index);
+            apiListener.Results[0].MsgId.Should().Be((short)HeaderMsg.Descriptor.Index);
 
             ////////// api to session ///////////////
 
@@ -99,7 +99,7 @@ namespace PlayHouseTests.Communicator
             Thread.Sleep(200);
 
             sessionListener.Results.Count.Should().Be(1);
-            sessionListener.Results[0].GetMsgId().Should().Be(messagId);
+            sessionListener.Results[0].MsgId.Should().Be(messagId);
 
         }
     }

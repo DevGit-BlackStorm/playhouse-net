@@ -154,7 +154,7 @@ namespace PlayHouse.Communicator
 
         public void OnReceive(RoutePacket routePacket)
         {
-            LOG.Debug($"onReceive: {routePacket.GetMsgId()}, from: {routePacket.RouteHeader.From}", this.GetType());
+            LOG.Debug($"onReceive: {routePacket.MsgId}, from: {routePacket.RouteHeader.From}", this.GetType());
 
             _performanceTester.IncCounter();
 

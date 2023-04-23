@@ -116,7 +116,7 @@ namespace PlayHouse.Service.Api
 
         public async Task CallMethod(RouteHeader routeHeader, Packet packet, bool isBackend, AllApiSender apiSender)
         {
-            var msgId = routeHeader.GetMsgId();
+            var msgId = routeHeader.MsgId;
             var targetMethod = isBackend ? (_backendMethods.ContainsKey(msgId) ? _backendMethods[msgId] : null) : (_methods.ContainsKey(msgId) ? _methods[msgId] : null);
             if (targetMethod == null) throw new ApiException.NotRegisterApiMethod(msgId);
 
