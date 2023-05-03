@@ -1,5 +1,7 @@
 ﻿using Playhouse.Protocol;
 using PlayHouse.Communicator.Message;
+using PlayHouse.Production;
+using PlayHouse.Production.Api;
 using System.Reflection;
 
 namespace PlayHouse.Service.Api
@@ -90,7 +92,7 @@ namespace PlayHouse.Service.Api
 
         public ApiReflection()
         {
-            var reflections = new Reflections(typeof(IApiService),typeof(IApiBackendService));
+            var reflections = new Reflections(typeof(IApiService));
             ExtractInstance(reflections);
             ExtractHandlerMethod(reflections);
         }
@@ -118,7 +120,7 @@ namespace PlayHouse.Service.Api
         {
             var msgId = routeHeader.MsgId;
             var targetMethod = isBackend ? (_backendMethods.ContainsKey(msgId) ? _backendMethods[msgId] : null) : (_methods.ContainsKey(msgId) ? _methods[msgId] : null);
-            if (targetMethod == null) throw new ApiException.NotRegisterApiMethod(msgId);
+            if (targetMethod == null) throw new ApiException.NotRegisterApiMethod($"not registered message msgId:{msgId}");
 
             if (!_instances.ContainsKey(targetMethod.ClassName)) throw new ApiException.NotRegisterApiInstance(targetMethod.ClassName);
             var targetInstance = _instances[targetMethod.ClassName];
@@ -156,7 +158,6 @@ namespace PlayHouse.Service.Api
         {
             RegisterInitMethod(reflections);
             RegisterHandlerMethod(reflections);
-            RegisterBackendHandlerMethod(reflections);
         }
 
         private void RegisterInitMethod(Reflections reflections)
@@ -175,12 +176,13 @@ namespace PlayHouse.Service.Api
         private void RegisterHandlerMethod(Reflections reflections)
         {
             //var reflections = new Reflections(typeof(IApiService));
-            reflections.GetMethodsBySignature("Handles", typeof(void), typeof(IHandlerRegister)).ForEach(methodInfo =>
+            reflections.GetMethodsBySignature("Handles", typeof(void), typeof(IHandlerRegister),typeof(IBackendHandlerRegister)).ForEach(methodInfo =>
             {
                 var className = methodInfo.DeclaringType!.FullName!;
                 var apiInstance = _instances[className!]!;
                 var handlerRegister = new XHandlerRegister();
-                methodInfo.Invoke(apiInstance.Instance, new object[]{handlerRegister});
+                var backendHandlerRegister = new XBackendHandlerRegister();
+                methodInfo.Invoke(apiInstance.Instance, new object[]{handlerRegister, backendHandlerRegister });
 
                 
                 foreach (var (key,value) in handlerRegister.Handles)
@@ -193,21 +195,7 @@ namespace PlayHouse.Service.Api
                     _messageIndexChecker[key] = value.GetMethodInfo().Name;
                 }
 
-            });
-
-        }
-        private void RegisterBackendHandlerMethod(Reflections reflections)
-        {
-            //var reflections = new Reflections(typeof(IApiBackendService));
-            reflections.GetMethodsBySignature("Handles", typeof(void), typeof(IBackendHandlerRegister)).ForEach(methodInfo =>
-            {
-                var className = methodInfo.DeclaringType!.FullName!;
-                var apiInstance = _instances[className!]!;
-                var handlerRegister = new XBackendHandlerRegister();
-                methodInfo.Invoke(apiInstance.Instance, new object[] { handlerRegister });
-
-
-                foreach (var (key, value) in handlerRegister.Handles)
+                foreach (var (key, value) in backendHandlerRegister.Handles)
                 {
                     if (_messageIndexBackendChecker.ContainsKey(key))
                     {
@@ -220,6 +208,30 @@ namespace PlayHouse.Service.Api
             });
 
         }
+        //private void RegisterBackendHandlerMethod(Reflections reflections)
+        //{
+        //    //var reflections = new Reflections(typeof(IApiBackendService));
+        //    reflections.GetMethodsBySignature("Handles", typeof(void), typeof(IBackendHandlerRegister)).ForEach(methodInfo =>
+        //    {
+        //        var className = methodInfo.DeclaringType!.FullName!;
+        //        var apiInstance = _instances[className!]!;
+        //        var handlerRegister = new XBackendHandlerRegister();
+        //        methodInfo.Invoke(apiInstance.Instance, new object[] { handlerRegister });
+
+
+        //        foreach (var (key, value) in handlerRegister.Handles)
+        //        {
+        //            if (_messageIndexBackendChecker.ContainsKey(key))
+        //            {
+        //                throw new ApiException($"registered msgId is duplicated - msgId:{key}, methods: {_messageIndexChecker[key]}, {value.GetMethodInfo().Name}");
+        //            }
+        //            _backendMethods[key] = new ApiMethod(key, className, value.Method);
+        //            _messageIndexBackendChecker[key] = value.GetMethodInfo().Name;
+        //        }
+
+        //    });
+
+        //}
 
 
     }

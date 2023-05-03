@@ -3,6 +3,8 @@ using PlayHouse.Communicator;
 using System.Collections.Concurrent;
 using PlayHouse.Service.Session.network;
 using PlayHouse.Utils;
+using PlayHouse.Production;
+using PlayHouse.Production.Session;
 
 namespace PlayHouse.Service.Session
 {
@@ -68,14 +70,14 @@ namespace PlayHouse.Service.Session
 
                     using (clientPacket)
                     {
-                        LOG.Debug($"SessionService:onReceive {clientPacket.GetMsgId()} : from client", this.GetType());
+                        LOG.Trace($"SessionService:onReceive {clientPacket.Header} : from client", this.GetType());
                         if (!_clients.TryGetValue(sessionId, out var sessionClient))
                         {
                             LOG.Error($"sessionId is not exist {sessionId},{clientPacket.GetMsgId()}", this.GetType());
                         }
                         else
                         {
-                            sessionClient.OnReceive(clientPacket);
+                            sessionClient.Dispatch(clientPacket);
                         }
                     }
                 }
@@ -99,7 +101,7 @@ namespace PlayHouse.Service.Session
                         }
                         else
                         {
-                            sessionClient.OnReceive(routePacket);
+                            sessionClient.Send(RoutePacket.MoveOf(routePacket));
                         }
                     }
                 }

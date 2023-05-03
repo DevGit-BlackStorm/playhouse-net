@@ -3,21 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PlayHouse.Production;
+using PlayHouse.Service.Play;
 
-namespace PlayHouse.Service.Play.Base
+namespace PlayHouse.Production.Play
 {
     public class ElementConfigurator
     {
-        private readonly Dictionary<string, Func<IStageSender, IStage<IActor>>> _rooms = new();
+        private readonly Dictionary<string, Func<IStageSender, IStage>> _rooms = new();
         private readonly Dictionary<string, Func<IActorSender, IActor>> _users = new();
 
-        public void Register(string stageType, Func<IStageSender, IStage<IActor>> stage, Func<IActorSender, IActor> actor)
+        public void Register(string stageType, Func<IStageSender, IStage> stage, Func<IActorSender, IActor> actor)
         {
             _rooms[stageType] = stage;
             _users[stageType] = actor;
         }
 
-        public IStage<IActor> GetStage(string stageType, IStageSender stageSender)
+        public IStage GetStage(string stageType, IStageSender stageSender)
         {
             if (_rooms.TryGetValue(stageType, out var factory))
             {

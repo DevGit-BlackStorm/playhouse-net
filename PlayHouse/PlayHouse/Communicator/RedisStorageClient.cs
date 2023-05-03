@@ -34,7 +34,7 @@ namespace PlayHouse.Communicator
         private string _redisURI = "";
         private IConnectionMultiplexer? _connectionMultiplexer;
         private readonly string _redisKey = "playhouse_serverinfos";
-        private readonly string _nodeIdeKey = "playhouse_nodeId";
+        private readonly string _nodeIdeKey = "playhouse_nodeId_net";
         private readonly string _nodeSequenceKey = "playhouse_nodeId_seq";
         private IDatabase? _database ;
 

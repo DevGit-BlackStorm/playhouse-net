@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PlayHouse.Service.Session
+namespace PlayHouse.Production.Session
 {
     public class SessionOption
     {

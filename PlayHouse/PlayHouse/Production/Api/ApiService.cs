@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PlayHouse.Service.Api
+namespace PlayHouse.Production.Api
 {
     public delegate Task ApiHandler(Packet packet, IApiSender apiSender);
     public delegate Task ApiBackendHandler(Packet packet, IApiBackendSender apiSender);
@@ -23,14 +23,14 @@ namespace PlayHouse.Service.Api
     public interface IApiService
     {
         Task Init(ISystemPanel systemPanel, ISender sender);
-        void Handles(IHandlerRegister register);
+        void Handles(IHandlerRegister handlerRegister, IBackendHandlerRegister backendHandlerRegister);
         IApiService Instance();
     }
 
-    public interface IApiBackendService
-    {
-        Task Init(ISystemPanel systemPanel, ISender sender);
-        void Handles(IBackendHandlerRegister register);
-        IApiBackendService Instance();
-    }
+    //public interface IApiBackendService
+    //{
+    //    Task Init(ISystemPanel systemPanel, ISender sender);
+    //    void Handles(IBackendHandlerRegister register);
+    //    IApiBackendService Instance();
+    //}
 }

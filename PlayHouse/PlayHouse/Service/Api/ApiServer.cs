@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PlayHouse.Production;
+using PlayHouse.Production.Api;
+using CommonLib;
 
 namespace PlayHouse.Service.Api
 {
@@ -31,6 +34,8 @@ namespace PlayHouse.Service.Api
 
             var bindEndpoint = communicatorOption.BindEndpoint;
             var serviceId = _commonOption.ServiceId;
+
+            PooledBuffer.Init(_commonOption.MaxBufferPoolSize);
 
             var requestCache = new RequestCache(_commonOption.RequestTimeoutSec);
             var storageClient = new RedisStorageClient(_commonOption.RedisIp, _commonOption.RedisPort);

@@ -1,6 +1,8 @@
 ﻿using Playhouse.Protocol;
 using PlayHouse.Communicator;
 using PlayHouse.Communicator.Message;
+using PlayHouse.Production;
+using PlayHouse.Production.Api;
 using PlayHouse.Utils;
 using System.Collections.Concurrent;
 
@@ -48,8 +50,8 @@ namespace PlayHouse.Service.Api
                         {
                             if (routeHeader.MsgId == DisconnectNoticeMsg.Descriptor.Index)
                             {
-                                var disconnectNoticeMsg = DisconnectNoticeMsg.Parser.ParseFrom(item.Data);
-                                _apiCallBack.OnDisconnect(disconnectNoticeMsg.AccountId);
+                                //var disconnectNoticeMsg = DisconnectNoticeMsg.Parser.ParseFrom(item.Data);
+                                _apiCallBack.OnDisconnect(routePacket.AccountId);
                             }
                             else
                             {

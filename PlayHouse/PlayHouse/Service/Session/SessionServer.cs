@@ -1,9 +1,12 @@
-﻿using PlayHouse.Communicator;
+﻿using CommonLib;
+using PlayHouse.Communicator;
 using PlayHouse.Communicator.PlaySocket;
+using PlayHouse.Production;
+using PlayHouse.Production.Session;
 
 namespace PlayHouse.Service.Session
 {
-    class SessionServer : IServer
+    public class SessionServer : IServer
     {
         private Communicator.Communicator? _communicator;
 
@@ -23,6 +26,9 @@ namespace PlayHouse.Service.Session
                 .SetServerSystem(_commonOption.ServerSystem!)
                 .SetShowQps(_commonOption.ShowQps)
                 .Build();
+
+
+            PooledBuffer.Init(_commonOption.MaxBufferPoolSize);
 
             var bindEndpoint = communicatorOption.BindEndpoint;
             short serviceId = _commonOption.ServiceId;

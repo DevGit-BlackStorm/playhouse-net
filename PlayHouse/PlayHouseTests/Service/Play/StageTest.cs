@@ -17,11 +17,13 @@ using Playhouse.Protocol;
 using FluentAssertions;
 using System.Runtime.CompilerServices;
 using System.Reflection;
+using PlayHouse.Production;
+using PlayHouse.Production.Play;
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 namespace PlayHouseTests.Service.Play
 {
-   
+
     public class StageTest
     {
         private readonly List<RoutePacket> resultList = new();
@@ -32,7 +34,7 @@ namespace PlayHouseTests.Service.Play
         private readonly string bindEndpoint = "tcp://127.0.0.1:8777";
         private BaseStage stage;
         private XStageSender xStageSender;
-        private IStage<IActor> contentStage = Mock.Of<IStage<IActor>>();
+        private IStage contentStage = Mock.Of<IStage>();
         private long stageId = 1;
         Mock<IClientCommunicator> clientCommunicator;
 
@@ -171,7 +173,7 @@ namespace PlayHouseTests.Service.Play
         public async Task AsyncBlock_ShouldRunBlocking()
         {
             String result = "";
-            await stage.Send(AsyncBlockPacket.Of(stageId, async pass => { result = (string)pass; await Task.CompletedTask; }, "test async block"));
+            await stage.Send(AsyncBlockPacket.Of(stageId, async arg => { result = (string)arg; await Task.CompletedTask; }, "test async block"));
             Assert.Equal("test async block", result);
         }
 

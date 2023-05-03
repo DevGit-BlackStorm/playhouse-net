@@ -6,6 +6,8 @@ using FluentAssertions;
 using PlayHouseConnector;
 using Packet = PlayHouseConnector.Packet;
 using CommonLib;
+using PlayHouse.Production.Session;
+using NetMQ;
 
 namespace PlayHouse.Service.Session.network
 {
@@ -25,6 +27,7 @@ namespace PlayHouse.Service.Session.network
 
         public void OnReceive(int sid, ClientPacket clientPacket)
         {
+            Console.WriteLine($"OnReceive sid:{sid},packetInfo:{clientPacket.Header}");
             var testMsg = TestMsg.Parser.ParseFrom(clientPacket.Data);
 
             if (testMsg.TestMsg_ == "request")
@@ -32,12 +35,8 @@ namespace PlayHouse.Service.Session.network
                 Buffer.Clear();
                 RoutePacket.WriteClientPacketBytes(clientPacket, Buffer);
 
-                int size = Buffer.Count;
-
-                PooledBuffer buffer = new PooledBuffer(size);
-
-                buffer.Append(Buffer.Buffer(), 0, size);
-                clientPacket.Payload = new PooledBufferPayload(buffer);
+                NetMQFrame frame = new NetMQFrame(Buffer.Buffer(), Buffer.Count);
+                clientPacket.Payload = new FramePayload(frame);
 
                 _session!.Send(clientPacket);
             }
@@ -109,7 +108,7 @@ namespace PlayHouse.Service.Session.network
                 {
                     TestMsg.Parser.ParseFrom(replyPacket.Data).TestMsg_.Should().Be("request");
                 }
-                
+
 
                 replyPacket = await connector.RequestToApi(SESSION, new Packet(new TestMsg { TestMsg_ = "request" }));
 
@@ -117,7 +116,7 @@ namespace PlayHouse.Service.Session.network
                 {
                     TestMsg.Parser.ParseFrom(replyPacket.Data).TestMsg_.Should().Be("request");
                 }
-                
+
                 connector.Disconnect();
 
                 await Task.Delay(100);

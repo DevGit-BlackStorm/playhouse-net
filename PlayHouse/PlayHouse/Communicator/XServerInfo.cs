@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf;
 using Playhouse.Protocol;
+using PlayHouse.Production;
 
 namespace PlayHouse.Communicator
 {
@@ -130,6 +131,11 @@ namespace PlayHouse.Communicator
         long IServerInfo.TimeStamp()
         {
             return LastUpdate;
+        }
+
+        public override string ToString()
+        {
+            return $"[Endpoint: {BindEndpoint}, ServiceType: {ServiceType}, ServiceId: {ServiceId}, State: {State}, WeightingPoint: {WeightingPoint}, LastUpdate: {LastUpdate}]";
         }
     }
 

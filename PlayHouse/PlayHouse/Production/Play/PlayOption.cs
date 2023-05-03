@@ -1,11 +1,10 @@
-﻿using PlayHouse.Service.Play.Base;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PlayHouse.Service.Play
+namespace PlayHouse.Production.Play
 {
     public class PlayOption
     {

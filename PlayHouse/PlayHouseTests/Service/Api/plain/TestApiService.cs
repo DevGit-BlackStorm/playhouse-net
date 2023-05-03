@@ -1,7 +1,7 @@
-﻿using Org.Ulalax.Playhouse.Protocol;
-using PlayHouse.Communicator.Message;
-using PlayHouse.Service;
-using PlayHouse.Service.Api;
+﻿using Microsoft.Win32;
+using Org.Ulalax.Playhouse.Protocol;
+using PlayHouse.Production;
+using PlayHouse.Production.Api;
 
 namespace PlayHouseTests.Service.Api.plain
 {
@@ -23,10 +23,13 @@ namespace PlayHouseTests.Service.Api.plain
             await Task.CompletedTask;
 
         }
-        public void Handles(IHandlerRegister register)
+        public void Handles(IHandlerRegister handlerRegister,IBackendHandlerRegister backendHandlerRegister)
         {
-            register.Add(ApiTestMsg1.Descriptor.Index, Test1);
-            register.Add(ApiTestMsg2.Descriptor.Index, Test2);
+            handlerRegister.Add(ApiTestMsg1.Descriptor.Index, Test1);
+            handlerRegister.Add(ApiTestMsg2.Descriptor.Index, Test2);
+
+            backendHandlerRegister.Add(ApiTestMsg1.Descriptor.Index, Test3);
+            backendHandlerRegister.Add(ApiTestMsg2.Descriptor.Index, Test4);
         }
 
         public IApiService Instance()
@@ -45,6 +48,20 @@ namespace PlayHouseTests.Service.Api.plain
         {
             var message = ApiTestMsg2.Parser.ParseFrom(packet.Data);
             ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Test2"] = message.TestMsg;
+            await Task.CompletedTask;
+        }
+
+        public async Task Test3(Packet packet, IApiBackendSender apiSender)
+        {
+            var message = ApiTestMsg1.Parser.ParseFrom(packet.Data);
+            ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Test3"] = message.TestMsg;
+            await Task.CompletedTask;
+        }
+
+        public async Task Test4(Packet packet, IApiBackendSender apiSender)
+        {
+            var message = ApiTestMsg2.Parser.ParseFrom(packet.Data);
+            ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Test4"] = message.TestMsg;
             await Task.CompletedTask;
         }
     }

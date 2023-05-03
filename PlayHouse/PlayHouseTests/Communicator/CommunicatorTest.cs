@@ -6,6 +6,7 @@ using PlayHouse;
 using Xunit;
 using FluentAssertions;
 using CommonLib;
+using PlayHouse.Production;
 
 namespace PlayHouseTests.Communicator
 {

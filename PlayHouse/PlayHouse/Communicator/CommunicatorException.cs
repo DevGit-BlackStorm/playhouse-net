@@ -13,7 +13,7 @@ namespace PlayHouse.Communicator
 
         public class NotExistServerInfo : CommunicatorException
         {
-            public NotExistServerInfo() : base("ServerInfo is not exist") { }
+            public NotExistServerInfo(string message) : base(message) { }
         }
     }
 }

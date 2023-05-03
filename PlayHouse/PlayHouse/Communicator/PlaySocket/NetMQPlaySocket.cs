@@ -4,6 +4,7 @@ using NetMQ;
 using NetMQ.Sockets;
 using Playhouse.Protocol;
 using PlayHouse.Communicator.Message;
+using PlayHouse.Production;
 using System.Text;
 
 namespace PlayHouse.Communicator.PlaySocket
@@ -76,7 +77,8 @@ namespace PlayHouse.Communicator.PlaySocket
 
                 String target = Encoding.UTF8.GetString(message[0].Buffer);
                 var header = RouteHeaderMsg.Parser.ParseFrom(message[1].Buffer);
-                PooledBufferPayload payload = new(new (message[2].Buffer));
+                //PooledBufferPayload payload = new(new (message[2].Buffer));
+                FramePayload payload = new FramePayload(message[2]); 
 
                 var routePacket = RoutePacket.Of(new (header),payload);
                 routePacket.RouteHeader.From = target;
@@ -85,36 +87,49 @@ namespace PlayHouse.Communicator.PlaySocket
             return null;
         }
 
-        public void Send(string endpoint, RoutePacket routerPacket)
+        public void Send(string endpoint, RoutePacket routePacket)
         {
-            using (routerPacket)
+            LOG.Trace($"sendTo:{endpoint}, packetInfo:{routePacket.RouteHeader}", this.GetType());
+            using (routePacket)
             {
                 NetMQMessage message = new NetMQMessage();
-                IPayload payload = routerPacket.Payload;
+                IPayload payload = routePacket.Payload;
 
-                _buffer.Clear();
-                if (routerPacket.ForClient())
+                NetMQFrame frame;
+
+                if(payload is FramePayload)
                 {
-                    routerPacket.WriteClientPacketBytes(_buffer);
+                    frame = ((FramePayload)payload).Frame;
                 }
                 else
                 {
-                    _buffer.Write(payload.Data);
+                    _buffer.Clear();
+                    if (routePacket.ForClient())
+                    {
+                        routePacket.WriteClientPacketBytes(_buffer);
+                    }
+                    else
+                    {
+                        _buffer.Write(payload.Data);
+                    }
+
+                    frame = new NetMQFrame(_buffer.Buffer(), _buffer.Count);
                 }
-                                
+
+
                 message.Append(new NetMQFrame(Encoding.UTF8.GetBytes(endpoint)));
-                var routerHeaderMsg = routerPacket.RouteHeader.ToMsg();
+                var routerHeaderMsg = routePacket.RouteHeader.ToMsg();
 
                 var headerSize = routerHeaderMsg.CalculateSize();
                 var headerFrame = new NetMQFrame(headerSize);
                 routerHeaderMsg.WriteTo(new MemoryStream(headerFrame.Buffer));
 
                 message.Append(headerFrame);
-                message.Append(new NetMQFrame(_buffer.Buffer(),_buffer.Count));
+                message.Append(frame);
 
                 if (!_socket.TrySendMultipartMessage(message))
                 {
-                    LOG.Error($"Send fail to {endpoint}, MsgName:{routerPacket.MsgId}", this.GetType());
+                    LOG.Error($"Send fail to {endpoint}, MsgName:{routePacket.MsgId}", this.GetType());
                 }
             }
             

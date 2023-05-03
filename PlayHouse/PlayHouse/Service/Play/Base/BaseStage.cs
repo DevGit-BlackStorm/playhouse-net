@@ -6,6 +6,8 @@ using System.Collections.Concurrent;
 using static NetMQ.NetMQSelector;
 using PlayHouse.Service.Api;
 using PlayHouse.Service.Play.Base.Command;
+using PlayHouse.Production;
+using PlayHouse.Production.Play;
 
 namespace PlayHouse.Service.Play.Base
 {
@@ -24,7 +26,7 @@ namespace PlayHouse.Service.Play.Base
 
         public XStageSender StageSender => _stageSender;
 
-        private IStage<IActor>? _stage; 
+        private IStage?  _stage; 
         public bool IsCreated { get; private set; }
 
         public BaseStage(long stageId, 

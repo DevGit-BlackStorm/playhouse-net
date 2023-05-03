@@ -4,10 +4,14 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Authors>ulala.the.greate@gmail.com</Authors>
+    <Company>ulalax.org</Company>
+    <AssemblyVersion>0.1</AssemblyVersion>
+    <FileVersion>0.1</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Protobuf" Version="3.22.1" />
+    <PackageReference Include="Google.Protobuf" Version="3.22.3" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0" />
     <PackageReference Include="NetCoreServer" Version="7.0.0" />
     <PackageReference Include="NetMQ" Version="4.0.1.11" />

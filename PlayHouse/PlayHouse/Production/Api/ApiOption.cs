@@ -4,13 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PlayHouse.Service
+namespace PlayHouse.Production.Api
 {
-    public interface IServer
+    public class ApiOption
     {
-        void Start();
-        void Stop();
-        void AwaitTermination();
+        public IApiCallBack? ApiCallBackHandler { get; set; }
     }
+
 
 }

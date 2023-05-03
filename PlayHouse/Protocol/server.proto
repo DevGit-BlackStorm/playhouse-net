@@ -53,9 +53,6 @@ message SessionCloseMsg {
 }
 
 message DisconnectNoticeMsg {
-  int64 account_id = 1;
-//  string session_info = 2;
-
 }
 
 //////////////// for room service //////////////////////////

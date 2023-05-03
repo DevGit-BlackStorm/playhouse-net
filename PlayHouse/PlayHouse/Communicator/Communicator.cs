@@ -1,4 +1,5 @@
 ﻿using PlayHouse.Communicator.Message;
+using PlayHouse.Production;
 using PlayHouse.Service;
 using System.Net;
 
@@ -111,12 +112,12 @@ namespace PlayHouse.Communicator
             var bindEndpoint = _option.BindEndpoint;
             var system = _option.ServerSystem;
             _systemPanel.Communicator = this;
-                        
+
+            _communicateServer.Bind(this);
+
             _messageLoop.Start();
             _addressResolver.Start();
             _baseSystem.Start();
-
-            _communicateServer.Bind(this);
 
             _service.OnStart();
             _performanceTester.Start();
@@ -150,15 +151,14 @@ namespace PlayHouse.Communicator
             _messageLoop.AwaitTermination();
         }
 
-        private bool IsPacketToClient(RoutePacket routePacket) => routePacket.RouteHeader.Sid > 0;
 
         public void OnReceive(RoutePacket routePacket)
         {
-            LOG.Debug($"onReceive: {routePacket.MsgId}, from: {routePacket.RouteHeader.From}", this.GetType());
+            LOG.Trace($"onReceive: from:{routePacket.RouteHeader.From}, packetInfo:${routePacket.RouteHeader}", this.GetType());
 
             _performanceTester.IncCounter();
 
-            if (!IsPacketToClient(routePacket) && routePacket.IsReply())
+            if (!routePacket.ForClient() && routePacket.IsReply())
             {
                 _requestCache.OnReply(routePacket);
                 return;

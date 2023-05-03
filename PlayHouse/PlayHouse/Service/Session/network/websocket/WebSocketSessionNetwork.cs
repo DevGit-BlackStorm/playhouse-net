@@ -3,6 +3,8 @@ using PlayHouse.Communicator.Message;
 using PlayHouse.Communicator;
 using System.Net.Sockets;
 using CommonLib;
+using PlayHouse.Production.Session;
+using PlayHouse.Production;
 
 namespace PlayHouse.Service.Session.network.websocket
 {
@@ -26,32 +28,62 @@ namespace PlayHouse.Service.Session.network.websocket
         }
         protected override void OnConnected()
         {
+            try
+            {
+                LOG.Info($"Websocket session with Id {GetSid()} connected!", this.GetType());
+                _sessionListener.OnConnect(GetSid(), this);
+            }
+            catch (Exception e)
+            {
+                LOG.Error(e.StackTrace, this.GetType(), e);
+            }
 
-            LOG.Info($"Websocket session with Id {GetSid()} connected!", this.GetType());
-            _sessionListener.OnConnect(GetSid(),this);
+          
 
         }
 
         protected override void OnDisconnected()
         {
-            LOG.Info($"Websocket session with Id {GetSid()} disconnected!", this.GetType());
-            _sessionListener.OnDisconnect(GetSid());
+            try
+            {
+                LOG.Info($"Websocket session with Id {GetSid()} disconnected!", this.GetType());
+                _sessionListener.OnDisconnect(GetSid());
+            }
+            catch(Exception e)
+            {
+                LOG.Error(e.StackTrace, this.GetType(), e);
+            }
+            
         }
 
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
-            _stream.Write(buffer, (int)offset, (int)size);
-            List<ClientPacket> packets = _packetParser.Parse(_buffer);
-            foreach (ClientPacket packet in packets)
+            try
             {
-                _sessionListener.OnReceive(GetSid(), packet);
+                _stream.Write(buffer, (int)offset, (int)size);
+                List<ClientPacket> packets = _packetParser.Parse(_buffer);
+                foreach (ClientPacket packet in packets)
+                {
+                    _sessionListener.OnReceive(GetSid(), packet);
+                }
+            }
+            catch (Exception e)
+            {
+                LOG.Error(e.StackTrace, this.GetType(), e);
             }
         }
 
         protected override void OnError(SocketError error)
         {
-            LOG.Error($"Chat TCP session caught an error with code {error}", this.GetType());
-            Disconnect();
+            try
+            {
+                LOG.Error($"Chat TCP session caught an error with code {error}", this.GetType());
+                Disconnect();
+            }
+            catch(Exception e)
+            {
+                LOG.Error(e.StackTrace, this.GetType(), e);
+            }
         }
 
         public void ClientDisconnect()
@@ -73,6 +105,14 @@ namespace PlayHouse.Service.Session.network.websocket
         public WsSessionServer(string address, int port, ISessionListener sessionListener) : base(address, port)
         {
             _sessionListener = sessionListener;
+
+            OptionNoDelay = true;
+            OptionReuseAddress = true;
+            OptionKeepAlive = true;
+
+            OptionReceiveBufferSize = 64 * 1024;
+            OptionSendBufferSize = 64 * 1024;
+            OptionAcceptorBacklog = 1024;
         }
 
         protected override WsSession CreateSession()
@@ -85,7 +125,9 @@ namespace PlayHouse.Service.Session.network.websocket
         private WsSessionServer _wsSessionServer;
         public WsSessionNetwork(SessionOption sessionOption, ISessionListener sessionListener)
         {
-            _wsSessionServer = new WsSessionServer(IpFinder.FindLocalIp(), sessionOption.SessionPort, sessionListener);
+            //_wsSessionServer = new WsSessionServer(IpFinder.FindLocalIp(), sessionOption.SessionPort, sessionListener);
+            _wsSessionServer = new WsSessionServer("0.0.0.0", sessionOption.SessionPort, sessionListener);
+            
         }
    
   

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Playhouse.Protocol;
+using PlayHouse.Production;
 
 namespace PlayHouse.Service
 {
@@ -46,14 +47,15 @@ namespace PlayHouse.Service
                 {
                     int sid = _currentHeader.Sid;
                     string from = _currentHeader.From;
-                    RoutePacket routePacket = RoutePacket.ReplyOf(_serviceId, msgSeq, reply);
+                    bool forClient = _currentHeader.ForClient;
+                    RoutePacket routePacket = RoutePacket.ReplyOf(_serviceId, msgSeq, sid, forClient, reply);
                     routePacket.RouteHeader.Sid = sid;
                     routePacket.RouteHeader.ForClient = _currentHeader.ForClient;
                     _clientCommunicator.Send(from, routePacket);
                 }
                 else
                 {
-                    LOG.Error($"Not exist request packet {reply.MsgId}, {_currentHeader.Header.MsgId} is not request packet", GetType());
+                    LOG.Error($"Not exist request packet - reply msgId:{reply.MsgId}, current msgId:{_currentHeader.Header.MsgId}", GetType());
                 }
             }
             else
@@ -113,9 +115,11 @@ namespace PlayHouse.Service
             _clientCommunicator.Send(apiEndpoint, routePacket);
         }
 
-        public void SendToBaseApi(string apiEndpoint,Packet packet)
+        public void SendToBaseApi(string apiEndpoint,long accountId,Packet packet)
         {
             RoutePacket routePacket = RoutePacket.ApiOf( packet, true, true);
+            routePacket.RouteHeader.AccountId = accountId;
+
             _clientCommunicator.Send(apiEndpoint, routePacket);
         }
 
@@ -210,7 +214,7 @@ namespace PlayHouse.Service
 
         public async Task<ReplyPacket> RequestToBaseStage(string playEndpoint, long stageId, long accountId, Packet packet)
         {
-            short seq = (short)GetSequence();
+            short seq = GetSequence();
             var deferred = new TaskCompletionSource<ReplyPacket>();
             _reqCache.Put(seq, new ReplyObject(null, deferred));
             RoutePacket routePacket = RoutePacket.StageOf(stageId, accountId, packet, true, true);
@@ -239,9 +243,11 @@ namespace PlayHouse.Service
         {
             short msgSeq = routeHeader.Header.MsgSeq;
             string from = routeHeader.From;
+            int sid = routeHeader.Sid;
+            bool forClient = routeHeader.ForClient;
             if (msgSeq > 0)
             {
-                RoutePacket reply = RoutePacket.ReplyOf(_serviceId, msgSeq, new ReplyPacket(errorCode));
+                RoutePacket reply = RoutePacket.ReplyOf(_serviceId, msgSeq,sid,forClient, new ReplyPacket(errorCode));
                 _clientCommunicator.Send(from, reply);
             }
         }

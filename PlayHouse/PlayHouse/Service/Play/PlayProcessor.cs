@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using Playhouse.Protocol;
 using System.Numerics;
 using PlayHouse.Utils;
+using PlayHouse.Production;
+using PlayHouse.Production.Play;
 
 namespace PlayHouse.Service.Play
 {
@@ -158,8 +160,11 @@ namespace PlayHouse.Service.Play
             {
                 if (!_baseRooms.TryGetValue(stageId, out var room))
                 {
-                    LOG.Error($"Room is not exist : {stageId},{msgId}", this.GetType());
-                    ErrorReply(routePacket.RouteHeader, (short)BaseErrorCode.StageIsNotExist);
+                    if(msgId != StageTimer.Descriptor.Index)
+                    {
+                        LOG.Error($"Room is not exist : {stageId},{msgId}", this.GetType());
+                        ErrorReply(routePacket.RouteHeader, (short)BaseErrorCode.StageIsNotExist);
+                    }
                     return;
                 }
 
@@ -282,7 +287,7 @@ namespace PlayHouse.Service.Play
             }
         }
 
-        public IStage<IActor> CreateContentRoom(string stageType, XStageSender roomSender)
+        public IStage CreateContentRoom(string stageType, XStageSender roomSender)
         {
             return _playOption.ElementConfigurator.GetStage(stageType, roomSender);
         }

@@ -1,8 +1,8 @@
-﻿using PlayHouse.Communicator.Message;
-using PlayHouse.Communicator;
+﻿using PlayHouse.Communicator;
 using System;
+using PlayHouse.Service;
 
-namespace PlayHouse.Service
+namespace PlayHouse.Production
 {
     public delegate Task TimerCallbackTask();
     public interface ISystemPanel
@@ -19,7 +19,7 @@ namespace PlayHouse.Service
 
     public interface ISender
     {
-        short ServiceId {get;}
+        short ServiceId { get; }
         void Reply(ReplyPacket reply);
         void SendToClient(string sessionEndpoint, int sid, Packet packet);
         void SendToApi(string apiEndpoint, Packet packet);
@@ -44,18 +44,7 @@ namespace PlayHouse.Service
 
         long AccountId { get; }
         Task<CreateStageResult> CreateStage(string playEndpoint, string stageType, long stageId, Packet packet);
-        Task<JoinStageResult> JoinStage(string playEndpoint,
-                      long stageId,
-                      long accountId,
-                      string sessionEndpoint,
-                      int sid,
-                      Packet packet
-        );
-        Task<CreateJoinStageResult> CreateJoinStage(string playEndpoint, string stageType, long stageId,
-                            Packet createPacket,
-                            long accountId, string sessionEndpoint, int sid,
-                            Packet joinPacket
-        );
+
 
     }
     public interface IApiSender : IApiCommonSender
@@ -64,9 +53,20 @@ namespace PlayHouse.Service
         string SessionEndpoint { get; }
         int Sid { get; }
 
+        Task<JoinStageResult> JoinStage(string playEndpoint,
+                    long stageId,
+                    Packet packet
+      );
+        Task<CreateJoinStageResult> CreateJoinStage(string playEndpoint,
+                            string stageType,
+                            long stageId,
+                            Packet createPacket,
+                            Packet joinPacket
+        );
+
         void SendToClient(Packet packet)
         {
-            SendToClient(SessionEndpoint, Sid,packet);
+            SendToClient(SessionEndpoint, Sid, packet);
         }
         void SessionClose()
         {
@@ -75,8 +75,8 @@ namespace PlayHouse.Service
 
     }
 
-    public delegate Task<T> AsyncPreCallback<T>();
-    public delegate Task AsyncPostCallback(Object result);
+    public delegate Task<object> AsyncPreCallback();
+    public delegate Task AsyncPostCallback(object result);
 
     public interface IStageSender : ISender
     {
@@ -88,7 +88,7 @@ namespace PlayHouse.Service
         void CancelTimer(long timerId);
         void CloseStage();
 
-        Task AsyncBlock<T>(AsyncPreCallback<T> preCallback, AsyncPostCallback? postCallback = null);
+        void AsyncBlock(AsyncPreCallback preCallback, AsyncPostCallback? postCallback = null);
     }
 
     public interface IApiBackendSender : IApiCommonSender

@@ -1,11 +1,11 @@
-﻿using PlayHouse.Communicator.Message;
+﻿using PlayHouse.Production;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PlayHouse.Service.Play.Contents
+namespace PlayHouse.Production.Play
 {
     public interface IPacketCmd<S, A> where A : IActor
     {

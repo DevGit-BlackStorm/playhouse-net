@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
-using PlayHouse.Communicator.Message;
+﻿using NetMQ;
+using PlayHouse.Production;
 using PlayHouse.Service.Api;
 using System;
 using System.Collections.Generic;
@@ -7,19 +7,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PlayHouse.Service.Play.Contents
+namespace PlayHouse.Production.Play
 {
     public class PacketHandler<S, A> where A : IActor
     {
-        private readonly ILogger _log;
         private readonly Dictionary<int, IPacketCmd<S, A>> _messageMap = new();
 
-        public PacketHandler(ILogger log)
-        {
-            _log = log;
-        }
-
-        public async Task Dispatch(S stage, A actor, Packet packet)
+                public async Task Dispatch(S stage, A actor, Packet packet)
         {
             if (_messageMap.TryGetValue(packet.MsgId, out var cmd))
             {
@@ -27,7 +21,7 @@ namespace PlayHouse.Service.Play.Contents
             }
             else
             {
-                _log.Error($"unregistered packet {packet.MsgId}", nameof(PacketHandler<S, A>));
+                throw new ArgumentException($"msgId:{packet.MsgId} is already registered");
             }
         }
 
@@ -35,7 +29,7 @@ namespace PlayHouse.Service.Play.Contents
         {
             if (_messageMap.ContainsKey(msgId))
             {
-                throw new ApiException.DuplicatedMessageIndex($"msgId:{msgId} is already registered");
+                throw new ArgumentException($"msgId:{msgId} is already registered");
             }
             _messageMap[msgId] = cmd;
         }

@@ -10,7 +10,7 @@ namespace PlayHouse.Communicator
     {
         public const int ThreadSleep = 50;
 
-        public static int ADDRESS_RESOLVER_INITIAL_DELAY { get; internal set; } = 1000;
+        public static int ADDRESS_RESOLVER_INITIAL_DELAY { get; internal set; } = 3000;
         public static int ADDRESS_RESOLVER_PERIOD { get; internal set; } = 3000;
         public static short DEFAULT_SERVICE_ID { get; internal set; } = -1;
 

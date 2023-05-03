@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PlayHouse.Communicator;
+using PlayHouse.Production;
 
 namespace PlayHouse.Service.Play
 {
@@ -103,14 +104,14 @@ namespace PlayHouse.Service.Play
             _playProcessor.OnReceive(packet2);
         }
 
-        public async Task AsyncBlock<T>(AsyncPreCallback<T> preCallback, AsyncPostCallback? postCallback = null)
+        public void AsyncBlock(AsyncPreCallback preCallback, AsyncPostCallback? postCallback = null)
         {
-            await Task.Run(async () =>
+            Task.Run(async () =>
             {
                 var result = await preCallback.Invoke();
                 if (postCallback != null)
                 {
-                    var packet = AsyncBlockPacket.Of(_stageId, postCallback, result!);
+                    var packet = AsyncBlockPacket.Of(_stageId,  postCallback, result!);
                     _playProcessor.OnReceive(packet);
                 }
             });

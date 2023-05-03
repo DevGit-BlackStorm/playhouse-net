@@ -1,4 +1,4 @@
-﻿using PlayHouse.Communicator.Message;
+﻿using PlayHouse.Production;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,8 +9,7 @@ namespace PlayHouse.Service
 {
     public interface IServerSystem
     {
-        ISystemPanel SystemPanel { get; }
-        ISender BaseSender { get; }
+        
         Task OnStart();
         Task OnDispatch(Packet packet);
         Task OnStop();

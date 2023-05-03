@@ -1,5 +1,6 @@
 ﻿using Playhouse.Protocol;
 using PlayHouse.Communicator.Message;
+using PlayHouse.Production;
 using PlayHouse.Utils;
 using System.Collections.Specialized;
 using System.Runtime.Caching;
@@ -39,7 +40,11 @@ namespace PlayHouse.Communicator
 
         public RequestCache(int timeout) 
         {
-            _policy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(timeout) };
+            _policy = new CacheItemPolicy();
+            if (timeout > 0)
+            {
+                _policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(timeout);
+            }
 
             // Set a callback to be called when the cache item is removed
             _policy.RemovedCallback = new CacheEntryRemovedCallback((args) => {

@@ -1,30 +1,30 @@
-﻿using PlayHouse.Communicator.Message;
-using Playhouse.Protocol;
+﻿using Playhouse.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PlayHouse.Production;
 
 namespace PlayHouse.Service
 {
     public class StageResult
     {
-        public int ErrorCode { get; }
+        public short ErrorCode { get; }
 
-        public StageResult(int errorCode)
+        public StageResult(short errorCode)
         {
             ErrorCode = errorCode;
         }
 
-        public bool IsSuccess() => ErrorCode == (int)BaseErrorCode.Success;
+        public bool IsSuccess() => ErrorCode == (short)BaseErrorCode.Success;
     }
 
     public class CreateStageResult : StageResult
     {
         public Packet CreateStageRes { get; }
 
-        public CreateStageResult(int errorCode, Packet createStageRes) : base(errorCode)
+        public CreateStageResult(short errorCode, Packet createStageRes) : base(errorCode)
         {
             CreateStageRes = createStageRes;
         }
@@ -35,7 +35,7 @@ namespace PlayHouse.Service
         public Packet JoinStageRes { get; }
         public int StageIndex { get; }
 
-        public JoinStageResult(int errorCode,int stageIndex, Packet joinStageRes) : base(errorCode)
+        public JoinStageResult(short errorCode,int stageIndex, Packet joinStageRes) : base(errorCode)
         {
             JoinStageRes = joinStageRes;
             StageIndex = stageIndex;
@@ -45,14 +45,16 @@ namespace PlayHouse.Service
     public class CreateJoinStageResult : StageResult
     {
         public bool IsCreate { get; }
+        public int StageIndex { get; }
         public Packet CreateStageRes { get; }
         public Packet JoinStageRes { get; }
 
-        public CreateJoinStageResult(int errorCode, bool isCreate, Packet createStageRes, Packet joinStageRes) : base(errorCode)
+        public CreateJoinStageResult(short errorCode, bool isCreate,int stageIndex, Packet createStageRes, Packet joinStageRes) : base(errorCode)
         {
             IsCreate = isCreate;
             CreateStageRes = createStageRes;
             JoinStageRes = joinStageRes;
+            StageIndex = stageIndex;
         }
     }
 }

@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PlayHouse.Production;
+using PlayHouse.Production.Play;
+using CommonLib;
 
 namespace PlayHouse.Service.Play
 {
@@ -30,6 +33,8 @@ namespace PlayHouse.Service.Play
 
             var bindEndpoint = communicatorOption.BindEndpoint;
             var serviceId = _commonOption.ServiceId;
+
+            PooledBuffer.Init(_commonOption.MaxBufferPoolSize);
 
             var communicateServer = new XServerCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(), bindEndpoint));
             var communicateClient = new XClientCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(), bindEndpoint));

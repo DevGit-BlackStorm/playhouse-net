@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PlayHouse.Communicator;
 
-namespace PlayHouse.Communicator
+namespace PlayHouse.Production
 {
 
     public enum ServerState

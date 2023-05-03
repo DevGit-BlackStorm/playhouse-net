@@ -9,6 +9,7 @@ namespace PlayHouse.Communicator
     using System;
     using System.Collections.Generic;
     using System.Threading;
+    using PlayHouse.Production;
 
     class ServerAddressResolver
     {
@@ -48,10 +49,16 @@ namespace PlayHouse.Communicator
                     ));
 
                     IList<XServerInfo> serverInfoList = storageClient.GetServerList(bindEndpoint);
+
+//                    LOG.Debug($"================ ServerInfoList size:{serverInfoList.Count}",this.GetType());
+
                     IList<XServerInfo> updateList = serverInfoCenter.Update(serverInfoList);
+
+//                    LOG.Debug($"================= updateList size:{updateList.Count}", this.GetType());
 
                     foreach (XServerInfo serverInfo in updateList)
                     {
+                        //LOG.Trace($"update server info : {serverInfo}",this.GetType());
                         switch (serverInfo.State)
                         {
                             case ServerState.RUNNING:

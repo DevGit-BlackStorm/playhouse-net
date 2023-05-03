@@ -1,12 +1,12 @@
 ﻿using CommonLib;
 using Google.Protobuf;
 using Playhouse.Protocol;
-using PlayHouse.Service;
+using PlayHouse.Production;
 using System.Net;
 
 namespace PlayHouse.Communicator.Message
 {
-     public class Header
+    public class Header
     {
         public short ServiceId { get; set; } = 0;
         public int MsgId { get; set; } = 0;
@@ -16,17 +16,17 @@ namespace PlayHouse.Communicator.Message
 
         public Header(short serviceId = 0,int msgId = 0, short msgSeq = 0,short errorCode = 0 ,byte stageIndex = 0)
         {
+            ServiceId = serviceId;
             MsgId = msgId;
             ErrorCode = errorCode;
             MsgSeq = msgSeq;
-            ServiceId = serviceId;
             StageIndex = stageIndex;
 
         }
 
          static public Header Of(HeaderMsg headerMsg)
         {
-            return new Header((short)headerMsg.ServiceId, headerMsg.MsgId, (short)headerMsg.MsgSeq, (short)headerMsg.ErrorCode);
+            return new Header((short)headerMsg.ServiceId, headerMsg.MsgId, (short)headerMsg.MsgSeq, (short)headerMsg.ErrorCode,(byte)headerMsg.StageIndex);
         }
 
         public  HeaderMsg ToMsg()
@@ -37,7 +37,13 @@ namespace PlayHouse.Communicator.Message
                 MsgId = MsgId,
                 MsgSeq = MsgSeq,
                 ErrorCode = ErrorCode,
+                StageIndex = StageIndex
+
             };
+        }
+        public override string ToString()
+        {
+            return $"Header(ServiceId={ServiceId}, MsgId={MsgId}, MsgSeq={MsgSeq}, ErrorCode={ErrorCode}, StageIndex={StageIndex})";
         }
     }
     public class RouteHeader
@@ -86,10 +92,12 @@ namespace PlayHouse.Communicator.Message
             message.HeaderMsg = Header.ToMsg();
             message.Sid = Sid;
             message.IsSystem = IsSystem;
+            message.IsBase = IsBase;
             message.IsBackend = IsBackend;
             message.IsReply = IsReply;
             message.AccountId = AccountId;
             message.StageId = StageId;
+            message.ForClient = ForClient;
             return message;
         }
 
@@ -109,6 +117,10 @@ namespace PlayHouse.Communicator.Message
             {
                 StageId = stageId
             };
+        }
+        public override string ToString()
+        {
+            return $"RouteHeader(Header={Header}, Sid={Sid}, IsSystem={IsSystem}, IsBase={IsBase}, IsBackend={IsBackend}, IsReply={IsReply}, AccountId={AccountId}, StageId={StageId}, From={From}, ForClient={ForClient})";
         }
     }
 
@@ -267,7 +279,7 @@ namespace PlayHouse.Communicator.Message
             return new RoutePacket(routeHeader, packet.MovePayload());
         }
 
-        public static RoutePacket ReplyOf(short serviceId, short msgSeq, ReplyPacket reply)
+        public static RoutePacket ReplyOf(short serviceId, short msgSeq, int sid,bool forClient, ReplyPacket reply)
         {
             Header header = new(msgId:reply.MsgId)
             {
@@ -277,6 +289,8 @@ namespace PlayHouse.Communicator.Message
 
             RouteHeader routeHeader = RouteHeader.Of(header);
             routeHeader.IsReply = true;
+            routeHeader.ForClient = forClient;
+            routeHeader.Sid = sid;
 
             var routePacket = new RoutePacket(routeHeader, reply.MovePayload());
             routePacket.RouteHeader.Header.ErrorCode = reply.ErrorCode;
@@ -292,6 +306,7 @@ namespace PlayHouse.Communicator.Message
 
             RouteHeader routeHeader = RouteHeader.Of(header);
             routeHeader.Sid = sid;
+            routeHeader.ForClient = true;
 
             return new RoutePacket(routeHeader, packet.MovePayload());
         }
@@ -351,16 +366,16 @@ namespace PlayHouse.Communicator.Message
 
     public class AsyncBlockPacket : RoutePacket
     {
-        public AsyncPostCallback? AsyncPostCallback { get; }
-        public Object Result { get; }
+        public AsyncPostCallback AsyncPostCallback { get; }
+        public object Result { get; }
 
-        private AsyncBlockPacket(AsyncPostCallback? asyncPostCallback, Object result, RouteHeader routeHeader) : base(routeHeader, new EmptyPayload())
+        private AsyncBlockPacket(AsyncPostCallback asyncPostCallback, object result, RouteHeader routeHeader) : base(routeHeader, new EmptyPayload())
         {
             AsyncPostCallback = asyncPostCallback;
             Result = result;
         }
 
-        public static RoutePacket Of(long stageId, AsyncPostCallback? asyncPostCallback, Object result)
+        public static RoutePacket Of(long stageId, AsyncPostCallback asyncPostCallback, Object result)
         {
             var header = new Header(msgId: AsyncBlock.Descriptor.Index);
             var routeHeader = RouteHeader.Of(header);

@@ -7,6 +7,7 @@ using Xunit;
 using Moq;
 using PlayHouse.Service.Session.network;
 using Google.Protobuf.WellKnownTypes;
+using PlayHouse.Production;
 
 namespace PlayHouseTests.Service.Session
 {
@@ -45,7 +46,7 @@ namespace PlayHouseTests.Service.Session
         {
             var sessionClient = new SessionClient(_idSession, _sid, _serviceCenter, _session, _clientCommunicator, _urls, _reqCache);
             var clientPacket = new ClientPacket(new Header(serviceId:_idApi), new EmptyPayload());
-            sessionClient.OnReceive(clientPacket);
+            sessionClient.Dispatch(clientPacket);
             Mock.Get(_session).Verify(s => s.ClientDisconnect(), Moq.Times.Once());
         }
 
@@ -57,7 +58,7 @@ namespace PlayHouseTests.Service.Session
             
             var sessionClient = new SessionClient(_idSession, _sid, _serviceCenter, _session, _clientCommunicator, _urls, _reqCache);
             var clientPacket = new ClientPacket(new Header(serviceId: _idApi,msgId:messageId), new EmptyPayload());
-            sessionClient.OnReceive(clientPacket);
+            sessionClient.Dispatch(clientPacket);
 
             Mock.Get(_clientCommunicator).Verify(c => c.Send(It.IsAny<string>(),It.IsAny<RoutePacket>()),Times.Once());
         }
@@ -76,7 +77,7 @@ namespace PlayHouseTests.Service.Session
             var routePacket = RoutePacket.SessionOf(_sid, new Packet(message), true, true);
 
             var sessionClient = new SessionClient(_idSession, _sid, _serviceCenter, _session, _clientCommunicator, _urls, _reqCache);
-            sessionClient.OnReceive(routePacket);
+            sessionClient.Dispatch(routePacket);
 
             sessionClient.IsAuthenticated.Should().BeTrue();
         }

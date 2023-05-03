@@ -25,7 +25,7 @@ namespace PlayHouse.Service.Api
 
         public class NotRegisterApiMethod : ApiException
         {
-            public NotRegisterApiMethod(int msgId) : base($"{msgId}: ApiMethod is not registered")
+            public NotRegisterApiMethod(string message) : base(message)
             {
             }
         }

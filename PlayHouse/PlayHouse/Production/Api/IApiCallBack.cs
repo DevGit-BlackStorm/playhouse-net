@@ -4,12 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PlayHouse.Service.Api
+namespace PlayHouse.Production.Api
 {
-    public class ApiOption
+    public interface IApiCallBack
     {
-        public IApiCallBack? ApiCallBackHandler { get; set; }
+        void OnDisconnect(long accountId);
     }
-
-
 }

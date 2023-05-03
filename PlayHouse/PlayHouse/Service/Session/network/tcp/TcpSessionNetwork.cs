@@ -2,6 +2,8 @@
 using NetCoreServer;
 using PlayHouse.Communicator;
 using PlayHouse.Communicator.Message;
+using PlayHouse.Production;
+using PlayHouse.Production.Session;
 using System.Net.Sockets;
 
 namespace PlayHouse.Service.Session.network.tcp
@@ -27,31 +29,59 @@ namespace PlayHouse.Service.Session.network.tcp
         }
         protected override void OnConnected()
         {
-            
-            LOG.Info($"TCP session with Id {GetSid()} connected!",this.GetType());
-            _sessionListener.OnConnect(GetSid(),this);
-
+            try
+            {
+                LOG.Info($"TCP session with Id {GetSid()} connected!", this.GetType());
+                _sessionListener.OnConnect(GetSid(), this);
+            }catch (Exception e)
+            {
+                LOG.Error(e.StackTrace,this.GetType(),e);
+            }
         }
 
         protected override void OnDisconnected()
         {
-            LOG.Info($"TCP session with Id {GetSid()} disconnected!", this.GetType());
-            _sessionListener.OnDisconnect(GetSid());
+            try
+            {
+                LOG.Info($"TCP session with Id {GetSid()} disconnected!", this.GetType());
+                _sessionListener.OnDisconnect(GetSid());
+            }
+            catch (Exception e)
+            {
+                LOG.Error(e.StackTrace, this.GetType(), e);
+            }
         }
 
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
-            _stream.Write(buffer, (int)offset, (int)size);
-            List<ClientPacket>  packets = _packetParser.Parse(_buffer);
-            foreach (ClientPacket packet in packets) {
-                _sessionListener.OnReceive(GetSid(), packet);
+            try
+            {
+                _stream.Write(buffer, (int)offset, (int)size);
+                List<ClientPacket> packets = _packetParser.Parse(_buffer);
+                foreach (ClientPacket packet in packets)
+                {
+                    _sessionListener.OnReceive(GetSid(), packet);
+                }
             }
+            catch (Exception e)
+            {
+                LOG.Error(e.StackTrace, this.GetType(), e);
+            }
+            
         }
 
         protected override void OnError(SocketError error)
         {
-            LOG.Error($"Chat TCP session caught an error with code {error}", this.GetType());
-            Disconnect();
+            try
+            {
+                LOG.Error($"Chat TCP session caught an error with code {error}", this.GetType());
+                Disconnect();
+            }
+            catch(Exception e)
+            {
+                LOG.Error(e.StackTrace, this.GetType(), e);
+            }
+            
         }
 
         public void ClientDisconnect()
@@ -73,6 +103,14 @@ namespace PlayHouse.Service.Session.network.tcp
         public TcpSessionServer(string address, int port,ISessionListener sessionListener) : base(address, port)
         {
             _sessionListener = sessionListener;
+
+            OptionNoDelay = true;
+            OptionReuseAddress = true;
+            OptionKeepAlive = true;
+
+            OptionReceiveBufferSize = 64 * 1024;
+            OptionSendBufferSize = 64 * 1024;
+            OptionAcceptorBacklog = 1024;
         }
 
         protected override TcpSession CreateSession()
@@ -83,15 +121,17 @@ namespace PlayHouse.Service.Session.network.tcp
         protected override void OnStarted()
         {
             LOG.Info("Server Started",GetType());
+            
         }
     }
     class TcpSessionNetwork : ISessionNetwork
     {
         private TcpSessionServer _tcpSessionServer;
         
-        public TcpSessionNetwork(SessionOption sessionOption,ISessionListener sessionListener) { 
+        public TcpSessionNetwork(SessionOption sessionOption,ISessionListener sessionListener) {
 
-            _tcpSessionServer = new TcpSessionServer(IpFinder.FindLocalIp(), sessionOption.SessionPort, sessionListener);
+            //_tcpSessionServer = new TcpSessionServer(IpFinder.FindLocalIp(), sessionOption.SessionPort, sessionListener);
+            _tcpSessionServer = new TcpSessionServer("0.0.0.0", sessionOption.SessionPort, sessionListener);
         }
 
         

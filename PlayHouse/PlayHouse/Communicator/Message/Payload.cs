@@ -5,6 +5,7 @@ namespace PlayHouse.Communicator.Message
     using System.IO;
     using System;
     using CommonLib;
+    using NetMQ;
 
     public interface IPayload : IDisposable
     {
@@ -78,30 +79,39 @@ namespace PlayHouse.Communicator.Message
         
     }
 
-    public class PooledBufferPayload : IPayload
+    //public class PooledBufferPayload : IPayload
+    //{
+    //    private readonly PooledBuffer _buffer;
+
+    //    public PooledBufferPayload(PooledBuffer buffer)
+    //    {
+    //        _buffer = buffer;
+    //    }
+
+    //    public ReadOnlySpan<byte> Data => new ReadOnlySpan<byte>(_buffer.Data, 0, _buffer.Size);
+
+
+    //    public void Dispose()
+    //    {
+    //        _buffer.Dispose();
+    //    }
+    //}
+
+    public class FramePayload : IPayload
     {
-        private readonly PooledBuffer _buffer;
+        private NetMQFrame _frame;
+        public ReadOnlySpan<byte> Data => new ReadOnlySpan<byte>(_frame.Buffer,0,_frame.MessageSize);
+        public NetMQFrame Frame => _frame;
 
-        public PooledBufferPayload(PooledBuffer buffer)
+        public FramePayload(NetMQFrame frame)
         {
-            _buffer = buffer;
+            _frame = frame;
+
         }
-
-        public ReadOnlySpan<byte> Data => new ReadOnlySpan<byte>(_buffer.Data, 0, _buffer.Size);
-
-        //public (byte[], int) Data()
-        //{
-        //    return (_buffer.Data,_buffer.Size);
-        //}
-
-        //public void Output(Stream outputStream)
-        //{
-        //    outputStream.Write(_buffer.Data, 0, _buffer.Size);
-        //}
 
         public void Dispose()
         {
-            _buffer.Dispose();
+            
         }
     }
 }

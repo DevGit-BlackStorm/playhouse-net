@@ -1,7 +1,9 @@
 ﻿
 using CommonLib;
+using NetMQ;
 using Playhouse.Protocol;
 using PlayHouse.Communicator.Message;
+using PlayHouse.Production;
 using System.Net;
 
 namespace PlayHouse.Service.Session.network
@@ -10,7 +12,7 @@ namespace PlayHouse.Service.Session.network
     {
 
         public const int MAX_PACKET_SIZE = 65535;
-        public const int HEADER_SIZE = 9;
+        public const int HEADER_SIZE = 11;
 
         public PacketParser() { }
 
@@ -43,13 +45,15 @@ namespace PlayHouse.Service.Session.network
                     short serviceId = XBitConverter.ToHostOrder(buffer.ReadInt16());
                     int msgId = XBitConverter.ToHostOrder(buffer.ReadInt32());
                     short msgSeq = XBitConverter.ToHostOrder(buffer.ReadInt16());
-                    byte stageId = buffer.ReadByte();
+                    byte stageIndex = buffer.ReadByte();
 
-                    var body = new PooledBuffer(bodySize);
+                    var body = new NetMQFrame(bodySize);
+
+                    //var body = new PooledBuffer(bodySize);
                                         
-                    buffer.Read(body, bodySize);
+                    buffer.Read(body.Buffer,0, bodySize);
 
-                    var clientPacket = new ClientPacket(new Header(serviceId, msgId, msgSeq,0,stageId), new PooledBufferPayload(body));
+                    var clientPacket = new ClientPacket(new Header(serviceId, msgId, msgSeq,0,stageIndex), new FramePayload(body));
                     packets.Add(clientPacket);
 
                 }

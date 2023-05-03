@@ -2,10 +2,9 @@
 using PlayHouse.Communicator;
 using Playhouse.Protocol;
 using PlayHouse.Service.Session.network;
-using Google.Protobuf;
-using System;
-using System.Runtime.InteropServices;
-using System.Linq;
+using PlayHouse.Utils;
+using System.Collections.Concurrent;
+using PlayHouse.Production;
 
 namespace PlayHouse.Service.Session
 {
@@ -47,6 +46,8 @@ namespace PlayHouse.Service.Session
 
         private XSessionSender _sessionSender;
         private TargetServiceCache _targetServiceCache;
+        private ConcurrentQueue<RoutePacket> _msgQueue = new ConcurrentQueue<RoutePacket>();
+        private AtomicBoolean _isUsing = new AtomicBoolean(false);
 
         public  bool IsAuthenticated { get; private set; } = false;
         private HashSet<string> _signInURIs = new HashSet<string>();
@@ -128,11 +129,8 @@ namespace PlayHouse.Service.Session
             if (IsAuthenticated)
             {
                 IServerInfo serverInfo = FindSuitableServer(_authenticateServiceId, _authServerEndpoint);
-                Packet disconnectPacket = new Packet(new DisconnectNoticeMsg
-                {
-                    AccountId = _accountId
-                });
-                _sessionSender.SendToBaseApi(serverInfo.BindEndpoint(), disconnectPacket);
+                Packet disconnectPacket = new Packet(new DisconnectNoticeMsg());
+                _sessionSender.SendToBaseApi(serverInfo.BindEndpoint(),_accountId, disconnectPacket);
                 foreach (var targetId in _playEndpoints.Values)
                 {
                     IServerInfo targetServer = _serviceInfoCenter.FindServer(targetId.Endpoint);
@@ -141,28 +139,35 @@ namespace PlayHouse.Service.Session
             }
         }
 
-        public void OnReceive(ClientPacket clientPacket)
+        public void Dispatch(ClientPacket clientPacket)
         {
-            short serviceId = clientPacket.ServiceId();
-            int msgId = clientPacket.GetMsgId();
+            try
+            {
+                short serviceId = clientPacket.ServiceId();
+                int msgId = clientPacket.GetMsgId();
 
-            if (IsAuthenticated)
-            {
-                RelayTo(serviceId, clientPacket);
-            }
-            else
-            {
-                string uri = $"{serviceId}:{msgId}";
-                if (_signInURIs.Contains(uri))
+                if (IsAuthenticated)
                 {
                     RelayTo(serviceId, clientPacket);
                 }
                 else
                 {
-                    LOG.Warn($"client is not authenticated :{msgId}", this.GetType());
-                    _session.ClientDisconnect();
+                    string uri = $"{serviceId}:{msgId}";
+                    if (_signInURIs.Contains(uri))
+                    {
+                        RelayTo(serviceId, clientPacket);
+                    }
+                    else
+                    {
+                        LOG.Warn($"client is not authenticated :{msgId}", this.GetType());
+                        _session.ClientDisconnect();
+                    }
                 }
+            }catch (Exception ex)
+            {
+                LOG.Error(ex.StackTrace, this.GetType(), ex);
             }
+            
         }
         private IServerInfo FindSuitableServer(short serviceId, string endpoint)
         {
@@ -195,7 +200,7 @@ namespace PlayHouse.Service.Session
                     break;
 
                 case ServiceType.Play:
-                    var targetId = _playEndpoints[clientPacket.Header.StageIndex];
+                    var targetId = _playEndpoints.GetValueOrDefault(clientPacket.Header.StageIndex);
                     if (targetId == null)
                     {
                         LOG.Error($"Target Stage is not exist - service type:{type}, msgId:{clientPacket.GetMsgId()}", this.GetType());
@@ -213,9 +218,39 @@ namespace PlayHouse.Service.Session
             }
         }
 
-   
+        public void Send(RoutePacket routePacket)
+        {
+            _msgQueue.Enqueue(routePacket);
+            if (_isUsing.CompareAndSet(false, true))
+            {
+                while (_isUsing.Get())
+                {
+                    if (_msgQueue.TryDequeue(out var item))
+                    {
+                        try
+                        {
+                            using (item)
+                            {
+                                _sessionSender.SetCurrentPacketHeader(item.RouteHeader);
+                                Dispatch(item);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            _sessionSender.ErrorReply(routePacket.RouteHeader, (short)BaseErrorCode.SystemError);
+                            LOG.Error(e.StackTrace, this.GetType(), e);
+                        }
+                    }
+                    else
+                    {
+                        _isUsing.Set(false);
+                    }
+                }
+            }
+        }
 
-        public void OnReceive(RoutePacket packet)
+
+        public void Dispatch(RoutePacket packet)
         {
             int msgId = packet.MsgId;
             bool isBase = packet.IsBase();
@@ -229,20 +264,26 @@ namespace PlayHouse.Service.Session
                     Authenticate((short)authenticateMsg.ServiceId, apiEndpoint,authenticateMsg.AccountId);
                     LOG.Debug($"{_accountId} is authenticated", this.GetType());
                 }
-                else if(msgId != SessionCloseMsg.Descriptor.Index)
+                else if(msgId == SessionCloseMsg.Descriptor.Index)
                 {
                     _session.ClientDisconnect();
                     LOG.Debug($"{_accountId} is required to session close", this.GetType());
                 }
-                else if(msgId != JoinStageInfoUpdateReq.Descriptor.Index)
+                else if(msgId == JoinStageInfoUpdateReq.Descriptor.Index)
                 {
                     JoinStageInfoUpdateReq joinStageMsg = JoinStageInfoUpdateReq.Parser.ParseFrom(packet.Data);
                     string playEndpoint = joinStageMsg.PlayEndpoint;
                     long stageId = joinStageMsg.StageId;
                     var stageIndex = UpdateStageInfo(playEndpoint, stageId);
-                    LOG.Debug($"{_accountId} is stageInfo updated:{playEndpoint},{stageId} $", this.GetType());
+                    _sessionSender.Reply(
+                        new ReplyPacket(new JoinStageInfoUpdateRes()
+                        {
+                            StageIdx = stageIndex,
+                        })
+                    );
+                    LOG.Debug($"{_accountId} is stageInfo updated: playEndpoint:{playEndpoint},stageId:{stageId}, stageIndex:{stageIndex}", this.GetType());
                 }
-                else if (msgId != LeaveStageMsg.Descriptor.Index)
+                else if (msgId == LeaveStageMsg.Descriptor.Index)
                 {
                     var stageId = LeaveStageMsg.Parser.ParseFrom(packet.Data).StageId;
                     ClearRoomInfo(stageId);
@@ -286,6 +327,7 @@ namespace PlayHouse.Service.Session
         {
             using (clientPacket)
             {
+                LOG.Trace($"SendTo Client - PacketInfo:{clientPacket.Header}",this.GetType());
                 _session.Send(clientPacket);
             }
         }

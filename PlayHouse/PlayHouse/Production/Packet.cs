@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PlayHouse.Communicator.Message
+namespace PlayHouse.Production
 {
     using Google.Protobuf;
     using Playhouse.Protocol;
+    using PlayHouse.Communicator.Message;
 
 
     public delegate void ReplyCallback(ReplyPacket replyPacket);
@@ -15,7 +16,7 @@ namespace PlayHouse.Communicator.Message
     public interface IBasePacket : IDisposable
     {
         IPayload MovePayload();
-        
+
         ReadOnlySpan<byte> Data { get; }
     }
 
@@ -30,28 +31,28 @@ namespace PlayHouse.Communicator.Message
 
         public Packet(int msgId = 0)
         {
-            this.MsgId = msgId;
-            this._payload =new EmptyPayload();
+            MsgId = msgId;
+            _payload = new EmptyPayload();
         }
 
         public Packet(int msgId, IPayload payload) : this(msgId)
         {
             _payload = payload;
         }
-          
+
 
         public Packet(IMessage message) : this(message.Descriptor.Index, new ProtoPayload(message)) { }
         public Packet(int msgId, ByteString message) : this(msgId, new ByteStringPayload(message)) { }
 
-        
 
-        public ReadOnlySpan<byte> Data=>_payload!.Data;
+
+        public ReadOnlySpan<byte> Data => _payload!.Data;
 
         public IPayload MovePayload()
         {
-            
+
             IPayload temp = _payload;
-            _payload = new EmptyPayload() ;
+            _payload = new EmptyPayload();
             return temp;
         }
 
@@ -70,23 +71,23 @@ namespace PlayHouse.Communicator.Message
 
         public ReplyPacket(short errorCode, int msgId, IPayload payload)
         {
-            this.ErrorCode = errorCode;
-            this.MsgId = msgId;
-            this._payload = payload;
+            ErrorCode = errorCode;
+            MsgId = msgId;
+            _payload = payload;
         }
 
-        public ReplyPacket(short errorCode = 0, int msgId = 0):this(errorCode,msgId,new EmptyPayload()){}
+        public ReplyPacket(short errorCode = 0, int msgId = 0) : this(errorCode, msgId, new EmptyPayload()) { }
 
         public ReplyPacket(short errorCode, IMessage message) : this(errorCode, message.Descriptor.Index, new ProtoPayload(message)) { }
         public ReplyPacket(IMessage message) : this(0, message.Descriptor.Index, new ProtoPayload(message)) { }
-        
+
 
         public bool IsSuccess()
         {
             return ErrorCode == 0;
         }
 
-   
+
         public ReadOnlySpan<byte> Data => _payload.Data;
 
         public IPayload MovePayload()

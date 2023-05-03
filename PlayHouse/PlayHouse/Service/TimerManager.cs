@@ -12,8 +12,8 @@ namespace PlayHouse.Service
     using System.Collections.Generic;
     using System.Threading;
     using System.Collections.Concurrent;
+    using PlayHouse.Production;
 
-   
     public class TimerManager
     {
         private readonly IProcessor _service;

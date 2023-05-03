@@ -1,5 +1,6 @@
 ﻿using PlayHouse.Communicator.Message;
 using PlayHouse.Communicator.PlaySocket;
+using PlayHouse.Production;
 using System.Net;
 
 
@@ -29,9 +30,17 @@ namespace PlayHouse.Communicator
 
             _jobBucket.Add(() =>
             {
-                _playSocket.Connect(endpoint);
-                _connected.Add(endpoint);
-                _disconnected.Remove(endpoint);
+                try
+                {
+                    _playSocket.Connect(endpoint);
+                    _connected.Add(endpoint);
+                    _disconnected.Remove(endpoint);
+                    LOG.Info($"connected with {endpoint}", this.GetType());
+                }
+                catch(Exception ex) 
+                {
+                    LOG.Error($"connect error - endpoint:{endpoint}, error:{ex.Message}", this.GetType());
+                }
             });
         }
 
@@ -44,10 +53,23 @@ namespace PlayHouse.Communicator
 
             _jobBucket.Add(() =>
             {
-                _playSocket.Disconnect(endpoint);
-                _disconnected.Add(endpoint);
-                _connected.Remove(endpoint);
+                try
+                {
+                    _playSocket.Disconnect(endpoint);
+                    LOG.Info($"disconnected with {endpoint}", this.GetType());
+                }
+                catch(Exception ex)
+                {
+                    LOG.Error($"disconnect error - endpoint:{endpoint}, error:{ex.Message}", this.GetType());
+                    
+                }finally {
+                    _connected.Remove(endpoint);
+                    _disconnected.Add(endpoint); 
+                }
+                
             });
+            
+            
         }
 
         public void Stop()
