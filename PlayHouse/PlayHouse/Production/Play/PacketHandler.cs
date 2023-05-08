@@ -13,7 +13,7 @@ namespace PlayHouse.Production.Play
     {
         private readonly Dictionary<int, IPacketCmd<S, A>> _messageMap = new();
 
-                public async Task Dispatch(S stage, A actor, Packet packet)
+        public async Task Dispatch(S stage, A actor, Packet packet)
         {
             if (_messageMap.TryGetValue(packet.MsgId, out var cmd))
             {

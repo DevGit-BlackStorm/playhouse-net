@@ -8,7 +8,7 @@ namespace PlayHouse.Production.Play
 {
     public class PlayOption
     {
-        public ElementConfigurator ElementConfigurator { get; } = new ElementConfigurator();
+        public PlayProducer PlayProducer { get; } = new PlayProducer();
     }
 
 }

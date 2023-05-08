@@ -8,7 +8,7 @@ using PlayHouse.Service.Play;
 
 namespace PlayHouse.Production.Play
 {
-    public class ElementConfigurator
+    public class PlayProducer
     {
         private readonly Dictionary<string, Func<IStageSender, IStage>> _rooms = new();
         private readonly Dictionary<string, Func<IActorSender, IActor>> _users = new();

@@ -289,17 +289,17 @@ namespace PlayHouse.Service.Play
 
         public IStage CreateContentRoom(string stageType, XStageSender roomSender)
         {
-            return _playOption.ElementConfigurator.GetStage(stageType, roomSender);
+            return _playOption.PlayProducer.GetStage(stageType, roomSender);
         }
 
         public IActor CreateContentUser(string stageType, XActorSender userSender)
         {
-            return _playOption.ElementConfigurator.GetActor(stageType, userSender);
+            return _playOption.PlayProducer.GetActor(stageType, userSender);
         }
 
         public bool IsValidType(string stageType)
         {
-            return _playOption.ElementConfigurator.IsInvalidType(stageType);
+            return _playOption.PlayProducer.IsInvalidType(stageType);
         }
     }
 

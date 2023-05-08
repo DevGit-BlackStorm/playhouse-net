@@ -45,7 +45,7 @@ namespace PlayHouseTests.Service.Play
             var reqCache = new RequestCache(0);
             var playOption = new PlayOption();
 
-            playOption.ElementConfigurator.Register(
+            playOption.PlayProducer.Register(
                 stageType,
                 stageSender => contentStage,
                 actorSender => Mock.Of<IActor>()
