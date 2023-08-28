@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using Google.Protobuf.Collections;
-using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Org.Ulalax.Playhouse.Protocol;
 using Playhouse.Protocol;
@@ -20,35 +19,30 @@ namespace PlayHouseTests.Service.Api.plain
     class ReflectionTestResult
     {
         public static Dictionary<string, string> ResultMap = new();
-
     }
 
-    public  class ApiReflectionTest 
+    public class ApiReflectionTest
     {
-        static ApiReflectionTest()
-        {
-            var collections = new ServiceCollection();
-            collections.AddTransient<TestApiService>();
-            var mockSender = new Mock<ISender>();
-            collections.AddSingleton<ISender>(ServiceProvider =>
-            {
-                return mockSender.Object;
-            });
-            var mockPanel = new Mock<ISystemPanel>();
-            collections.AddSingleton<ISystemPanel>(ServiceProvider =>
-            {
-                return mockPanel.Object;
-            });
+        //[Fact]
+        //public async Task Test_Init_Method()
+        //{
+        //    var apiReflections = new ApiReflection();
+        //    var systemPanel = new Mock<ISystemPanel>();
+        //    var sender = new Mock<ISender>();
 
-            XServiceProvider.Instance = collections.BuildServiceProvider();
 
-        }
+        //    await apiReflections.CallInitMethod(systemPanel.Object, sender.Object);
 
-        [Fact] public async Task Test_CALL_Method()
+        //    ReflectionTestResult.ResultMap["TestApiService_Init"].Should().Be("OK");
+
+        //}
+
+        [Fact]
+        public async Task Test_CALL_Method()
         {
             var apiReflections = new ApiReflection();
-            //var systemPanel = new Mock<ISystemPanel>();
-            //var sender = new Mock<ISender>();
+            var systemPanel = new Mock<ISystemPanel>();
+            var sender = new Mock<ISender>();
             var apiSender = new AllApiSender(0, new Mock<IClientCommunicator>().Object, new RequestCache(0));
             bool isBackend = false;
 
@@ -72,12 +66,12 @@ namespace PlayHouseTests.Service.Api.plain
         public async Task Test_CALL_Backend_Method()
         {
             var apiReflections = new ApiReflection();
-            //var systemPanel = new Mock<ISystemPanel>();
-            //var sender = new Mock<ISender>();
+            var systemPanel = new Mock<ISystemPanel>();
+            var sender = new Mock<ISender>();
             var apiSender = new AllApiSender(0, new Mock<IClientCommunicator>().Object, new RequestCache(0));
             bool isBackend = true;
 
-            // await apiReflections.CallInitMethod(systemPanel.Object, sender.Object);
+            //await apiReflections.CallInitMethod(systemPanel.Object, sender.Object);
 
             var routePacket = RoutePacket.ApiOf(new Packet(new ApiTestMsg1() { TestMsg = "ApiBackendServiceCall_Test1" }), false, isBackend);
 
@@ -93,6 +87,5 @@ namespace PlayHouseTests.Service.Api.plain
 
         }
 
-    
     }
 }

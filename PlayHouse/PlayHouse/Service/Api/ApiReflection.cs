@@ -1,10 +1,9 @@
-﻿
-using Microsoft.Extensions.DependencyInjection;
-using Playhouse.Protocol;
+﻿using Playhouse.Protocol;
 using PlayHouse.Communicator.Message;
 using PlayHouse.Production;
 using PlayHouse.Production.Api;
 using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace PlayHouse.Service.Api
 {
@@ -21,40 +20,40 @@ namespace PlayHouse.Service.Api
         }
     }
 
-    //public class ApiInstance
-    //{
-    //    public object Instance { get; set; }
-    //    public ApiInstance(object instance)
-    //    {
-    //        Instance = instance;
-    //    }
-    //}
+    public class ApiInstance
+    {
+        public object Instance { get; set; }
+        public MethodInfo Method { get; set; }
+        public ApiInstance(object instance,MethodInfo methodInfo)
+        {
+            Instance = instance;
+            Method = methodInfo;
+        }
+    }
 
-  
+
 
     class Reflections
     {
         private Type[] _findTypes;
-        
+
         public Reflections(params Type[] types)
         {
             this._findTypes = GetAllSubtypes(types);
         }
 
 
-        public List<MethodInfo> GetMethodsBySignature(string methodName,Type returnType, params Type[] parameterTypes)
+        public List<MethodInfo> GetMethodsBySignature(string methodName, Type returnType, params Type[] parameterTypes)
         {
             return _findTypes
                 .SelectMany(type => type.GetMethods())
-                .Where(method => 
+                .Where(method =>
                     method.Name == methodName &&
                     method.ReturnType == returnType &&
                     method.GetParameters().Select(p => p.ParameterType).SequenceEqual(parameterTypes))
                 .ToList();
         }
 
-        public Type[] GetTypes() => _findTypes;
-        
         //private Type[] GetAllSubtypes(params Type[] subTypes)
         //{
         //    return AppDomain.CurrentDomain.GetAssemblies()
@@ -66,31 +65,21 @@ namespace PlayHouse.Service.Api
         private Type[] GetAllSubtypes(params Type[] subTypes)
         {
             return AppDomain.CurrentDomain.GetAssemblies()
-                    .Where(assembly => !assembly.FullName!.StartsWith("Castle.Core", StringComparison.OrdinalIgnoreCase))  // Castle.Core 어셈블리 제외
-                    .SelectMany(assembly => assembly.GetTypes())
-                    .Where(type => type.IsClass &&
-                                   (string.IsNullOrEmpty(type.Namespace) ||
-                                    !type.Namespace.StartsWith("Castle.Proxies", StringComparison.OrdinalIgnoreCase)) &&  // Castle.Proxies 네임스페이스가 없거나 아닌 경우만 포함
-                                   !type.IsAbstract &&
-                                   subTypes.Any(subType => subType.IsAssignableFrom(type)))
-                    .ToArray();
-
-            //return AppDomain.CurrentDomain.GetAssemblies()
-            //    .SelectMany(assembly => assembly.GetTypes())
-            //    .Where(type => type.IsClass && 
-            //    !type.IsAbstract && subTypes.Any(subType => subType.IsAssignableFrom(type)))
-            //    .ToArray();
+                .SelectMany(assembly => assembly.GetTypes())
+                .Where(type => type.IsClass && !type.IsAbstract && subTypes.Any(subType => subType.IsAssignableFrom(type)))
+                .ToArray();
         }
-        public List<(string,Object)> InvokeMethodByName(string methodName, params object[] arguments)
+        public List<(string, Object,MethodInfo)> InvokeMethodByName(string methodName, params object[] arguments)
         {
             return _findTypes
                 .SelectMany(type => type.GetMethods())
                 .Where(m => m.Name == methodName)
                 .Select(m =>
                 {
-                    var instance = Activator.CreateInstance(m.DeclaringType!);
-                    var result = m.Invoke(instance, arguments);
-                    return  (m.DeclaringType!.FullName!, result!) ;
+                    var instance = FormatterServices.GetUninitializedObject(m.DeclaringType!);
+                    //var instance = Activator.CreateInstance(m.DeclaringType!);
+                    //var result = m.Invoke(instance, arguments);
+                    return (m.DeclaringType!.FullName!, instance!,m);
                 })
                 .ToList();
         }
@@ -98,7 +87,7 @@ namespace PlayHouse.Service.Api
 
     public class ApiReflection
     {
-        private readonly Dictionary<string, Type> _types = new Dictionary<string, Type>();
+        private readonly Dictionary<string, ApiInstance> _instances = new Dictionary<string, ApiInstance>();
         //private readonly List<ApiMethod> _initMethods = new List<ApiMethod>();
         private readonly Dictionary<int, ApiMethod> _methods = new Dictionary<int, ApiMethod>();
         private readonly Dictionary<int, ApiMethod> _backendMethods = new Dictionary<int, ApiMethod>();
@@ -107,8 +96,8 @@ namespace PlayHouse.Service.Api
 
         public ApiReflection()
         {
-            var reflections = new Reflections(typeof(IApiController));            
-            ExtractTypes(reflections);
+            var reflections = new Reflections(typeof(IApiController));
+            ExtractInstance(reflections);
             ExtractHandlerMethod(reflections);
         }
 
@@ -118,9 +107,9 @@ namespace PlayHouse.Service.Api
         //    {
         //        try
         //        {
-        //            if (!_types.ContainsKey(targetMethod.ClassName)) throw new ApiException.NotRegisterApiInstance(targetMethod.ClassName);
-        //            var apiInstance = _types[targetMethod.ClassName];
-        //            var task =  (Task)targetMethod.Method.Invoke(apiInstance.Instance, new object[] { systemPanel, sender })!;
+        //            if (!_instances.ContainsKey(targetMethod.ClassName)) throw new ApiException.NotRegisterApiInstance(targetMethod.ClassName);
+        //            var apiInstance = _instances[targetMethod.ClassName];
+        //            var task = (Task)targetMethod.Method.Invoke(apiInstance.Instance, new object[] { systemPanel, sender })!;
         //            await task;
         //        }
         //        catch (Exception e)
@@ -137,20 +126,22 @@ namespace PlayHouse.Service.Api
             var targetMethod = isBackend ? (_backendMethods.ContainsKey(msgId) ? _backendMethods[msgId] : null) : (_methods.ContainsKey(msgId) ? _methods[msgId] : null);
             if (targetMethod == null) throw new ApiException.NotRegisterApiMethod($"not registered message msgId:{msgId}");
 
-            if (!_types.ContainsKey(targetMethod.ClassName)) throw new ApiException.NotRegisterApiInstance(targetMethod.ClassName);
-            var type = _types[targetMethod.ClassName];
+            if (!_instances.ContainsKey(targetMethod.ClassName)) throw new ApiException.NotRegisterApiInstance(targetMethod.ClassName);
+            var classInstance = _instances[targetMethod.ClassName];
 
             try
             {
-                var instance = XServiceProvider.Instance.GetRequiredService(type);
+                var targetInstance = classInstance.Method.Invoke(classInstance.Instance,null);
+
+
                 if (isBackend)
                 {
-                    var task = (Task)targetMethod.Method.Invoke(instance, new object[] { packet, apiSender as IApiBackendSender })!;
+                    var task = (Task)targetMethod.Method.Invoke(targetInstance, new object[] { packet, apiSender as IApiBackendSender })!;
                     await task;
                 }
                 else
                 {
-                    var task = (Task)targetMethod.Method.Invoke(instance, new object[] { packet, apiSender as IApiSender })!;
+                    var task = (Task)targetMethod.Method.Invoke(targetInstance, new object[] { packet, apiSender as IApiSender })!;
                     await task;
                 }
             }
@@ -161,12 +152,10 @@ namespace PlayHouse.Service.Api
             }
         }
 
-        private void ExtractTypes(Reflections reflections)
+        private void ExtractInstance(Reflections reflections)
         {
-            foreach(Type type in reflections.GetTypes())
-            {
-                _types.Add(type.FullName!, type);
-            }
+
+            reflections.InvokeMethodByName("Instance").ForEach(instance => _instances.Add(instance.Item1, new ApiInstance(instance.Item2,instance.Item3)));
         }
 
         private void ExtractHandlerMethod(Reflections reflections)
@@ -181,23 +170,22 @@ namespace PlayHouse.Service.Api
         //    reflections.GetMethodsBySignature("Init", typeof(Task), typeof(ISystemPanel), typeof(ISender)).ForEach(el => {
         //        _initMethods.Add(new ApiMethod(0, el.DeclaringType!.FullName!, el));
         //    });
-            
+
         //}
 
         private void RegisterHandlerMethod(Reflections reflections)
         {
             //var reflections = new Reflections(typeof(IApiService));
-            reflections.GetMethodsBySignature("Handles", typeof(void), typeof(IHandlerRegister),typeof(IBackendHandlerRegister)).ForEach(methodInfo =>
+            reflections.GetMethodsBySignature("Handles", typeof(void), typeof(IHandlerRegister), typeof(IBackendHandlerRegister)).ForEach(methodInfo =>
             {
                 var className = methodInfo.DeclaringType!.FullName!;
-                var type = _types[className!]!;
+                var apiInstance = _instances[className!]!;
                 var handlerRegister = new XHandlerRegister();
                 var backendHandlerRegister = new XBackendHandlerRegister();
-                var instance = XServiceProvider.Instance.GetRequiredService(type);
-                methodInfo.Invoke(instance, new object[]{handlerRegister, backendHandlerRegister });
+                methodInfo.Invoke(apiInstance.Instance, new object[] { handlerRegister, backendHandlerRegister });
 
-                
-                foreach (var (key,value) in handlerRegister.Handles)
+
+                foreach (var (key, value) in handlerRegister.Handles)
                 {
                     if (_messageIndexChecker.ContainsKey(key))
                     {

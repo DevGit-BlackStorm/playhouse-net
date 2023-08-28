@@ -12,20 +12,13 @@ namespace PlayHouse.Service.Api
         private readonly CommonOption _commonOption;
         private readonly ApiOption _apiOption;
         private Communicator.Communicator? _communicator;
-        private Func<IServiceProvider> _serviceProviderFunc;
-        private IServiceCollection  _serviceCollection;
 
         public ApiServer(
             CommonOption commonOption, 
-            ApiOption apiOption, 
-            IServiceCollection serviceCollection,
-            Func<IServiceProvider> serviceProviderFunc
-            )
+            ApiOption apiOption)
         {
             _commonOption = commonOption;
             _apiOption = apiOption;
-            _serviceCollection = serviceCollection;
-            _serviceProviderFunc = serviceProviderFunc;
         }
 
         public void Start()
@@ -56,11 +49,6 @@ namespace PlayHouse.Service.Api
             var nodeId = storageClient.GetNodeId(bindEndpoint);
 
             var systemPanel = new XSystemPanel(serverInfoCenter, communicateClient, nodeId);
-
-
-            _serviceCollection.AddSingleton<ISystemPanel, XSystemPanel>();
-            _serviceCollection.AddSingleton<ISender,XSender>();
-            XServiceProvider.Instance = _serviceProviderFunc.Invoke();
 
             ControlContext.BaseSender = sender;
             ControlContext.SystemPanel = systemPanel;
