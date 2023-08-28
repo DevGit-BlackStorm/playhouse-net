@@ -5,24 +5,18 @@ using PlayHouse.Production.Api;
 
 namespace PlayHouseTests.Service.Api.plain
 {
-    internal class TestApiService : IApiService
+
+    public class TestApiService : IApiController
     {
-        private ISystemPanel? _systemPanel;
-        private ISender? _sender;
+        private readonly ISystemPanel _systemPanel;
+        private readonly ISender _sender;
 
-        public TestApiService()
-        {
-
-        }
-
-        public async Task Init(ISystemPanel systemPanel, ISender sender)
+        public TestApiService(ISystemPanel systemPanel,ISender sender)
         {
             _systemPanel = systemPanel;
             _sender = sender;
-            ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Init"] = "OK";
-            await Task.CompletedTask;
-
         }
+
         public void Handles(IHandlerRegister handlerRegister,IBackendHandlerRegister backendHandlerRegister)
         {
             handlerRegister.Add(ApiTestMsg1.Descriptor.Index, Test1);
@@ -32,10 +26,6 @@ namespace PlayHouseTests.Service.Api.plain
             backendHandlerRegister.Add(ApiTestMsg2.Descriptor.Index, Test4);
         }
 
-        public IApiService Instance()
-        {
-            return new TestApiService();
-        }
 
         public async Task Test1(Packet packet, IApiSender apiSender)
         {

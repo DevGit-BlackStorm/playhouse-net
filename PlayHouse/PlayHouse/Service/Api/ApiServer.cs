@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using PlayHouse.Production;
 using PlayHouse.Production.Api;
 using CommonLib;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace PlayHouse.Service.Api
 {
@@ -17,10 +18,11 @@ namespace PlayHouse.Service.Api
         private readonly ApiOption _apiOption;
         private Communicator.Communicator? _communicator;
 
-        public ApiServer(CommonOption commonOption, ApiOption apiOption)
+        public ApiServer(CommonOption commonOption, ApiOption apiOption, IServiceCollection serviceCollection)
         {
             _commonOption = commonOption;
             _apiOption = apiOption;
+            PlayServiceCollection.Instance = serviceCollection;
         }
 
         public void Start()
@@ -51,8 +53,15 @@ namespace PlayHouse.Service.Api
             var nodeId = storageClient.GetNodeId(bindEndpoint);
 
             var systemPanel = new XSystemPanel(serverInfoCenter, communicateClient, nodeId);
+
+            
+            PlayServiceCollection.Instance.AddSingleton<ISystemPanel, XSystemPanel>();
+            PlayServiceCollection.Instance.AddSingleton<ISender,XSender>();
+            PlayServiceProvider.Instance = PlayServiceCollection.Instance.BuildServiceProvider();
+
             ControlContext.BaseSender = sender;
             ControlContext.SystemPanel = systemPanel;
+
 
             var service = new ApiProcessor(serviceId, _apiOption, requestCache, communicateClient, sender, systemPanel);
             _communicator = new Communicator.Communicator(

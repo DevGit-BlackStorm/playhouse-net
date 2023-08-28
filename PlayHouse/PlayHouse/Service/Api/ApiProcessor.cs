@@ -66,8 +66,8 @@ namespace PlayHouse.Service.Api
         {
             _state.Set(ServerState.RUNNING);
 
-            var task = (Task)_apiReflection.CallInitMethod(_systemPanel, sender);
-            task.Wait();
+            //var task = (Task)_apiReflection.CallInitMethod(_systemPanel, sender);
+            //task.Wait();
 
             _threadLoop.Start();
         }

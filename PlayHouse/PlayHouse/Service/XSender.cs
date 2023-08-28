@@ -11,7 +11,7 @@ using PlayHouse.Production;
 namespace PlayHouse.Service
 {
     public class XSender : ISender
-    { 
+    {
         private readonly short _serviceId;
         private readonly IClientCommunicator _clientCommunicator;
         private readonly RequestCache _reqCache;

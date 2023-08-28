@@ -20,17 +20,9 @@ namespace PlayHouse.Production.Api
         void Add(int msgId, ApiBackendHandler handler);
     }
 
-    public interface IApiService
+    public interface IApiController
     {
-        Task Init(ISystemPanel systemPanel, ISender sender);
         void Handles(IHandlerRegister handlerRegister, IBackendHandlerRegister backendHandlerRegister);
-        IApiService Instance();
     }
 
-    //public interface IApiBackendService
-    //{
-    //    Task Init(ISystemPanel systemPanel, ISender sender);
-    //    void Handles(IBackendHandlerRegister register);
-    //    IApiBackendService Instance();
-    //}
 }
