@@ -1,10 +1,5 @@
 ﻿using PlayHouse.Communicator.PlaySocket;
 using PlayHouse.Communicator;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using PlayHouse.Production;
 using PlayHouse.Production.Api;
 using CommonLib;
@@ -17,12 +12,20 @@ namespace PlayHouse.Service.Api
         private readonly CommonOption _commonOption;
         private readonly ApiOption _apiOption;
         private Communicator.Communicator? _communicator;
+        private Func<IServiceProvider> _serviceProviderFunc;
+        private IServiceCollection  _serviceCollection;
 
-        public ApiServer(CommonOption commonOption, ApiOption apiOption, IServiceCollection serviceCollection)
+        public ApiServer(
+            CommonOption commonOption, 
+            ApiOption apiOption, 
+            IServiceCollection serviceCollection,
+            Func<IServiceProvider> serviceProviderFunc
+            )
         {
             _commonOption = commonOption;
             _apiOption = apiOption;
-            PlayServiceCollection.Instance = serviceCollection;
+            _serviceCollection = serviceCollection;
+            _serviceProviderFunc = serviceProviderFunc;
         }
 
         public void Start()
@@ -54,10 +57,10 @@ namespace PlayHouse.Service.Api
 
             var systemPanel = new XSystemPanel(serverInfoCenter, communicateClient, nodeId);
 
-            
-            PlayServiceCollection.Instance.AddSingleton<ISystemPanel, XSystemPanel>();
-            PlayServiceCollection.Instance.AddSingleton<ISender,XSender>();
-            PlayServiceProvider.Instance = PlayServiceCollection.Instance.BuildServiceProvider();
+
+            _serviceCollection.AddSingleton<ISystemPanel, XSystemPanel>();
+            _serviceCollection.AddSingleton<ISender,XSender>();
+            XServiceProvider.Instance = _serviceProviderFunc.Invoke();
 
             ControlContext.BaseSender = sender;
             ControlContext.SystemPanel = systemPanel;

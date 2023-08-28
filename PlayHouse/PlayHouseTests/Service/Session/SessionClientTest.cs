@@ -6,7 +6,6 @@ using PlayHouse.Service.Session;
 using Xunit;
 using Moq;
 using PlayHouse.Service.Session.network;
-using Google.Protobuf.WellKnownTypes;
 using PlayHouse.Production;
 
 namespace PlayHouseTests.Service.Session

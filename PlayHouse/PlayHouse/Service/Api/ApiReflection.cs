@@ -66,9 +66,20 @@ namespace PlayHouse.Service.Api
         private Type[] GetAllSubtypes(params Type[] subTypes)
         {
             return AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(assembly => assembly.GetTypes())
-                .Where(type => type.IsClass && !type.IsAbstract && subTypes.Any(subType => subType.IsAssignableFrom(type)))
-                .ToArray();
+                    .Where(assembly => !assembly.FullName!.StartsWith("Castle.Core", StringComparison.OrdinalIgnoreCase))  // Castle.Core 어셈블리 제외
+                    .SelectMany(assembly => assembly.GetTypes())
+                    .Where(type => type.IsClass &&
+                                   (string.IsNullOrEmpty(type.Namespace) ||
+                                    !type.Namespace.StartsWith("Castle.Proxies", StringComparison.OrdinalIgnoreCase)) &&  // Castle.Proxies 네임스페이스가 없거나 아닌 경우만 포함
+                                   !type.IsAbstract &&
+                                   subTypes.Any(subType => subType.IsAssignableFrom(type)))
+                    .ToArray();
+
+            //return AppDomain.CurrentDomain.GetAssemblies()
+            //    .SelectMany(assembly => assembly.GetTypes())
+            //    .Where(type => type.IsClass && 
+            //    !type.IsAbstract && subTypes.Any(subType => subType.IsAssignableFrom(type)))
+            //    .ToArray();
         }
         public List<(string,Object)> InvokeMethodByName(string methodName, params object[] arguments)
         {
@@ -131,7 +142,7 @@ namespace PlayHouse.Service.Api
 
             try
             {
-                var instance = PlayServiceProvider.Instance.GetRequiredService(type);
+                var instance = XServiceProvider.Instance.GetRequiredService(type);
                 if (isBackend)
                 {
                     var task = (Task)targetMethod.Method.Invoke(instance, new object[] { packet, apiSender as IApiBackendSender })!;
@@ -182,7 +193,7 @@ namespace PlayHouse.Service.Api
                 var type = _types[className!]!;
                 var handlerRegister = new XHandlerRegister();
                 var backendHandlerRegister = new XBackendHandlerRegister();
-                var instance = PlayServiceProvider.Instance.GetRequiredService(type);
+                var instance = XServiceProvider.Instance.GetRequiredService(type);
                 methodInfo.Invoke(instance, new object[]{handlerRegister, backendHandlerRegister });
 
                 

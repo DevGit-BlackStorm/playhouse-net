@@ -27,28 +27,28 @@ namespace PlayHouseTests.Service.Api.plain
     {
         static ApiReflectionTest()
         {
-            PlayServiceCollection.Instance = new ServiceCollection();
-            PlayServiceCollection.Instance.AddTransient<TestApiService>();
+            var collections = new ServiceCollection();
+            collections.AddTransient<TestApiService>();
             var mockSender = new Mock<ISender>();
-            PlayServiceCollection.Instance.AddSingleton<ISender>(ServiceProvider =>
+            collections.AddSingleton<ISender>(ServiceProvider =>
             {
                 return mockSender.Object;
             });
             var mockPanel = new Mock<ISystemPanel>();
-            PlayServiceCollection.Instance.AddSingleton<ISystemPanel>(ServiceProvider =>
+            collections.AddSingleton<ISystemPanel>(ServiceProvider =>
             {
                 return mockPanel.Object;
             });
 
-            PlayServiceProvider.Instance = PlayServiceCollection.Instance.BuildServiceProvider();
+            XServiceProvider.Instance = collections.BuildServiceProvider();
 
         }
 
         [Fact] public async Task Test_CALL_Method()
         {
             var apiReflections = new ApiReflection();
-            var systemPanel = new Mock<ISystemPanel>();
-            var sender = new Mock<ISender>();
+            //var systemPanel = new Mock<ISystemPanel>();
+            //var sender = new Mock<ISender>();
             var apiSender = new AllApiSender(0, new Mock<IClientCommunicator>().Object, new RequestCache(0));
             bool isBackend = false;
 
@@ -72,8 +72,8 @@ namespace PlayHouseTests.Service.Api.plain
         public async Task Test_CALL_Backend_Method()
         {
             var apiReflections = new ApiReflection();
-            var systemPanel = new Mock<ISystemPanel>();
-            var sender = new Mock<ISender>();
+            //var systemPanel = new Mock<ISystemPanel>();
+            //var sender = new Mock<ISender>();
             var apiSender = new AllApiSender(0, new Mock<IClientCommunicator>().Object, new RequestCache(0));
             bool isBackend = true;
 
