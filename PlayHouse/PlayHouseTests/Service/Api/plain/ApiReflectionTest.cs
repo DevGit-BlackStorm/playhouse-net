@@ -52,13 +52,13 @@ namespace PlayHouseTests.Service.Api.plain
 
             await apiReflections.CallMethod(routePacket.RouteHeader, routePacket.ToPacket(), isBackend, apiSender);
 
-            ReflectionTestResult.ResultMap["TestApiService_Test1"].Should().Be("ApiServiceCall_Test1");
+            ReflectionTestResult.ResultMap["TestApiController_Test1"].Should().Be("ApiServiceCall_Test1");
 
             routePacket = RoutePacket.ApiOf(new Packet(new ApiTestMsg2() { TestMsg = "ApiServiceCall_Test2" }), false, isBackend);
 
             await apiReflections.CallMethod(routePacket.RouteHeader, routePacket.ToPacket(), isBackend, apiSender);
 
-            ReflectionTestResult.ResultMap["TestApiService_Test2"].Should().Be("ApiServiceCall_Test2");
+            ReflectionTestResult.ResultMap["TestApiController_Test2"].Should().Be("ApiServiceCall_Test2");
 
         }
 
@@ -77,13 +77,13 @@ namespace PlayHouseTests.Service.Api.plain
 
             await apiReflections.CallMethod(routePacket.RouteHeader, routePacket.ToPacket(), isBackend, apiSender);
 
-            ReflectionTestResult.ResultMap["TestApiService_Test3"].Should().Be("ApiBackendServiceCall_Test1");
+            ReflectionTestResult.ResultMap["TestApiController_Test3"].Should().Be("ApiBackendServiceCall_Test1");
 
             routePacket = RoutePacket.ApiOf(new Packet(new ApiTestMsg2() { TestMsg = "ApiBackendServiceCall_Test2" }), false, isBackend);
 
             await apiReflections.CallMethod(routePacket.RouteHeader, routePacket.ToPacket(), isBackend, apiSender);
 
-            ReflectionTestResult.ResultMap["TestApiService_Test4"].Should().Be("ApiBackendServiceCall_Test2");
+            ReflectionTestResult.ResultMap["TestApiController_Test4"].Should().Be("ApiBackendServiceCall_Test2");
 
         }
 

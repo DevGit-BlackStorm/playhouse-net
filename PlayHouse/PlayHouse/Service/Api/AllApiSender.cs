@@ -32,12 +32,12 @@ namespace PlayHouse.Service.Api
         public string SessionEndpoint => _currentHeader?.From ?? "";
         public int Sid => _currentHeader?.Sid ?? 0;
 
-        public void Authenticate(long accountId)
+        public void Authenticate(Guid accountId)
         {
             var message = new AuthenticateMsg()
             {
                 ServiceId = (int)serviceId,
-                AccountId = accountId
+                AccountId = ByteString.CopyFrom(accountId.ToByteArray())
             };
 
             if (_currentHeader != null)
@@ -52,7 +52,7 @@ namespace PlayHouse.Service.Api
 
   
 
-        public async Task<JoinStageResult> JoinStage(string playEndpoint, long stageId, Packet packet)
+        public async Task<JoinStageResult> JoinStage(string playEndpoint, Guid stageId, Packet packet)
         {
             var req = new JoinStageReq()
             {
@@ -70,8 +70,8 @@ namespace PlayHouse.Service.Api
         }
 
         public async Task<CreateJoinStageResult> CreateJoinStage(string playEndpoint,
-                                                string stageType, 
-                                                long stageId,
+                                                string stageType,
+                                                Guid stageId,
                                                 Packet createPacket,                
                                                 Packet joinPacket)
         {

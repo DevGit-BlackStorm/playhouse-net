@@ -13,7 +13,7 @@ namespace PlayHouse.Service.Play.Base
 {
     public class BaseStage
     {
-        private long _stageId;
+        private Guid _stageId;
         private PlayProcessor _playProcessor;
         private IClientCommunicator _clientCommunicator;
         private RequestCache _reqCache;
@@ -29,7 +29,7 @@ namespace PlayHouse.Service.Play.Base
         private IStage?  _stage; 
         public bool IsCreated { get; private set; }
 
-        public BaseStage(long stageId, 
+        public BaseStage(Guid stageId, 
                          PlayProcessor playProcessor, 
                          IClientCommunicator clientCommunicator,
                          RequestCache reqCache, 
@@ -65,7 +65,7 @@ namespace PlayHouse.Service.Play.Base
                 }
                 else
                 {
-                    long accountId = routePacket.AccountId;
+                    Guid accountId = routePacket.AccountId;
                     var baseUser = _playProcessor.FindUser(accountId);
                     if (baseUser != null)
                     {
@@ -124,7 +124,7 @@ namespace PlayHouse.Service.Play.Base
             return outcome;
         }
 
-        public async Task<(ReplyPacket, int)> Join(long accountId, string sessionEndpoint, int sid, string apiEndpoint, Packet packet)
+        public async Task<(ReplyPacket, int)> Join(Guid accountId, string sessionEndpoint, int sid, string apiEndpoint, Packet packet)
         {
             BaseActor? baseUser = _playProcessor.FindUser(accountId);
 
@@ -163,14 +163,14 @@ namespace PlayHouse.Service.Play.Base
             this._stageSender.Reply(packet);
         }
 
-        public void LeaveStage(long accountId, string sessionEndpoint, int sid)
+        public void LeaveStage(Guid accountId, string sessionEndpoint, int sid)
         {
             this._playProcessor.RemoveUser(accountId);
             var request = new LeaveStageMsg();
             this._stageSender.SendToBaseSession(sessionEndpoint, sid,new Packet(request));
         }
 
-        public long StageId=> _stageSender.StageId;
+        public Guid StageId => _stageSender.StageId;
 
         public void CancelTimer(long timerId)
         {
@@ -194,7 +194,7 @@ namespace PlayHouse.Service.Play.Base
             }
         }
 
-        public async Task OnPostJoinRoom(long accountId)
+        public async Task OnPostJoinRoom(Guid accountId)
         {
             try
             {
@@ -216,7 +216,7 @@ namespace PlayHouse.Service.Play.Base
             }
         }
 
-        public async Task OnDisconnect(long accountId)
+        public async Task OnDisconnect(Guid accountId)
         {
             var baseUser = _playProcessor.FindUser(accountId);
 

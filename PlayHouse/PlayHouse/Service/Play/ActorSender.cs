@@ -9,7 +9,7 @@ namespace PlayHouse.Service.Play
 {
     public interface IActorSender
     {
-        long AccountId();
+        Guid AccountId();
         string SessionEndpoint();
         string ApiEndpoint();
         int Sid();

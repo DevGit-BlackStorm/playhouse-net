@@ -7,6 +7,7 @@ using Xunit;
 using Moq;
 using PlayHouse.Service.Session.network;
 using PlayHouse.Production;
+using Google.Protobuf;
 
 namespace PlayHouseTests.Service.Session
 {
@@ -66,12 +67,13 @@ namespace PlayHouseTests.Service.Session
         public void ReceiveAuthenticatePacket_SessionClientShouldBeAuthenticated()
         {
             // api 서버로부터 authenticate 패킷을 받을 경우 인증 확인 및 session info 정보 확인
-            long accountId = 1000L;
+            //long accountId = 1000L;
+            Guid accountId = Guid.NewGuid();
 
             var message = new AuthenticateMsg()
             {
                 ServiceId = _idApi,
-                AccountId = accountId,
+                AccountId = ByteString.CopyFrom(accountId.ToByteArray()),
             };
             var routePacket = RoutePacket.SessionOf(_sid, new Packet(message), true, true);
 

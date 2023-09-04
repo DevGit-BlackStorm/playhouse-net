@@ -11,12 +11,12 @@ namespace PlayHouse.Service.Session
     public class TargetAddress
     {
         public string Endpoint { get; }
-        public long StageId { get; }
+        public Guid StageId { get; } = Guid.Empty;
 
-        public TargetAddress(string endpoint, long stageId = 0)
+        public TargetAddress(string endpoint, Guid? stageId = null)
         {
             Endpoint = endpoint;
-            StageId = stageId;
+            StageId = stageId ?? Guid.Empty;
         }
     }
     class StageIndexGenerator
@@ -52,7 +52,7 @@ namespace PlayHouse.Service.Session
         public  bool IsAuthenticated { get; private set; } = false;
         private HashSet<string> _signInURIs = new HashSet<string>();
         //private Dictionary<short, string> _sessionData = new Dictionary<short, string>();
-        private long _accountId = 0;
+        private Guid _accountId = Guid.Empty;
 
         private Dictionary<int, TargetAddress> _playEndpoints = new Dictionary<int, TargetAddress>();
         private short _authenticateServiceId = 0;
@@ -84,7 +84,7 @@ namespace PlayHouse.Service.Session
         }
 
 
-        private void Authenticate(short serviceId, string apiEndpoint, long accountId)
+        private void Authenticate(short serviceId, string apiEndpoint, Guid accountId)
         {
             this._accountId = accountId;
             this.IsAuthenticated = true;
@@ -92,7 +92,7 @@ namespace PlayHouse.Service.Session
             this._authServerEndpoint = apiEndpoint;
         }
 
-        private int UpdateStageInfo(string playEndpoint, long stageId)
+        private int UpdateStageInfo(string playEndpoint, Guid stageId)
         {
             int? stageIndex = null;
             foreach (var action in _playEndpoints)
@@ -261,7 +261,7 @@ namespace PlayHouse.Service.Session
                 {
                     AuthenticateMsg authenticateMsg = AuthenticateMsg.Parser.ParseFrom(packet.Data);
                     var apiEndpoint = packet.RouteHeader.From;
-                    Authenticate((short)authenticateMsg.ServiceId, apiEndpoint,authenticateMsg.AccountId);
+                    Authenticate((short)authenticateMsg.ServiceId, apiEndpoint, new Guid(authenticateMsg.AccountId.ToByteArray()));
                     LOG.Debug($"{_accountId} is authenticated", this.GetType());
                 }
                 else if(msgId == SessionCloseMsg.Descriptor.Index)
@@ -273,7 +273,7 @@ namespace PlayHouse.Service.Session
                 {
                     JoinStageInfoUpdateReq joinStageMsg = JoinStageInfoUpdateReq.Parser.ParseFrom(packet.Data);
                     string playEndpoint = joinStageMsg.PlayEndpoint;
-                    long stageId = joinStageMsg.StageId;
+                    Guid stageId = new Guid(joinStageMsg.StageId.ToByteArray());
                     var stageIndex = UpdateStageInfo(playEndpoint, stageId);
                     _sessionSender.Reply(
                         new ReplyPacket(new JoinStageInfoUpdateRes()
@@ -285,7 +285,7 @@ namespace PlayHouse.Service.Session
                 }
                 else if (msgId == LeaveStageMsg.Descriptor.Index)
                 {
-                    var stageId = LeaveStageMsg.Parser.ParseFrom(packet.Data).StageId;
+                    Guid stageId = new (LeaveStageMsg.Parser.ParseFrom(packet.Data).StageId.ToByteArray());
                     ClearRoomInfo(stageId);
                     LOG.Debug($"stage info clear - accountId: {_accountId}, stageId: {stageId}", this.GetType());
 
@@ -304,7 +304,7 @@ namespace PlayHouse.Service.Session
 
 
 
-        private void ClearRoomInfo(long stageId)
+        private void ClearRoomInfo(Guid stageId)
         {
             int? stageIndex = null;
             foreach (var action in _playEndpoints)

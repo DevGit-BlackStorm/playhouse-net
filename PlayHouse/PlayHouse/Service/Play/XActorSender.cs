@@ -10,14 +10,14 @@ namespace PlayHouse.Service.Play
 {
     public class XActorSender : IActorSender
     {
-        private readonly long _accountId;
+        private readonly Guid _accountId;
         private string _sessionEndpoint;
         private int _sid;
         private string _apiEndpoint;
         private readonly BaseStage _baseStage;
         private readonly IServerInfoCenter _serverInfoCenter;
 
-        public XActorSender(long accountId, string sessionEndpoint, int sid, string apiEndpoint, BaseStage baseStage, IServerInfoCenter serverInfoCenter)
+        public XActorSender(Guid accountId, string sessionEndpoint, int sid, string apiEndpoint, BaseStage baseStage, IServerInfoCenter serverInfoCenter)
         {
             _accountId = accountId;
             _sessionEndpoint = sessionEndpoint;
@@ -33,7 +33,7 @@ namespace PlayHouse.Service.Play
 
         public int Sid() => _sid;
 
-        public long AccountId() => _accountId;
+        public Guid AccountId() => _accountId;
 
         public void LeaveStage()
         {

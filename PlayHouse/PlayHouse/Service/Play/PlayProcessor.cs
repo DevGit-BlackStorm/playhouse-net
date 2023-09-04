@@ -19,8 +19,8 @@ namespace PlayHouse.Service.Play
     public class PlayProcessor : IProcessor
     {
         private AtomicEnum<ServerState> _state = new(ServerState.DISABLE);
-        private readonly ConcurrentDictionary<long, BaseActor> _baseUsers = new();
-        private readonly ConcurrentDictionary<long, BaseStage> _baseRooms = new();
+        private readonly ConcurrentDictionary<Guid, BaseActor> _baseUsers = new();
+        private readonly ConcurrentDictionary<Guid, BaseStage> _baseRooms = new();
         private Thread _threadForCoroutine;
         private readonly ConcurrentQueue<RoutePacket> _msgQueue = new();
         private readonly TimerManager _timerManager;
@@ -54,12 +54,12 @@ namespace PlayHouse.Service.Play
             _threadForCoroutine.Start();
         }
 
-        public void RemoveRoom(long stageId)
+        public void RemoveRoom(Guid stageId)
         {
             _baseRooms.Remove(stageId,out _);
         }
 
-        public void RemoveUser(long accountId)
+        public void RemoveUser(Guid accountId)
         {
             _baseUsers.Remove(accountId, out _);
         }
@@ -68,7 +68,7 @@ namespace PlayHouse.Service.Play
         {
             _sender.ErrorReply(routeHeader, errorCode);
         }
-        private BaseStage MakeBaseRoom(long stageId)
+        private BaseStage MakeBaseRoom(Guid stageId)
         {
             var stageSender =  new XStageSender(ServiceId, stageId, this, _clientCommunicator, _requestCache);
             var sessionUpdator = new XSessionUpdater(Endpoint(), stageSender);
@@ -119,7 +119,7 @@ namespace PlayHouse.Service.Play
         }
 
 
-        private async Task DoBaseRoomPacket(int msgId, RoutePacket routePacket, long stageId)
+        private async Task DoBaseRoomPacket(int msgId, RoutePacket routePacket, Guid stageId)
         {
 
             if (msgId == CreateStageReq.Descriptor.Index)
@@ -182,7 +182,7 @@ namespace PlayHouse.Service.Play
             }
         }
 
-        private void TimerProcess(long stageId, long timerId, TimerMsg timerMsg, TimerCallbackTask timerCallback)
+        private void TimerProcess(Guid stageId, long timerId, TimerMsg timerMsg, TimerCallbackTask timerCallback)
         {
             var room = _baseRooms[stageId];
 
@@ -257,7 +257,7 @@ namespace PlayHouse.Service.Play
             _state.Set(ServerState.RUNNING);
         }
 
-        public BaseActor? FindUser(long accountId)
+        public BaseActor? FindUser(Guid accountId)
         {
             if(_baseUsers.TryGetValue(accountId, out var user)) return user;
             return null;
@@ -269,7 +269,7 @@ namespace PlayHouse.Service.Play
             _baseUsers[baseActor.ActorSender.AccountId()] = baseActor;
         }
 
-        public BaseStage? FindRoom(long stageId)
+        public BaseStage? FindRoom(Guid stageId)
         {
             return _baseRooms[stageId];
         }
@@ -279,7 +279,7 @@ namespace PlayHouse.Service.Play
             return _publicEndpoint;
         }
 
-        public void CancelTimer(long stageId, long timerId)
+        public void CancelTimer(Guid stageId, long timerId)
         {
             if (_baseRooms.ContainsKey(stageId))
             {

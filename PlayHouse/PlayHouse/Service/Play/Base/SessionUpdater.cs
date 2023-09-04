@@ -1,4 +1,5 @@
-﻿using Playhouse.Protocol;
+﻿using Google.Protobuf;
+using Playhouse.Protocol;
 using PlayHouse.Production;
 
 namespace PlayHouse.Service.Play.Base
@@ -23,7 +24,7 @@ namespace PlayHouse.Service.Play.Base
         {
             var joinStageInfoUpdateReq = new JoinStageInfoUpdateReq()
             {
-                StageId = _stageSender.StageId,
+                StageId = ByteString.CopyFrom(_stageSender.StageId.ToByteArray()),
                 PlayEndpoint = _playEndpoint,
             };
 

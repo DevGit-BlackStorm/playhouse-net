@@ -54,8 +54,8 @@ namespace PlayHouse.Communicator.Message
         public bool IsBase { get; set; } = false;
         public bool IsBackend { get; set; } = false;
         public bool IsReply { get; set; } = false;
-        public long AccountId { get; set; } = 0;
-        public long StageId { get; set; } = 0;
+        public Guid AccountId { get; set; } = Guid.Empty;
+        public Guid StageId { get; set; } = Guid.Empty;
 
         public string From { get; set; } = "";
 
@@ -74,8 +74,8 @@ namespace PlayHouse.Communicator.Message
             IsBase = headerMsg.IsBase;
             IsBackend = headerMsg.IsBackend;
             IsReply = headerMsg.IsReply;
-            AccountId = headerMsg.AccountId;
-            StageId = headerMsg.StageId;
+            AccountId = new Guid(headerMsg.AccountId.ToByteArray());
+            StageId = new Guid(headerMsg.StageId.ToByteArray());
             ForClient = headerMsg.ForClient;
         }
 
@@ -95,8 +95,8 @@ namespace PlayHouse.Communicator.Message
             message.IsBase = IsBase;
             message.IsBackend = IsBackend;
             message.IsReply = IsReply;
-            message.AccountId = AccountId;
-            message.StageId = StageId;
+            message.AccountId = ByteString.CopyFrom(AccountId.ToByteArray());
+            message.StageId = ByteString.CopyFrom(StageId.ToByteArray());
             message.ForClient = ForClient;
             return message;
         }
@@ -111,7 +111,7 @@ namespace PlayHouse.Communicator.Message
             return new RouteHeader(header);
         }
 
-        public static RouteHeader TimerOf(long stageId, short msgId)
+        public static RouteHeader TimerOf(Guid stageId, short msgId)
         {
             return new RouteHeader(new Header(msgId: msgId))
             {
@@ -161,7 +161,7 @@ namespace PlayHouse.Communicator.Message
             return RouteHeader.IsBase;
         }
 
-        public long AccountId => RouteHeader.AccountId;
+        public Guid AccountId => RouteHeader.AccountId;
 
         public void SetMsgSeq(short msgSeq)
         {
@@ -178,7 +178,7 @@ namespace PlayHouse.Communicator.Message
             return RouteHeader.IsReply;
         }
 
-        public long StageId => RouteHeader.StageId;
+        public Guid StageId => RouteHeader.StageId;
 
         public bool IsSystem()
         {
@@ -233,7 +233,7 @@ namespace PlayHouse.Communicator.Message
             return new RoutePacket(routeHeader, packet.MovePayload());
         }
 
-        public static RoutePacket AddTimerOf(TimerMsg.Types.Type type, long stageId, long timerId, TimerCallbackTask timerCallback, TimeSpan initialDelay, TimeSpan period, int count = 0)
+        public static RoutePacket AddTimerOf(TimerMsg.Types.Type type, Guid stageId, long timerId, TimerCallbackTask timerCallback, TimeSpan initialDelay, TimeSpan period, int count = 0)
         {
             Header header = new Header(msgId:(short)TimerMsg.Descriptor.Index);
             RouteHeader routeHeader = RouteHeader.Of(header);
@@ -255,7 +255,7 @@ namespace PlayHouse.Communicator.Message
             };
         }
 
-        public static RoutePacket StageTimerOf(long stageId, long timerId, TimerCallbackTask timerCallback, object? timerState)
+        public static RoutePacket StageTimerOf(Guid stageId, long timerId, TimerCallbackTask timerCallback, object? timerState)
         {
             Header header = new Header(msgId: StageTimer.Descriptor.Index);
             RouteHeader routeHeader = RouteHeader.Of(header);
@@ -268,7 +268,7 @@ namespace PlayHouse.Communicator.Message
             };
         }
 
-        public static RoutePacket StageOf(long stageId, long accountId, Packet packet, bool isBase, bool isBackend)
+        public static RoutePacket StageOf(Guid stageId, Guid accountId, Packet packet, bool isBase, bool isBackend)
         {
             Header header = new Header(msgId: packet.MsgId);
             RouteHeader routeHeader = RouteHeader.Of(header);
@@ -375,7 +375,7 @@ namespace PlayHouse.Communicator.Message
             Result = result;
         }
 
-        public static RoutePacket Of(long stageId, AsyncPostCallback asyncPostCallback, Object result)
+        public static RoutePacket Of(Guid stageId, AsyncPostCallback asyncPostCallback, Object result)
         {
             var header = new Header(msgId: AsyncBlock.Descriptor.Index);
             var routeHeader = RouteHeader.Of(header);

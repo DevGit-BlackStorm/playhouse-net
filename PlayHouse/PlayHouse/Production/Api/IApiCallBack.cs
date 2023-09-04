@@ -8,6 +8,6 @@ namespace PlayHouse.Production.Api
 {
     public interface IApiCallBack
     {
-        void OnDisconnect(long accountId);
+        void OnDisconnect(Guid accountId);
     }
 }

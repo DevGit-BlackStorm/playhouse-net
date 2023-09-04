@@ -18,8 +18,8 @@ message RouteHeaderMsg {
   bool is_reply = 4;
   bool is_base = 5;
   bool is_backend = 6;
-  int64 stage_id = 7;
-  int64 account_id = 8;
+  bytes stage_id = 7;
+  bytes account_id = 8;
   bool for_client = 9;
 }
 
@@ -40,7 +40,7 @@ message ServerInfoMsg{
 
 message AuthenticateMsg {
   int32 service_id = 1;
-  int64 account_id = 2;
+  bytes account_id = 2;
 }
 
 //message UpdateSessionInfoMsg {
@@ -105,13 +105,13 @@ message JoinStageRes {
 
 message JoinStageInfoUpdateReq{
   string playEndpoint = 1;
-  int64 stage_id = 2;
+  bytes stage_id = 2;
 }
 message JoinStageInfoUpdateRes{
   int32 stage_idx = 1;
 }
 message LeaveStageMsg {
-  int64 stage_id = 1;
+  bytes stage_id = 1;
 }
 
 //message LeaveStageRes {

@@ -92,7 +92,7 @@ namespace PlayHouse.Service
         {
             return _reqCache.GetSequence();
         }
-        public void SendToApi(string apiEndpoint, long accountId, Packet packet)
+        public void SendToApi(string apiEndpoint, Guid accountId, Packet packet)
         {
             var routePacket = RoutePacket.ApiOf(packet, isBase: false, isBackend: true);
             routePacket.RouteHeader.AccountId = accountId;
@@ -115,7 +115,7 @@ namespace PlayHouse.Service
             _clientCommunicator.Send(apiEndpoint, routePacket);
         }
 
-        public void SendToBaseApi(string apiEndpoint,long accountId,Packet packet)
+        public void SendToBaseApi(string apiEndpoint, Guid accountId,Packet packet)
         {
             RoutePacket routePacket = RoutePacket.ApiOf( packet, true, true);
             routePacket.RouteHeader.AccountId = accountId;
@@ -123,13 +123,13 @@ namespace PlayHouse.Service
             _clientCommunicator.Send(apiEndpoint, routePacket);
         }
 
-        public void SendToStage(string playEndpoint, long stageId, long accountId, Packet packet)
+        public void SendToStage(string playEndpoint, Guid stageId, Guid accountId, Packet packet)
         {
             RoutePacket routePacket = RoutePacket.StageOf(stageId, accountId, packet, false, true);
             _clientCommunicator.Send(playEndpoint, routePacket);
         }
 
-        public void SendToBaseStage(string playEndpoint, long stageId, long accountId, Packet packet)
+        public void SendToBaseStage(string playEndpoint, Guid stageId, Guid accountId, Packet packet)
         {
             RoutePacket routePacket = RoutePacket.StageOf(stageId, accountId, packet, true, true);
             _clientCommunicator.Send(playEndpoint, routePacket);
@@ -148,11 +148,11 @@ namespace PlayHouse.Service
         {
             return await AsyncToApi(apiEndpoint,  packet).Task;
         }
-        public async Task<ReplyPacket> RequestToApi(string apiEndpoint,long accountId, Packet packet)
+        public async Task<ReplyPacket> RequestToApi(string apiEndpoint, Guid accountId, Packet packet)
         {
             return await AsyncToApi(apiEndpoint, accountId, packet);
         }
-        public async Task<ReplyPacket> AsyncToApi(string apiEndpoint, long accountId, Packet packet)
+        public async Task<ReplyPacket> AsyncToApi(string apiEndpoint, Guid accountId, Packet packet)
         {
             short seq = GetSequence();
             var taskCompletionSource = new TaskCompletionSource<ReplyPacket>();
@@ -175,7 +175,7 @@ namespace PlayHouse.Service
             return deferred;
         }
 
-        public void RequestToStage(string playEndpoint, long stageId, long accountId, Packet packet, ReplyCallback replyCallback)
+        public void RequestToStage(string playEndpoint, Guid stageId, Guid accountId, Packet packet, ReplyCallback replyCallback)
         {
             short seq = (short)GetSequence();
             _reqCache.Put(seq, new ReplyObject(replyCallback));
@@ -184,7 +184,7 @@ namespace PlayHouse.Service
             _clientCommunicator.Send(playEndpoint, routePacket);
         }
 
-        public ReplyPacket CallToBaseRoom(string playEndpoint, long stageId, long accountId, Packet packet)
+        public ReplyPacket CallToBaseRoom(string playEndpoint, Guid stageId, Guid accountId, Packet packet)
         {
             short seq = (short) GetSequence();
             var future = new TaskCompletionSource<ReplyPacket>();
@@ -196,7 +196,7 @@ namespace PlayHouse.Service
             return future.Task.Result;
         }
 
-        public TaskCompletionSource<ReplyPacket> AsyncToStage(string playEndpoint, long stageId, long accountId, Packet packet)
+        public TaskCompletionSource<ReplyPacket> AsyncToStage(string playEndpoint, Guid stageId, Guid accountId, Packet packet)
         {
             short seq = (short)GetSequence();
             var deferred = new TaskCompletionSource<ReplyPacket>();
@@ -207,12 +207,12 @@ namespace PlayHouse.Service
             return deferred;
         }
 
-        public async Task<ReplyPacket> RequestToStage(string playEndpoint, long stageId, long accountId, Packet packet)
+        public async Task<ReplyPacket> RequestToStage(string playEndpoint, Guid stageId, Guid accountId, Packet packet)
         {
             return await AsyncToStage(playEndpoint, stageId, accountId, packet).Task;
         }
 
-        public async Task<ReplyPacket> RequestToBaseStage(string playEndpoint, long stageId, long accountId, Packet packet)
+        public async Task<ReplyPacket> RequestToBaseStage(string playEndpoint, Guid stageId, Guid accountId, Packet packet)
         {
             short seq = GetSequence();
             var deferred = new TaskCompletionSource<ReplyPacket>();

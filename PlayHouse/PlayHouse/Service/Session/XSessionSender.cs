@@ -13,7 +13,7 @@ namespace PlayHouse.Service.Session
             this._clientCommunicator = clientCommunicator;
         }
 
-        public void RelayToStage(string playEndpoint, long stageId, int sid, long accountId, ClientPacket packet)
+        public void RelayToStage(string playEndpoint, Guid stageId, int sid, Guid accountId, ClientPacket packet)
         {
             var routePacket = RoutePacket.ApiOf(packet.ToPacket(), false, false);
             routePacket.RouteHeader.StageId = stageId;
@@ -24,7 +24,7 @@ namespace PlayHouse.Service.Session
             _clientCommunicator.Send(playEndpoint, routePacket);
         }
 
-        public void RelayToApi(string apiEndpoint, int sid, long accountId, ClientPacket packet)
+        public void RelayToApi(string apiEndpoint, int sid, Guid accountId, ClientPacket packet)
         {
             var routePacket = RoutePacket.ApiOf( packet.ToPacket(), false, false);
             routePacket.RouteHeader.Sid = sid;

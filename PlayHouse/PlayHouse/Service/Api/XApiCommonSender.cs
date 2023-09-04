@@ -24,9 +24,9 @@ namespace PlayHouse.Service.Api
             this.reqCache = reqCache;
         }
 
-        public long AccountId => _currentHeader?.AccountId ?? 0;
+        public Guid AccountId => _currentHeader?.AccountId ?? Guid.Empty;
 
-        public async Task<CreateStageResult> CreateStage(string playEndpoint, string stageType, long stageId, Packet packet)
+        public async Task<CreateStageResult> CreateStage(string playEndpoint, string stageType, Guid stageId, Packet packet)
         {
             var req = new CreateStageReq()
             {
@@ -35,7 +35,7 @@ namespace PlayHouse.Service.Api
                 Payload = ByteString.CopyFrom(packet.Data)
             };
 
-            var reply = await RequestToBaseStage(playEndpoint, stageId, 0, new Packet(req));
+            var reply = await RequestToBaseStage(playEndpoint, stageId, Guid.Empty, new Packet(req));
 
             var res = CreateStageRes.Parser.ParseFrom(reply.Data);
 

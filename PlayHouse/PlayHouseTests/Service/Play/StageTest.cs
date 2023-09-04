@@ -29,14 +29,15 @@ namespace PlayHouseTests.Service.Play
         private readonly List<RoutePacket> resultList = new();
         private readonly string stageType = "dungeon";
         private PlayProcessor playProcessor;
-        private readonly long testStageId = 10000L;
+        private readonly Guid testStageId = Guid.NewGuid();
         private readonly string sessionEndpoint = "tcp://127.0.0.1:5555";
         private readonly string bindEndpoint = "tcp://127.0.0.1:8777";
         private BaseStage stage;
         private XStageSender xStageSender;
         private IStage contentStage = Mock.Of<IStage>();
-        private long stageId = 1;
+        private Guid stageId = Guid.NewGuid();
         Mock<IClientCommunicator> clientCommunicator;
+        private Guid accountId= Guid.NewGuid();
 
      
         public StageTest()
@@ -132,7 +133,7 @@ namespace PlayHouseTests.Service.Play
             clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
             .Callback<string, RoutePacket>((sid, packet) => result.Add(packet));
 
-            var createJoinRoom = CreateJoinRoomPacket(stageType, testStageId, 1000);
+            var createJoinRoom = CreateJoinRoomPacket(stageType, testStageId, accountId);
             await stage.Send(createJoinRoom);
 
 
@@ -156,7 +157,7 @@ namespace PlayHouseTests.Service.Play
             clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
             .Callback<string, RoutePacket>((sid, packet) => result.Add(packet));
 
-            var createJoinRoom = CreateJoinRoomPacket(stageType, stageId, 1000);
+            var createJoinRoom = CreateJoinRoomPacket(stageType, stageId, accountId);
             // Act
             await stage.Send(createJoinRoom);
 
@@ -184,12 +185,12 @@ namespace PlayHouseTests.Service.Play
                 StageType = stageType
             });
 
-            var result = RoutePacket.StageOf(0, 0, packet, true, true);
+            var result = RoutePacket.StageOf(Guid.Empty, Guid.Empty, packet, true, true);
             result.SetMsgSeq(1);
             return result;
         }
 
-        private RoutePacket JoinRoomPacket(long stageId, long accountId)
+        private RoutePacket JoinRoomPacket(Guid stageId, Guid accountId)
         {
             var packet = new Packet(new JoinStageReq
             {
@@ -203,7 +204,7 @@ namespace PlayHouseTests.Service.Play
             return result;
         }
 
-        private RoutePacket CreateJoinRoomPacket(string stageType, long stageId, long accountId)
+        private RoutePacket CreateJoinRoomPacket(string stageType, Guid stageId, Guid accountId)
         {
             var req = new CreateJoinStageReq
             {

@@ -26,7 +26,7 @@ namespace PlayHouse.Service
 
 
 
-        public long RegisterRepeatTimer(long stageId, long timerId, long initialDelay, long period, TimerCallbackTask timerCallback)
+        public long RegisterRepeatTimer(Guid stageId, long timerId, long initialDelay, long period, TimerCallbackTask timerCallback)
         {
             var timer = new Timer(timerState =>
             {
@@ -39,7 +39,7 @@ namespace PlayHouse.Service
             return timerId;
         }
 
-        public long RegisterCountTimer(long stageId, long timerId, long initialDelay, int count, long period, TimerCallbackTask timerCallback)
+        public long RegisterCountTimer(Guid stageId, long timerId, long initialDelay, int count, long period, TimerCallbackTask timerCallback)
         {
             int remainingCount = count;
 

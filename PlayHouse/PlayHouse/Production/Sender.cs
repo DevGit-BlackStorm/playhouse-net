@@ -14,7 +14,7 @@ namespace PlayHouse.Production
         void Resume();
         void Shutdown();
         ServerState GetServerState();
-        long GenerateUUID();
+        //long GenerateUUID();
     }
 
     public interface ISender
@@ -23,15 +23,15 @@ namespace PlayHouse.Production
         void Reply(ReplyPacket reply);
         void SendToClient(string sessionEndpoint, int sid, Packet packet);
         void SendToApi(string apiEndpoint, Packet packet);
-        void SendToStage(string playEndpoint, long stageId, long accountId, Packet packet);
+        void SendToStage(string playEndpoint, Guid stageId, Guid accountId, Packet packet);
 
         void RequestToApi(string apiEndpoint, Packet packet, ReplyCallback replyCallback);
-        void RequestToStage(string playEndpoint, long stageId, long accountId, Packet packet, ReplyCallback replyCallback);
+        void RequestToStage(string playEndpoint, Guid stageId, Guid accountId, Packet packet, ReplyCallback replyCallback);
         Task<ReplyPacket> RequestToApi(string apiEndpoint, Packet packet);
-        Task<ReplyPacket> RequestToStage(string playEndpoint, long stageId, long accountId, Packet packet);
+        Task<ReplyPacket> RequestToStage(string playEndpoint, Guid stageId, Guid accountId, Packet packet);
 
         TaskCompletionSource<ReplyPacket> AsyncToApi(string apiEndpoint, Packet packet);
-        TaskCompletionSource<ReplyPacket> AsyncToStage(string playEndpoint, long stageId, long accountId, Packet packet);
+        TaskCompletionSource<ReplyPacket> AsyncToStage(string playEndpoint, Guid stageId, Guid accountId, Packet packet);
 
         void SendToSystem(string endpoint, Packet packet);
         Task<ReplyPacket> RequestToSystem(string endpoint, Packet packet);
@@ -42,24 +42,24 @@ namespace PlayHouse.Production
     public interface IApiCommonSender : ISender
     {
 
-        long AccountId { get; }
-        Task<CreateStageResult> CreateStage(string playEndpoint, string stageType, long stageId, Packet packet);
+        Guid AccountId { get; }
+        Task<CreateStageResult> CreateStage(string playEndpoint, string stageType, Guid stageId, Packet packet);
 
 
     }
     public interface IApiSender : IApiCommonSender
     {
-        void Authenticate(long accountId);
+        void Authenticate(Guid accountId);
         string SessionEndpoint { get; }
         int Sid { get; }
 
         Task<JoinStageResult> JoinStage(string playEndpoint,
-                    long stageId,
+                    Guid stageId,
                     Packet packet
       );
         Task<CreateJoinStageResult> CreateJoinStage(string playEndpoint,
                             string stageType,
-                            long stageId,
+                            Guid stageId,
                             Packet createPacket,
                             Packet joinPacket
         );
@@ -80,7 +80,7 @@ namespace PlayHouse.Production
 
     public interface IStageSender : ISender
     {
-        public long StageId { get; }
+        public Guid StageId { get; }
         public string StageType { get; }
 
         long AddRepeatTimer(TimeSpan initialDelay, TimeSpan period, TimerCallbackTask timerCallback);

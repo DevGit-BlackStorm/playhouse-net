@@ -83,7 +83,7 @@ namespace PlayHouse.Service.Api
 
                     try
                     {
-                        if (routeHeader.AccountId != 0)
+                        if (routeHeader.AccountId != Guid.Empty)
                         {
                             var accountApiProcessor =(AccountApiProcessor) _cache.Get($"{ routeHeader.AccountId}");
                             if (accountApiProcessor == null)
