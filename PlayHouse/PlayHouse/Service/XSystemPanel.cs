@@ -18,7 +18,7 @@ namespace PlayHouse.Service
             this._uniqueIdGenerator = new UniqueIdGenerator(NodeId);
         }
 
-        public IServerInfo GetServerInfoByService(short serviceId)
+        public IServerInfo GetServerInfoByService(ushort serviceId)
         {
             return _serverInfoCenter.FindRoundRobinServer(serviceId);
         }

@@ -8,12 +8,12 @@ namespace PlayHouse.Communicator
     {
         public string BindEndpoint { get; }
         public ServiceType ServiceType { get; }
-        public short ServiceId { get; }
+        public ushort ServiceId { get; }
         public ServerState State { get; set; }
         public int WeightingPoint { get; set; }
         public long LastUpdate { get; set; }
 
-        public XServerInfo(string bindEndpoint, ServiceType serviceType, short serviceId, ServerState state, int weightingPoint, long lastUpdate)
+        public XServerInfo(string bindEndpoint, ServiceType serviceType, ushort serviceId, ServerState state, int weightingPoint, long lastUpdate)
         {
             BindEndpoint = bindEndpoint;
             ServiceType = serviceType;
@@ -40,14 +40,14 @@ namespace PlayHouse.Communicator
             return new XServerInfo(
                 infoMsg.Endpoint,
                 Enum.Parse<ServiceType>(infoMsg.ServiceType),
-                (short)infoMsg.ServiceId,
+                (ushort)infoMsg.ServiceId,
                 Enum.Parse<ServerState>(infoMsg.ServerState),
                 infoMsg.WeightingPoint,
                 infoMsg.Timestamp
             );
         }
 
-        public static XServerInfo Of(string bindEndpoint, ServiceType serviceType, short serviceId, ServerState state, int weightingPoint, long timeStamp)
+        public static XServerInfo Of(string bindEndpoint, ServiceType serviceType, ushort serviceId, ServerState state, int weightingPoint, long timeStamp)
         {
             return new XServerInfo(bindEndpoint, serviceType, serviceId, state, weightingPoint, timeStamp);
         }
@@ -118,7 +118,7 @@ namespace PlayHouse.Communicator
             return ServiceType;
         }
 
-        short IServerInfo.ServiceId()
+        ushort IServerInfo.ServiceId()
         {
             return ServiceId;
         }

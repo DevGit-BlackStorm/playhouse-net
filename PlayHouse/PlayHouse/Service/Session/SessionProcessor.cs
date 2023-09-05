@@ -10,7 +10,7 @@ namespace PlayHouse.Service.Session
 {
     public class SessionProcessor : IProcessor, ISessionListener
     {
-        private readonly short _serviceId;
+        private readonly ushort _serviceId;
         private readonly SessionOption _sessionOption;
         private readonly IServerInfoCenter _serverInfoCenter;
         private readonly IClientCommunicator _clientCommunicator;
@@ -27,9 +27,9 @@ namespace PlayHouse.Service.Session
         private Thread? _clientMessageLoopThread;
         private Thread? _serverMessageLoopThread;
 
-        public short ServiceId => _serviceId;
+        public ushort ServiceId => _serviceId;
 
-        public SessionProcessor(short serviceId, SessionOption sessionOption, IServerInfoCenter serverInfoCenter,
+        public SessionProcessor(ushort serviceId, SessionOption sessionOption, IServerInfoCenter serverInfoCenter,
                                IClientCommunicator clientCommunicator, RequestCache requestCache, int sessionPort, bool showQps)
         {
             this._serviceId = serviceId;
@@ -136,7 +136,7 @@ namespace PlayHouse.Service.Session
             return ServiceType.SESSION;
         }
 
-        public short GetServiceId()
+        public ushort GetServiceId()
         {
             return _serviceId;
         }

@@ -101,7 +101,7 @@ namespace PlayHouseTests.Service.Play
             await stage.Send(CreateRoomPacket(stageType));
 
             // then
-            result[0].RouteHeader.Header.ErrorCode.Should().Be((short)BaseErrorCode.Success);
+            result[0].RouteHeader.Header.ErrorCode.Should().Be((ushort)BaseErrorCode.Success);
 
             result[0].MsgId.Should().Be(CreateStageRes.Descriptor.Index);
             var createStageRes = CreateStageRes.Parser.ParseFrom(result[0].Data);
@@ -123,7 +123,7 @@ namespace PlayHouseTests.Service.Play
             await stage.Send(CreateRoomPacket("invalid type"));
 
             // then
-            result[0].RouteHeader.Header.ErrorCode.Should().Be((short)BaseErrorCode.StageTypeIsInvalid);
+            result[0].RouteHeader.Header.ErrorCode.Should().Be((ushort)BaseErrorCode.StageTypeIsInvalid);
         }
 
         [Fact]
@@ -231,7 +231,7 @@ namespace PlayHouseTests.Service.Play
             await stage.Send(CreateRoomPacket(stageType));
 
 
-            result[0].RouteHeader.Header.ErrorCode.Should().Be((short)BaseErrorCode.Success);
+            result[0].RouteHeader.Header.ErrorCode.Should().Be((ushort)BaseErrorCode.Success);
 
             var createStageRes = CreateStageRes.Parser.ParseFrom(result[0].Data);
         }

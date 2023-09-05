@@ -36,8 +36,8 @@ namespace PlayHouseTests.Communicator
 
 
             // act
-            redisClient.UpdateServerInfo(new XServerInfo(endpoint1,ServiceType.SESSION,(short)ServiceType.SESSION, ServerState.RUNNING,0,0));
-            redisClient.UpdateServerInfo(new XServerInfo(endpoint2, ServiceType.API, (short)ServiceType.API, ServerState.RUNNING, 0, 0));
+            redisClient.UpdateServerInfo(new XServerInfo(endpoint1,ServiceType.SESSION,(ushort)ServiceType.SESSION, ServerState.RUNNING,0,0));
+            redisClient.UpdateServerInfo(new XServerInfo(endpoint2, ServiceType.API, (ushort)ServiceType.API, ServerState.RUNNING, 0, 0));
 
             // Assert
             List<XServerInfo> serverList = redisClient.GetServerList("");
@@ -55,7 +55,7 @@ namespace PlayHouseTests.Communicator
         {
             var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-            XServerInfo serverInfo = new (endpoint1, ServiceType.SESSION, (short)ServiceType.SESSION, ServerState.RUNNING, 0, timestamp);
+            XServerInfo serverInfo = new (endpoint1, ServiceType.SESSION, (ushort)ServiceType.SESSION, ServerState.RUNNING, 0, timestamp);
 
             serverInfo.TimeOver().Should().BeFalse();
 

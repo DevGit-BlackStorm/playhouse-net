@@ -80,7 +80,7 @@ namespace PlayHouseTests.Communicator
             Thread.Sleep(100);
 
             var message = new HeaderMsg();
-            sessionClient.Send(apiEndpoint, RoutePacket.ClientOf((short)ServiceType.SESSION, 0, new Packet(message)));
+            sessionClient.Send(apiEndpoint, RoutePacket.ClientOf((ushort)ServiceType.SESSION, 0, new Packet(message)));
 
             Thread.Sleep(200);
 
@@ -95,7 +95,7 @@ namespace PlayHouseTests.Communicator
             Thread.Sleep(100);
 
             short messagId = 100;
-            apiClient.Send(sessionEndpoint, RoutePacket.ClientOf((short)ServiceType.API, 0, new Packet(messagId)));
+            apiClient.Send(sessionEndpoint, RoutePacket.ClientOf((ushort)ServiceType.API, 0, new Packet(messagId)));
 
             Thread.Sleep(200);
 

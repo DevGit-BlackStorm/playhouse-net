@@ -8,7 +8,7 @@ namespace PlayHouse.Service.Session
     {
         private IClientCommunicator _clientCommunicator;
 
-        public XSessionSender(short serviceId, IClientCommunicator clientCommunicator, RequestCache reqCache):base(serviceId, clientCommunicator,reqCache)
+        public XSessionSender(ushort serviceId, IClientCommunicator clientCommunicator, RequestCache reqCache):base(serviceId, clientCommunicator,reqCache)
         {
             this._clientCommunicator = clientCommunicator;
         }

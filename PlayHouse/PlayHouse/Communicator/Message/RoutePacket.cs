@@ -8,13 +8,13 @@ namespace PlayHouse.Communicator.Message
 {
     public class Header
     {
-        public short ServiceId { get; set; } = 0;
+        public ushort ServiceId { get; set; } = 0;
         public int MsgId { get; set; } = 0;
-        public short MsgSeq { get; set; } = 0;
-        public short ErrorCode { get; set; } = 0;
+        public ushort MsgSeq { get; set; } = 0;
+        public ushort ErrorCode { get; set; } = 0;
         public byte  StageIndex { get; set; } = 0;
 
-        public Header(short serviceId = 0,int msgId = 0, short msgSeq = 0,short errorCode = 0 ,byte stageIndex = 0)
+        public Header(ushort serviceId = 0,int msgId = 0, ushort msgSeq = 0,ushort errorCode = 0 ,byte stageIndex = 0)
         {
             ServiceId = serviceId;
             MsgId = msgId;
@@ -26,7 +26,7 @@ namespace PlayHouse.Communicator.Message
 
          static public Header Of(HeaderMsg headerMsg)
         {
-            return new Header((short)headerMsg.ServiceId, headerMsg.MsgId, (short)headerMsg.MsgSeq, (short)headerMsg.ErrorCode,(byte)headerMsg.StageIndex);
+            return new Header((ushort)headerMsg.ServiceId, headerMsg.MsgId, (ushort)headerMsg.MsgSeq, (ushort)headerMsg.ErrorCode,(byte)headerMsg.StageIndex);
         }
 
         public  HeaderMsg ToMsg()
@@ -140,7 +140,7 @@ namespace PlayHouse.Communicator.Message
         }
 
         public int MsgId => RouteHeader.MsgId;
-        public short ServiceId() { return RouteHeader.Header.ServiceId; }
+        public ushort ServiceId() { return RouteHeader.Header.ServiceId; }
         public bool IsBackend() { return RouteHeader.IsBackend; }
 
  
@@ -163,7 +163,7 @@ namespace PlayHouse.Communicator.Message
 
         public Guid AccountId => RouteHeader.AccountId;
 
-        public void SetMsgSeq(short msgSeq)
+        public void SetMsgSeq(ushort msgSeq)
         {
             RouteHeader.Header.MsgSeq = msgSeq;
         }
@@ -279,7 +279,7 @@ namespace PlayHouse.Communicator.Message
             return new RoutePacket(routeHeader, packet.MovePayload());
         }
 
-        public static RoutePacket ReplyOf(short serviceId, short msgSeq, int sid,bool forClient, ReplyPacket reply)
+        public static RoutePacket ReplyOf(ushort serviceId, ushort msgSeq, int sid,bool forClient, ReplyPacket reply)
         {
             Header header = new(msgId:reply.MsgId)
             {
@@ -297,7 +297,7 @@ namespace PlayHouse.Communicator.Message
             return routePacket;
         }
 
-        public static RoutePacket ClientOf(short serviceId, int sid, Packet packet)
+        public static RoutePacket ClientOf(ushort serviceId, int sid, Packet packet)
         {
             Header header = new(msgId:packet.MsgId)
             {
@@ -329,7 +329,7 @@ namespace PlayHouse.Communicator.Message
                 throw new Exception($"body size is over : {bodySize}");
             }
 
-            buffer.WriteInt16(XBitConverter.ToNetworkOrder((short)bodySize));
+            buffer.WriteInt16(XBitConverter.ToNetworkOrder((ushort)bodySize));
             buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.ServiceId()));
             buffer.WriteInt32(XBitConverter.ToNetworkOrder(clientPacket.GetMsgId()));
             buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.GetMsgSeq()));

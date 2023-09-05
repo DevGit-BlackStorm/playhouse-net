@@ -17,7 +17,7 @@ namespace PlayHouse.Communicator
 
     public interface IProcessor
     {
-        short ServiceId { get; }
+        ushort ServiceId { get; }
         void OnStart();
         void OnReceive(RoutePacket routePacket);
         void OnStop();

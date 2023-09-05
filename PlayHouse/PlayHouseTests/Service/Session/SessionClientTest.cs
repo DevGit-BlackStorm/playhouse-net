@@ -20,8 +20,8 @@ namespace PlayHouseTests.Service.Session
         private int _sid = 1;
         private ISession _session;
 
-        private short _idSession = 1;
-        private short _idApi = 2;
+        private ushort _idSession = 1;
+        private ushort _idApi = 2;
         
 
         public SessionClientTest()

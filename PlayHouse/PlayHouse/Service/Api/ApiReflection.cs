@@ -88,7 +88,6 @@ namespace PlayHouse.Service.Api
     public class ApiReflection
     {
         private readonly Dictionary<string, ApiInstance> _instances = new Dictionary<string, ApiInstance>();
-        //private readonly List<ApiMethod> _initMethods = new List<ApiMethod>();
         private readonly Dictionary<int, ApiMethod> _methods = new Dictionary<int, ApiMethod>();
         private readonly Dictionary<int, ApiMethod> _backendMethods = new Dictionary<int, ApiMethod>();
         private readonly Dictionary<int, string> _messageIndexChecker = new Dictionary<int, string>();
@@ -101,55 +100,33 @@ namespace PlayHouse.Service.Api
             ExtractHandlerMethod(reflections);
         }
 
-        //public async Task CallInitMethod(ISystemPanel systemPanel, ISender sender)
-        //{
-        //    foreach (var targetMethod in _initMethods)
-        //    {
-        //        try
-        //        {
-        //            if (!_instances.ContainsKey(targetMethod.ClassName)) throw new ApiException.NotRegisterApiInstance(targetMethod.ClassName);
-        //            var apiInstance = _instances[targetMethod.ClassName];
-        //            var task = (Task)targetMethod.Method.Invoke(apiInstance.Instance, new object[] { systemPanel, sender })!;
-        //            await task;
-        //        }
-        //        catch (Exception e)
-        //        {
-        //            LOG.Error(e.StackTrace, this.GetType(), e);
-        //            Environment.Exit(1);
-        //        }
-        //    }
-        //}
 
-        public async Task CallMethod(RouteHeader routeHeader, Packet packet, bool isBackend, AllApiSender apiSender)
+        public async Task CallMethod(RouteHeader routeHeader, Packet packet, IApiSender apiSender)
         {
             var msgId = routeHeader.MsgId;
-            var targetMethod = isBackend ? (_backendMethods.ContainsKey(msgId) ? _backendMethods[msgId] : null) : (_methods.ContainsKey(msgId) ? _methods[msgId] : null);
+            var targetMethod = _methods.ContainsKey(msgId) ? _methods[msgId] : null;
             if (targetMethod == null) throw new ApiException.NotRegisterApiMethod($"not registered message msgId:{msgId}");
 
             if (!_instances.ContainsKey(targetMethod.ClassName)) throw new ApiException.NotRegisterApiInstance(targetMethod.ClassName);
             var classInstance = _instances[targetMethod.ClassName];
 
-            try
-            {
-                var targetInstance = classInstance.Method.Invoke(classInstance.Instance,null);
+            var targetInstance = classInstance.Method.Invoke(classInstance.Instance,null);
+            var task = (Task)targetMethod.Method.Invoke(targetInstance, new object[] { packet, apiSender })!;
+            await task;
+        }
 
+        public async Task BackendCallMethod(RouteHeader routeHeader, Packet packet,IApiBackendSender apiBackendSender)
+        {
+            var msgId = routeHeader.MsgId;
+            var targetMethod = _backendMethods.ContainsKey(msgId) ? _backendMethods[msgId] : null;
+            if (targetMethod == null) throw new ApiException.NotRegisterApiMethod($"not registered message msgId:{msgId}");
 
-                if (isBackend)
-                {
-                    var task = (Task)targetMethod.Method.Invoke(targetInstance, new object[] { packet, apiSender as IApiBackendSender })!;
-                    await task;
-                }
-                else
-                {
-                    var task = (Task)targetMethod.Method.Invoke(targetInstance, new object[] { packet, apiSender as IApiSender })!;
-                    await task;
-                }
-            }
-            catch (Exception e)
-            {
-                apiSender.ErrorReply(routeHeader, (short)BaseErrorCode.UncheckedContentsError);
-                LOG.Error(e.StackTrace, this.GetType(), e);
-            }
+            if (!_instances.ContainsKey(targetMethod.ClassName)) throw new ApiException.NotRegisterApiInstance(targetMethod.ClassName);
+            var classInstance = _instances[targetMethod.ClassName];
+
+            var targetInstance = classInstance.Method.Invoke(classInstance.Instance, null);
+            var task = (Task)targetMethod.Method.Invoke(targetInstance, new object[] { packet, apiBackendSender})!;
+            await task;
         }
 
         private void ExtractInstance(Reflections reflections)

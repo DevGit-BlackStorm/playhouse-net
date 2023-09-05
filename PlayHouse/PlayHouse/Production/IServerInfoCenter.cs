@@ -11,9 +11,9 @@ namespace PlayHouse.Production
     {
         IList<XServerInfo> Update(IList<XServerInfo> serverList);
         XServerInfo FindServer(string endpoint);
-        XServerInfo FindRoundRobinServer(short serviceId);
+        XServerInfo FindRoundRobinServer(ushort serviceId);
         IList<XServerInfo> GetServerList();
-        XServerInfo FindServerByAccountId(short serviceId, Guid accountId);
-        ServiceType FindServerType(short serviceId);
+        XServerInfo FindServerByAccountId(ushort serviceId, Guid accountId);
+        ServiceType FindServerType(ushort serviceId);
     }
 }

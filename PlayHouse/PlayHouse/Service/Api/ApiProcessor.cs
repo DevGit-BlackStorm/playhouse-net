@@ -18,7 +18,7 @@ namespace PlayHouse.Service.Api
 {
     public class ApiProcessor : IProcessor
     {
-        private readonly short _serviceId;
+        private readonly ushort _serviceId;
         private readonly ApiOption _apiOption;
         private readonly RequestCache _requestCache;
         private readonly IClientCommunicator _clientCommunicator;
@@ -33,10 +33,10 @@ namespace PlayHouse.Service.Api
         private CacheItemPolicy _policy;
         private Thread _threadLoop;
 
-        public short ServiceId => _serviceId;
+        public ushort ServiceId => _serviceId;
 
         public ApiProcessor(
-            short serviceId,
+            ushort serviceId,
             ApiOption apiOption,
             RequestCache requestCache,
             IClientCommunicator clientCommunicator,
@@ -65,10 +65,6 @@ namespace PlayHouse.Service.Api
         public void OnStart()
         {
             _state.Set(ServerState.RUNNING);
-
-            //var task = (Task)_apiReflection.CallInitMethod(_systemPanel, sender);
-            //task.Wait();
-
             _threadLoop.Start();
         }
 
@@ -112,15 +108,25 @@ namespace PlayHouse.Service.Api
                             {
                                 try
                                 {
-                                    await _apiReflection.CallMethod(
+                                    if(routePacket.IsBackend())
+                                    {
+                                        await _apiReflection.BackendCallMethod(
                                         routeHeader,
                                         routePacket.ToPacket(),
-                                        routePacket.IsBackend(),
                                         apiSender).ConfigureAwait(false);
+                                    }
+                                    else
+                                    {
+                                        await _apiReflection.CallMethod(
+                                        routeHeader,
+                                        routePacket.ToPacket(),
+                                        apiSender).ConfigureAwait(false);
+                                    }
+                                    
                                 }
                                 catch (Exception e)
                                 {
-                                    apiSender.ErrorReply(routeHeader, (short)BaseErrorCode.SystemError);
+                                    apiSender.ErrorReply(routeHeader, (ushort)BaseErrorCode.SystemError);
                                     LOG.Error(e.StackTrace, this.GetType(), e);
                                 }
                             });
@@ -171,7 +177,7 @@ namespace PlayHouse.Service.Api
             _state.Set(ServerState.RUNNING);
         }
 
-        public short GetServiceId()
+        public ushort GetServiceId()
         {
             return _serviceId;
         }

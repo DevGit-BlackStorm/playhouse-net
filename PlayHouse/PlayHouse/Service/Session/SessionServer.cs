@@ -31,7 +31,7 @@ namespace PlayHouse.Service.Session
             PooledBuffer.Init(_commonOption.MaxBufferPoolSize);
 
             var bindEndpoint = communicatorOption.BindEndpoint;
-            short serviceId = _commonOption.ServiceId;
+            ushort serviceId = _commonOption.ServiceId;
 
             var communicateServer = new XServerCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(),bindEndpoint));
             var communicateClient = new XClientCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(),bindEndpoint));

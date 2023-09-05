@@ -25,3 +25,12 @@ message ApiHandlerTestMsg2{
   string test_msg = 1;
   int32 test_number	 = 2;
 }
+
+message ApiDefaultContentsExceptionTest
+{
+
+}
+
+message ApiContentsExceptionTest
+{
+}

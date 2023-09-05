@@ -12,11 +12,11 @@ namespace PlayHouse.Service.Api
 {
     public class AllApiSender : XApiCommonSender, IApiSender, IApiBackendSender
     {
-        private short serviceId;
+        private ushort serviceId;
         private IClientCommunicator clientCommunicator;
         private RequestCache reqCache;
 
-        public AllApiSender(short serviceId, IClientCommunicator clientCommunicator, RequestCache reqCache)
+        public AllApiSender(ushort serviceId, IClientCommunicator clientCommunicator, RequestCache reqCache)
             : base(serviceId, clientCommunicator, reqCache)
         {
             this.serviceId = serviceId;

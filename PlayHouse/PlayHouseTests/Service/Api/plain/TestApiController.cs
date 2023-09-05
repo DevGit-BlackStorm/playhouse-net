@@ -7,32 +7,35 @@ namespace PlayHouseTests.Service.Api.plain
 {
     internal class TestApiController : IApiController
     {
-        public TestApiController(int x)
-        {
-
-        }
-
-        //public async Task Init(ISystemPanel systemPanel, ISender sender)
-        //{
-        //    _systemPanel = systemPanel;
-        //    _sender = sender;
-        //    ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Init"] = "OK";
-        //    await Task.CompletedTask;
-
-        //}
         public void Handles(IHandlerRegister handlerRegister, IBackendHandlerRegister backendHandlerRegister)
         {
             handlerRegister.Add(ApiTestMsg1.Descriptor.Index, Test1);
             handlerRegister.Add(ApiTestMsg2.Descriptor.Index, Test2);
+            handlerRegister.Add(ApiDefaultContentsExceptionTest.Descriptor.Index, TestApiDefaultContentsException);
+            handlerRegister.Add(ApiContentsExceptionTest.Descriptor.Index, TestApiContentsException);
 
             backendHandlerRegister.Add(ApiTestMsg1.Descriptor.Index, Test3);
             backendHandlerRegister.Add(ApiTestMsg2.Descriptor.Index, Test4);
         }
 
+        private Task TestApiContentsException(Packet packet, IApiSender apiSender)
+        {
+            ExceptionContextStorage.ErrorCode = 101;
+            throw new Exception("test content TestApiContentsException");
+        }
+
+        private Task TestApiDefaultContentsException(Packet packet, IApiSender apiSender)
+        {
+            throw new Exception("test content TestApiDefaultContentsException");
+        }
+
         public IApiController Instance()
         {
-            return new TestApiController(1);
+            return new TestApiController();
         }
+
+
+        
 
         public async Task Test1(Packet packet, IApiSender apiSender)
         {

@@ -25,7 +25,7 @@ namespace PlayHouse.Communicator
             }
         }
 
-        public void Throw(short errorCode)
+        public void Throw(ushort errorCode)
         {
             _replyCallback?.Invoke(new ReplyPacket(errorCode));
             _taskCompletionSource?.SetResult(new ReplyPacket(errorCode));
@@ -61,7 +61,7 @@ namespace PlayHouse.Communicator
             _cache = new MemoryCache("RequestCache", cacheSettings);
         }
 
-        public short GetSequence()
+        public ushort GetSequence()
         {
             return _sequence.IncrementAndGet();
         }

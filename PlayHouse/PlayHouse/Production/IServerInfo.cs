@@ -20,7 +20,7 @@ namespace PlayHouse.Production
     {
         string BindEndpoint();
         ServiceType ServiceType();
-        short ServiceId();
+        ushort ServiceId();
         ServerState State();
         //int WeightingPoint();
         long TimeStamp();

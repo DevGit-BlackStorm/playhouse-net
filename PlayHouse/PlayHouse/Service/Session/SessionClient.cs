@@ -36,7 +36,7 @@ namespace PlayHouse.Service.Session
 
     public class SessionClient
     {
-        private short _serviceId;
+        private ushort _serviceId;
         private int _sid;
         private IServerInfoCenter _serviceInfoCenter;
         private ISession _session;
@@ -55,12 +55,12 @@ namespace PlayHouse.Service.Session
         private Guid _accountId = Guid.Empty;
 
         private Dictionary<int, TargetAddress> _playEndpoints = new Dictionary<int, TargetAddress>();
-        private short _authenticateServiceId = 0;
+        private ushort _authenticateServiceId = 0;
         private string _authServerEndpoint = "";
         private StageIndexGenerator _stageIndexGenerator = new StageIndexGenerator();
 
         public SessionClient(
-            short serviceId, 
+            ushort serviceId, 
             int sid, 
             IServerInfoCenter serviceInfoCenter, 
             ISession session, 
@@ -84,7 +84,7 @@ namespace PlayHouse.Service.Session
         }
 
 
-        private void Authenticate(short serviceId, string apiEndpoint, Guid accountId)
+        private void Authenticate(ushort serviceId, string apiEndpoint, Guid accountId)
         {
             this._accountId = accountId;
             this.IsAuthenticated = true;
@@ -143,7 +143,7 @@ namespace PlayHouse.Service.Session
         {
             try
             {
-                short serviceId = clientPacket.ServiceId();
+                ushort serviceId = clientPacket.ServiceId();
                 int msgId = clientPacket.GetMsgId();
 
                 if (IsAuthenticated)
@@ -169,7 +169,7 @@ namespace PlayHouse.Service.Session
             }
             
         }
-        private IServerInfo FindSuitableServer(short serviceId, string endpoint)
+        private IServerInfo FindSuitableServer(ushort serviceId, string endpoint)
         {
             IServerInfo serverInfo = _serviceInfoCenter.FindServer(endpoint);
             if (serverInfo.State() != ServerState.RUNNING)
@@ -179,7 +179,7 @@ namespace PlayHouse.Service.Session
             return serverInfo;
         }
                
-        private void RelayTo(short serviceId, ClientPacket clientPacket)
+        private void RelayTo(ushort serviceId, ClientPacket clientPacket)
         {
             ServiceType type = _targetServiceCache.FindTypeBy(serviceId);
 
@@ -237,7 +237,7 @@ namespace PlayHouse.Service.Session
                         }
                         catch (Exception e)
                         {
-                            _sessionSender.ErrorReply(routePacket.RouteHeader, (short)BaseErrorCode.SystemError);
+                            _sessionSender.ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.SystemError);
                             LOG.Error(e.StackTrace, this.GetType(), e);
                         }
                     }
@@ -261,7 +261,7 @@ namespace PlayHouse.Service.Session
                 {
                     AuthenticateMsg authenticateMsg = AuthenticateMsg.Parser.ParseFrom(packet.Data);
                     var apiEndpoint = packet.RouteHeader.From;
-                    Authenticate((short)authenticateMsg.ServiceId, apiEndpoint, new Guid(authenticateMsg.AccountId.ToByteArray()));
+                    Authenticate((ushort)authenticateMsg.ServiceId, apiEndpoint, new Guid(authenticateMsg.AccountId.ToByteArray()));
                     LOG.Debug($"{_accountId} is authenticated", this.GetType());
                 }
                 else if(msgId == SessionCloseMsg.Descriptor.Index)

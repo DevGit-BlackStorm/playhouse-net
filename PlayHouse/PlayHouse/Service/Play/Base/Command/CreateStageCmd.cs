@@ -23,7 +23,7 @@ namespace PlayHouse.Service.Play.Base.Command
 
             if (!_playProcessor.IsValidType(stageType))
             {
-                _playProcessor.ErrorReply(routePacket.RouteHeader, (short)BaseErrorCode.StageTypeIsInvalid);
+                _playProcessor.ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.StageTypeIsInvalid);
                 return;
             }
 

@@ -10,7 +10,7 @@ namespace PlayHouse.Service.Api
 {
     public class AccountApiProcessor
     {
-        private readonly short _serviceId;
+        private readonly ushort _serviceId;
         private readonly RequestCache _requestCache;
         private readonly IClientCommunicator _clientCommunicator;
         private readonly ApiReflection _apiReflection;
@@ -20,7 +20,7 @@ namespace PlayHouse.Service.Api
         private readonly AtomicBoolean _isUsing = new AtomicBoolean(false);
 
         public AccountApiProcessor(
-            short serviceId,
+            ushort serviceId,
             RequestCache requestCache,
             IClientCommunicator clientCommunicator,
             ApiReflection apiReflection,
@@ -65,12 +65,33 @@ namespace PlayHouse.Service.Api
 
                             try
                             {
-                                var task = (Task)_apiReflection.CallMethod(routeHeader, item.ToPacket(), routeHeader.IsBase, apiSender)!;
-                                await task;
+                                
+                                if (routeHeader.IsBase)
+                                {
+                                    await _apiReflection.BackendCallMethod(routeHeader, item.ToPacket(), apiSender)!;
+                                }
+                                else
+                                {
+                                    await _apiReflection.CallMethod(routeHeader, item.ToPacket(), apiSender)!;
+                                }
+                                
+                                
                             }
                             catch (Exception e)
                             {
-                                apiSender.ErrorReply(routePacket.RouteHeader, (short)BaseErrorCode.UncheckedContentsError);
+                                // Use this error code when it's set in the content.
+                                // Use the default content error code if it's not set in the content.
+                                if(routeHeader.Header.MsgSeq > 0)
+                                {
+                                    ushort errorCode = ExceptionContextStorage.ErrorCode;
+                                    if (errorCode == (ushort)BaseErrorCode.Success)
+                                    {
+                                        errorCode = (ushort)BaseErrorCode.UncheckedContentsError;
+                                    }
+
+                                    apiSender.ErrorReply(routePacket.RouteHeader, errorCode);
+                                }
+                                
                                 LOG.Error(e.StackTrace, this.GetType(), e);
                             }
                         }

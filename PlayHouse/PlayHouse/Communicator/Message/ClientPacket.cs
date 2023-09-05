@@ -39,7 +39,7 @@ namespace PlayHouse.Communicator.Message
             return temp;
         }
 
-        public short GetMsgSeq()
+        public ushort GetMsgSeq()
         {
             return Header.MsgSeq;
         }
@@ -50,7 +50,7 @@ namespace PlayHouse.Communicator.Message
         }
           
 
-        public short ServiceId()
+        public ushort ServiceId()
         {
             return Header.ServiceId;
         }

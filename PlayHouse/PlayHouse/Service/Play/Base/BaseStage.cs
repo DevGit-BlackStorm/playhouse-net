@@ -75,7 +75,7 @@ namespace PlayHouse.Service.Play.Base
             }
             catch (Exception e)
             {
-                _stageSender.ErrorReply(routePacket.RouteHeader,(short) BaseErrorCode.SystemError);
+                _stageSender.ErrorReply(routePacket.RouteHeader,(ushort) BaseErrorCode.SystemError);
                 LOG.Error(e.StackTrace, this.GetType(), e);
             }
             finally
@@ -103,7 +103,7 @@ namespace PlayHouse.Service.Play.Base
                         }
                         catch (Exception e)
                         {
-                            _stageSender.ErrorReply(routePacket.RouteHeader, (short)BaseErrorCode.UncheckedContentsError);
+                            _stageSender.ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.UncheckedContentsError);
                             LOG.Error(e.StackTrace, this.GetType(), e);
                         }
                     }

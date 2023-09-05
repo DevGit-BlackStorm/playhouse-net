@@ -7,7 +7,7 @@ namespace PlayHouse.Production
     public delegate Task TimerCallbackTask();
     public interface ISystemPanel
     {
-        IServerInfo GetServerInfoByService(short serviceId);
+        IServerInfo GetServerInfoByService(ushort serviceId);
         IServerInfo GetServerInfoByEndpoint(string endpoint);
         IList<IServerInfo> GetServers();
         void Pause();
@@ -19,7 +19,7 @@ namespace PlayHouse.Production
 
     public interface ISender
     {
-        short ServiceId { get; }
+        ushort ServiceId { get; }
         void Reply(ReplyPacket reply);
         void SendToClient(string sessionEndpoint, int sid, Packet packet);
         void SendToApi(string apiEndpoint, Packet packet);

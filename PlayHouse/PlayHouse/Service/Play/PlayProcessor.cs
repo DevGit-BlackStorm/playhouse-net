@@ -25,16 +25,16 @@ namespace PlayHouse.Service.Play
         private readonly ConcurrentQueue<RoutePacket> _msgQueue = new();
         private readonly TimerManager _timerManager;
         private readonly XSender _sender;
-        private readonly short _serviceId;
+        private readonly ushort _serviceId;
         private readonly string _publicEndpoint;
         private readonly PlayOption _playOption;
         private readonly IClientCommunicator _clientCommunicator;
         private readonly RequestCache _requestCache;
         private readonly IServerInfoCenter _serverInfoCenter;
 
-        public short ServiceId => _serviceId;
+        public ushort ServiceId => _serviceId;
 
-        public PlayProcessor(short serviceId, string publicEndpoint, PlayOption playOption,
+        public PlayProcessor(ushort serviceId, string publicEndpoint, PlayOption playOption,
             IClientCommunicator clientCommunicator, RequestCache requestCache, IServerInfoCenter serverInfoCenter)
         {
             _serviceId = serviceId;
@@ -64,7 +64,7 @@ namespace PlayHouse.Service.Play
             _baseUsers.Remove(accountId, out _);
         }
 
-        public void ErrorReply(RouteHeader routeHeader, short errorCode)
+        public void ErrorReply(RouteHeader routeHeader, ushort errorCode)
         {
             _sender.ErrorReply(routeHeader, errorCode);
         }
@@ -127,7 +127,7 @@ namespace PlayHouse.Service.Play
                 var newStageId = routePacket.StageId;
                 if (_baseRooms.ContainsKey(newStageId))
                 {
-                    ErrorReply(routePacket.RouteHeader, (short)BaseErrorCode.AlreadyExistStage);
+                    ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.AlreadyExistStage);
                 }
                 else
                 {
@@ -163,7 +163,7 @@ namespace PlayHouse.Service.Play
                     if(msgId != StageTimer.Descriptor.Index)
                     {
                         LOG.Error($"Room is not exist : {stageId},{msgId}", this.GetType());
-                        ErrorReply(routePacket.RouteHeader, (short)BaseErrorCode.StageIsNotExist);
+                        ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.StageIsNotExist);
                     }
                     return;
                 }

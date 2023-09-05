@@ -77,7 +77,7 @@ namespace PlayHouse.Communicator
             return serverInfo;
         }
 
-        public XServerInfo FindRoundRobinServer(short serviceId)
+        public XServerInfo FindRoundRobinServer(ushort serviceId)
         {
             var list = _serverInfoList
                 .Where(x => x.State == ServerState.RUNNING && x.ServiceId == serviceId)
@@ -103,7 +103,7 @@ namespace PlayHouse.Communicator
             return _serverInfoList;
         }
 
-        public XServerInfo FindServerByAccountId(short serviceId, Guid accountId)
+        public XServerInfo FindServerByAccountId(ushort serviceId, Guid accountId)
         {
             var list = _serverInfoList
                 .Where(info => info.State.Equals(ServerState.RUNNING) && info.ServiceId == serviceId)
@@ -118,7 +118,7 @@ namespace PlayHouse.Communicator
             return list[index];
         }
 
-        public ServiceType FindServerType(short serviceId)
+        public ServiceType FindServerType(ushort serviceId)
         {
             var list = _serverInfoList
                 .Where(info => info.ServiceId == serviceId)
