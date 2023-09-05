@@ -72,7 +72,7 @@ namespace PlayHouse.Communicator.Socket.Tests
 
             var header = new HeaderMsg
             {
-                ErrorCode = 0,
+                ErrorCode = 10,
                 MsgSeq = 1,
                 ServiceId = (short)ServiceType.SESSION,
                 MsgId = TestMsg.Descriptor.Index

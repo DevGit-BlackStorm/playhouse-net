@@ -333,9 +333,8 @@ namespace PlayHouse.Communicator.Message
             buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.ServiceId()));
             buffer.WriteInt32(XBitConverter.ToNetworkOrder(clientPacket.GetMsgId()));
             buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.GetMsgSeq()));
-            buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.Header.ErrorCode));
             buffer.Write(clientPacket.Header.StageIndex);
-
+            buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.Header.ErrorCode));
             buffer.Write(clientPacket.Payload.Data);
         }
 

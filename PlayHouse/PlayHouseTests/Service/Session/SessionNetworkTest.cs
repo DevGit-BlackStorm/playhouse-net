@@ -33,10 +33,13 @@ namespace PlayHouse.Service.Session.network
             if (testMsg.TestMsg_ == "request")
             {
                 Buffer.Clear();
+                clientPacket.Header.ErrorCode = 60003;
                 RoutePacket.WriteClientPacketBytes(clientPacket, Buffer);
 
                 NetMQFrame frame = new NetMQFrame(Buffer.Buffer(), Buffer.Count);
                 clientPacket.Payload = new FramePayload(frame);
+
+                
 
                 _session!.Send(clientPacket);
             }
@@ -62,8 +65,8 @@ namespace PlayHouse.Service.Session.network
         [Fact]
         public async Task ClientAndSessionCommunicate()
         {
-            const short SESSION = 1;
-            const short API = 2;
+            const ushort SESSION = 1;
+            const ushort API = 2;
 
 
             var useWebSocketArray = new bool[] { false, true };
@@ -73,56 +76,56 @@ namespace PlayHouse.Service.Session.network
                 SessionServerListener serverListener = new() { UseWebSocket = useWebSocket };
                 var port = IpFinder.FindFreePort();
 
-                //var sessionNetwork = new SessionNetwork(new SessionOption { UseWebSocket = useWebSocket, SessionPort = port }, serverListener);
+                var sessionNetwork = new SessionNetwork(new SessionOption { UseWebSocket = useWebSocket, SessionPort = port }, serverListener);
 
 
-                //var serverThread = new Thread(() =>
-                //{
-                //    sessionNetwork.Start();
-                //    sessionNetwork.Await();
+                var serverThread = new Thread(() =>
+                {
+                    sessionNetwork.Start();
+                    sessionNetwork.Await();
 
-                //});
-                //serverThread.Start();
+                });
+                serverThread.Start();
 
-                //await Task.Delay(100);
-
-
-                //var connector = new Connector(new ConnectorConfig() { ReqestTimeout = 0 });
-
-                //var localIp = IpFinder.FindLocalIp();
-
-                //connector.Start();
-                //connector.Connect(localIp, port);
-
-                //await Task.Delay(100);
-                //serverListener.ResultValue.Should().Be("onConnect");
-
-                //connector.SendToApi(API, new Packet(new TestMsg { TestMsg_ = "test" }));
-
-                //await Task.Delay(100);
+                await Task.Delay(100);
 
 
-                //var replyPacket = await connector.RequestToApi(SESSION, new Packet(new TestMsg { TestMsg_ = "request" }));
+                var connector = new Connector(new ConnectorConfig() { ReqestTimeout = 0 });
 
-                //using (replyPacket)
-                //{
-                //    TestMsg.Parser.ParseFrom(replyPacket.Data).TestMsg_.Should().Be("request");
-                //}
+                var localIp = IpFinder.FindLocalIp();
+
+                connector.Start();
+                connector.Connect(localIp, port);
+
+                await Task.Delay(100);
+                serverListener.ResultValue.Should().Be("onConnect");
+
+                connector.SendToApi(API, new Packet(new TestMsg { TestMsg_ = "test" }));
+
+                await Task.Delay(100);
 
 
-                //replyPacket = await connector.RequestToApi(SESSION, new Packet(new TestMsg { TestMsg_ = "request" }));
+                var replyPacket = await connector.RequestToApi(SESSION, new Packet(new TestMsg { TestMsg_ = "request" }));
 
-                //using (replyPacket)
-                //{
-                //    TestMsg.Parser.ParseFrom(replyPacket.Data).TestMsg_.Should().Be("request");
-                //}
+                using (replyPacket)
+                {
+                    TestMsg.Parser.ParseFrom(replyPacket.Data).TestMsg_.Should().Be("request");
+                }
 
-                //connector.Disconnect();
 
-                //await Task.Delay(100);
-                //serverListener.ResultValue.Should().Be("onDisconnect");
+                replyPacket = await connector.RequestToApi(SESSION, new Packet(new TestMsg { TestMsg_ = "request" }));
 
-                //sessionNetwork.Stop();
+                using (replyPacket)
+                {
+                    TestMsg.Parser.ParseFrom(replyPacket.Data).TestMsg_.Should().Be("request");
+                }
+
+                connector.Disconnect();
+
+                await Task.Delay(100);
+                serverListener.ResultValue.Should().Be("onDisconnect");
+
+                sessionNetwork.Stop();
             }
         }
     }
