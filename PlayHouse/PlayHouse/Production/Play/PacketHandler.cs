@@ -21,7 +21,7 @@ namespace PlayHouse.Production.Play
             }
             else
             {
-                throw new ArgumentException($"msgId:{packet.MsgId} is already registered");
+                throw new ArgumentException($"msgId:{packet.MsgId} is not registered");
             }
         }
 

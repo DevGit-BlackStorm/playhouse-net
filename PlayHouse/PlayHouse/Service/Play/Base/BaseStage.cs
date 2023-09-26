@@ -8,6 +8,7 @@ using PlayHouse.Service.Api;
 using PlayHouse.Service.Play.Base.Command;
 using PlayHouse.Production;
 using PlayHouse.Production.Play;
+using Google.Protobuf;
 
 namespace PlayHouse.Service.Play.Base
 {
@@ -167,6 +168,7 @@ namespace PlayHouse.Service.Play.Base
         {
             this._playProcessor.RemoveUser(accountId);
             var request = new LeaveStageMsg();
+            request.StageId = ByteString.CopyFrom(_stageId.ToByteArray());
             this._stageSender.SendToBaseSession(sessionEndpoint, sid,new Packet(request));
         }
 

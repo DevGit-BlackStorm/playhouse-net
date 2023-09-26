@@ -88,7 +88,13 @@ namespace PlayHouse.Service.Play
                         var msgId = routePacket.MsgId;
                         var isBase = routePacket.IsBase();
                         var stageId = routePacket.RouteHeader.StageId;
-                        var roomPacket = RoutePacket.MoveOf(routePacket);
+
+                        var roomPacket = routePacket;
+                        if (routePacket.Payload is not EmptyPayload)
+                        {
+                            roomPacket = RoutePacket.MoveOf(routePacket);
+                        }
+                        
 
                         if (isBase)
                         {

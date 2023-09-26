@@ -66,7 +66,7 @@ namespace PlayHouse.Service.Api
                             try
                             {
                                 
-                                if (routeHeader.IsBase)
+                                if (routeHeader.IsBackend)
                                 {
                                     await _apiReflection.BackendCallMethod(routeHeader, item.ToPacket(), apiSender)!;
                                 }

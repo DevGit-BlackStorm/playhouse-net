@@ -106,7 +106,7 @@ namespace PlayHouse.Service.Session
 
             if(stageIndex == null)
             {
-                for(int i = 1; i < 256; i++)
+                for(int i = 0; i < 256; i++)
                 {
                     if (!_playEndpoints.ContainsKey(i))
                     {
