@@ -18,7 +18,7 @@ public class ApiSenderContext
         return _apiSenderContext.Value;
     }
 
-    internal static void Set(IApiSender apiSender)
+    public static void Set(IApiSender apiSender)
     {
         _apiSenderContext.Value = apiSender;
     }
