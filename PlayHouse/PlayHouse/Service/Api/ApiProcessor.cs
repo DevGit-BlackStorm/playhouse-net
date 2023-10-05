@@ -1,13 +1,7 @@
 ﻿using PlayHouse.Communicator.Message;
 using PlayHouse.Communicator;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Runtime.Caching;
-using System.Threading;
 using System.Collections.Specialized;
 using Playhouse.Protocol;
 using PlayHouse.Utils;
@@ -22,7 +16,7 @@ namespace PlayHouse.Service.Api
         private readonly ApiOption _apiOption;
         private readonly RequestCache _requestCache;
         private readonly IClientCommunicator _clientCommunicator;
-        private readonly ISender sender;
+        private readonly ISender _sender;
         private readonly XSystemPanel _systemPanel;
 
         private readonly AtomicEnum<ServerState> _state = new AtomicEnum<ServerState>(ServerState.DISABLE);
@@ -30,8 +24,8 @@ namespace PlayHouse.Service.Api
         private readonly ConcurrentQueue<RoutePacket> _msgQueue = new ConcurrentQueue<RoutePacket>();
 
         private readonly MemoryCache _cache;
-        private CacheItemPolicy _policy;
-        private Thread _threadLoop;
+        private readonly CacheItemPolicy _policy;
+        private readonly Thread _threadLoop;
 
         public ushort ServiceId => _serviceId;
 
@@ -47,7 +41,7 @@ namespace PlayHouse.Service.Api
             _apiOption = apiOption;
             _requestCache = requestCache;
             _clientCommunicator = clientCommunicator;
-            this.sender = sender;
+            this._sender = sender;
             _systemPanel = systemPanel;
 
             _apiReflection = new ApiReflection();
@@ -81,7 +75,7 @@ namespace PlayHouse.Service.Api
                     {
                         if (routeHeader.AccountId != Guid.Empty)
                         {
-                            var accountApiProcessor =(AccountApiProcessor) _cache.Get($"{ routeHeader.AccountId}");
+                            var accountApiProcessor =(AccountApiProcessor?) _cache.Get($"{ routeHeader.AccountId}");
                             if (accountApiProcessor == null)
                             {
                                 accountApiProcessor = new AccountApiProcessor(
@@ -94,7 +88,7 @@ namespace PlayHouse.Service.Api
                                 _cache.Add(new CacheItem(routeHeader.AccountId.ToString(), accountApiProcessor),_policy);
                             }
 
-                             Task.Run( async ()  => {
+                            Task.Run( async ()  => {
                                  await accountApiProcessor!.Dispatch(routePacket!).ConfigureAwait(false);
                              });
                             
@@ -108,6 +102,7 @@ namespace PlayHouse.Service.Api
                             {
                                 try
                                 {
+                                    ApiSenderContext.Set(apiSender);
                                     if(routePacket.IsBackend())
                                     {
                                         await _apiReflection.BackendCallMethod(

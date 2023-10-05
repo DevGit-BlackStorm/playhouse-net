@@ -43,8 +43,11 @@ namespace PlayHouse.Service.Api
                 {
                     if (_msgQueue.TryDequeue(out var item))
                     {
-                        
                         var routeHeader = item.RouteHeader;
+                        var apiSender = new AllApiSender(_serviceId, _clientCommunicator, _requestCache);
+                        apiSender.SetCurrentPacketHeader(routeHeader);
+
+                        ApiSenderContext.Set(apiSender);
 
                         if (routeHeader.IsBase)
                         {
@@ -60,9 +63,6 @@ namespace PlayHouse.Service.Api
                         }
                         else
                         {
-                            var apiSender = new AllApiSender(_serviceId, _clientCommunicator, _requestCache);
-                            apiSender.SetCurrentPacketHeader(routeHeader);
-
                             try
                             {
                                 
