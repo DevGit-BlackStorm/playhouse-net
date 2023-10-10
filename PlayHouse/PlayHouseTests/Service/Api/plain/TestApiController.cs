@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using Org.Ulalax.Playhouse.Protocol;
+using PlayHouse;
 using PlayHouse.Production;
 using PlayHouse.Production.Api;
 
@@ -20,7 +21,7 @@ namespace PlayHouseTests.Service.Api.plain
 
         private Task TestApiContentsException(Packet packet, IApiSender apiSender)
         {
-            ExceptionContextStorage.ErrorCode = 101;
+            AsyncContext.ErrorCode = 101;
             throw new Exception("test content TestApiContentsException");
         }
 

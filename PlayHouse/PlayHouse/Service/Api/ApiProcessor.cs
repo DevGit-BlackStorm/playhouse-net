@@ -102,7 +102,10 @@ namespace PlayHouse.Service.Api
                             {
                                 try
                                 {
-                                    ApiSenderContext.Set(apiSender);
+                                    //ApiSenderContext.Set(apiSender);
+                                    AsyncContext.ApiSender = apiSender;
+                                    AsyncContext.InitErrorCode();
+                                    
                                     if(routePacket.IsBackend())
                                     {
                                         await _apiReflection.BackendCallMethod(
@@ -125,7 +128,7 @@ namespace PlayHouse.Service.Api
                                     // Use the default content error code if it's not set in the content.
                                     if(routeHeader.Header.MsgSeq > 0)
                                     {
-                                        ushort errorCode = ExceptionContextStorage.ErrorCode;
+                                        var errorCode = AsyncContext.ErrorCode;
                                         if (errorCode == (ushort)BaseErrorCode.Success)
                                         {
                                             errorCode = (ushort)BaseErrorCode.UncheckedContentsError;
