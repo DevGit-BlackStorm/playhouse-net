@@ -121,7 +121,18 @@ namespace PlayHouse.Service.Api
                                 }
                                 catch (Exception e)
                                 {
-                                    apiSender.ErrorReply(routeHeader, (ushort)BaseErrorCode.SystemError);
+                                    // Use this error code when it's set in the content.
+                                    // Use the default content error code if it's not set in the content.
+                                    if(routeHeader.Header.MsgSeq > 0)
+                                    {
+                                        ushort errorCode = ExceptionContextStorage.ErrorCode;
+                                        if (errorCode == (ushort)BaseErrorCode.Success)
+                                        {
+                                            errorCode = (ushort)BaseErrorCode.UncheckedContentsError;
+                                        }
+
+                                        apiSender.ErrorReply(routePacket.RouteHeader, errorCode);
+                                    }
                                     LOG.Error(e.StackTrace, this.GetType(), e);
                                 }
                             });
