@@ -95,7 +95,7 @@ namespace PlayHouse.Service.Api
                                     apiSender.ErrorReply(routePacket.RouteHeader, errorCode);
                                 }
                                 
-                                LOG.Error(e.StackTrace, this.GetType(), e);
+                                LOG.Error(e.Message,GetType(),e);
                             }
                         }
                         

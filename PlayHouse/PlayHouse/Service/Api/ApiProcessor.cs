@@ -101,7 +101,7 @@ namespace PlayHouse.Service.Api
                             _ = Task.Run(async () =>
                             {
                                 try
-                                {
+                                { 
                                     LOG.Debug($"[Call Packet: accountId:{routePacket.AccountId},MsgId={routeHeader.MsgId},IsBackend={routeHeader.IsBackend}]",this.GetType());
                                     
                                     AsyncContext.ApiSender = apiSender;
@@ -137,7 +137,7 @@ namespace PlayHouse.Service.Api
 
                                         apiSender.ErrorReply(routePacket.RouteHeader, errorCode);
                                     }
-                                    LOG.Error(e.StackTrace, this.GetType(), e);
+                                    LOG.Error(e.Message,GetType(),e);
                                 }
                             });
                         }
