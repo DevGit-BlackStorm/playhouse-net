@@ -102,7 +102,7 @@ namespace PlayHouse.Service.Api
                             {
                                 try
                                 {
-                                    LOG.Debug($"================= [Call Packet: MsgId={routeHeader.MsgId}, IsBackend={routeHeader.IsBackend}] =================",this.GetType());
+                                    LOG.Debug($"================= [Call Packet: MsgId={routeHeader.MsgId},IsBackend={routeHeader.IsBackend}] =================",this.GetType());
                                     
                                     AsyncContext.ApiSender = apiSender;
                                     AsyncContext.InitErrorCode();
