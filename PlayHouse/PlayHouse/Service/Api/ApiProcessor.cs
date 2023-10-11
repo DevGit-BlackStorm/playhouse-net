@@ -19,9 +19,9 @@ namespace PlayHouse.Service.Api
         private readonly ISender _sender;
         private readonly XSystemPanel _systemPanel;
 
-        private readonly AtomicEnum<ServerState> _state = new AtomicEnum<ServerState>(ServerState.DISABLE);
+        private readonly AtomicEnum<ServerState> _state = new(ServerState.DISABLE);
         private readonly ApiReflection _apiReflection;
-        private readonly ConcurrentQueue<RoutePacket> _msgQueue = new ConcurrentQueue<RoutePacket>();
+        private readonly ConcurrentQueue<RoutePacket> _msgQueue = new();
 
         private readonly MemoryCache _cache;
         private readonly CacheItemPolicy _policy;
@@ -89,7 +89,7 @@ namespace PlayHouse.Service.Api
                             }
 
                             Task.Run( async ()  => {
-                                 await accountApiProcessor!.Dispatch(routePacket!).ConfigureAwait(false);
+                                 await accountApiProcessor.Dispatch(routePacket).ConfigureAwait(false);
                              });
                             
                         }
@@ -102,7 +102,8 @@ namespace PlayHouse.Service.Api
                             {
                                 try
                                 {
-                                    //ApiSenderContext.Set(apiSender);
+                                    LOG.Debug($"================= [Call Packet: MsgId={routeHeader.MsgId}, IsBackend={routeHeader.IsBackend}] =================",this.GetType());
+                                    
                                     AsyncContext.ApiSender = apiSender;
                                     AsyncContext.InitErrorCode();
                                     

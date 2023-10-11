@@ -66,14 +66,15 @@ namespace PlayHouse.Service.Api
                         {
                             try
                             {
+                                LOG.Debug($"================= [Call Packet: MsgId={routeHeader.MsgId}, IsBackend={routeHeader.IsBackend}] =================",this.GetType());
                                 
                                 if (routeHeader.IsBackend)
                                 {
-                                    await _apiReflection.BackendCallMethod(routeHeader, item.ToPacket(), apiSender)!;
+                                    await _apiReflection.BackendCallMethod(routeHeader, item.ToPacket(), apiSender);
                                 }
                                 else
                                 {
-                                    await _apiReflection.CallMethod(routeHeader, item.ToPacket(), apiSender)!;
+                                    await _apiReflection.CallMethod(routeHeader, item.ToPacket(), apiSender);
                                 }
                                 
                                 
