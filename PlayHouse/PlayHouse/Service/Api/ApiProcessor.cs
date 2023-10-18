@@ -103,7 +103,6 @@ namespace PlayHouse.Service.Api
                                 try
                                 { 
                                     LOG.Debug($"[Call Packet: accountId:{routePacket.AccountId},MsgId={routeHeader.MsgId},IsBackend={routeHeader.IsBackend}]",this.GetType());
-                                    
                                     AsyncContext.ApiSender = apiSender;
                                     AsyncContext.InitErrorCode();
                                     
@@ -121,7 +120,22 @@ namespace PlayHouse.Service.Api
                                         routePacket.ToPacket(),
                                         apiSender).ConfigureAwait(false);
                                     }
-                                    
+                                }
+                                catch (ApiException.NotRegisterApiMethod e)
+                                {
+                                    if (routeHeader.Header.MsgSeq > 0)
+                                    {
+                                        apiSender.ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.NotRegisteredMessage);    
+                                    }
+                                    LOG.Error(e.Message, GetType(), e);
+                                }
+                                catch (ApiException.NotRegisterApiInstance e)
+                                {
+                                    if (routeHeader.Header.MsgSeq > 0)
+                                    {
+                                        apiSender.ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.SystemError);    
+                                    }
+                                    LOG.Error(e.Message, GetType(), e);
                                 }
                                 catch (Exception e)
                                 {

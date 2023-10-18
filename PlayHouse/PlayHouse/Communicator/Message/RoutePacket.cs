@@ -59,7 +59,7 @@ namespace PlayHouse.Communicator.Message
 
         public string From { get; set; } = "";
 
-        public bool ForClient { get; set; } = false;
+        public bool IsToClient { get; set; } = false;
 
         public RouteHeader(Header header)
         {
@@ -76,7 +76,6 @@ namespace PlayHouse.Communicator.Message
             IsReply = headerMsg.IsReply;
             AccountId = new Guid(headerMsg.AccountId.ToByteArray());
             StageId = new Guid(headerMsg.StageId.ToByteArray());
-            ForClient = headerMsg.ForClient;
         }
 
         public byte[] ToByteArray()
@@ -97,7 +96,6 @@ namespace PlayHouse.Communicator.Message
             message.IsReply = IsReply;
             message.AccountId = ByteString.CopyFrom(AccountId.ToByteArray());
             message.StageId = ByteString.CopyFrom(StageId.ToByteArray());
-            message.ForClient = ForClient;
             return message;
         }
 
@@ -120,7 +118,7 @@ namespace PlayHouse.Communicator.Message
         }
         public override string ToString()
         {
-            return $"RouteHeader(Header={Header}, Sid={Sid}, IsSystem={IsSystem}, IsBase={IsBase}, IsBackend={IsBackend}, IsReply={IsReply}, AccountId={AccountId}, StageId={StageId}, From={From}, ForClient={ForClient})";
+            return $"RouteHeader(Header={Header}, Sid={Sid}, IsSystem={IsSystem}, IsBase={IsBase}, IsBackend={IsBackend}, IsReply={IsReply}, AccountId={AccountId}, StageId={StageId}, From={From}, ForClient={IsToClient})";
         }
     }
 
@@ -185,9 +183,9 @@ namespace PlayHouse.Communicator.Message
             return RouteHeader.IsSystem;
         }
 
-        public bool ForClient()
+        public bool IsToClient()
         {
-            return RouteHeader.ForClient;
+            return RouteHeader.IsToClient;
         }
 
         public static RoutePacket MoveOf(RoutePacket routePacket)
@@ -289,7 +287,7 @@ namespace PlayHouse.Communicator.Message
 
             RouteHeader routeHeader = RouteHeader.Of(header);
             routeHeader.IsReply = true;
-            routeHeader.ForClient = forClient;
+            routeHeader.IsToClient = forClient;
             routeHeader.Sid = sid;
 
             var routePacket = new RoutePacket(routeHeader, reply.MovePayload());
@@ -306,7 +304,7 @@ namespace PlayHouse.Communicator.Message
 
             RouteHeader routeHeader = RouteHeader.Of(header);
             routeHeader.Sid = sid;
-            routeHeader.ForClient = true;
+            routeHeader.IsToClient = true;
 
             return new RoutePacket(routeHeader, packet.MovePayload());
         }

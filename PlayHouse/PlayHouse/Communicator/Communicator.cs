@@ -158,7 +158,7 @@ namespace PlayHouse.Communicator
 
             _performanceTester.IncCounter();
 
-            if (!routePacket.ForClient() && routePacket.IsReply())
+            if (routePacket.IsBackend() && routePacket.IsReply())
             {
                 _requestCache.OnReply(routePacket);
                 return;

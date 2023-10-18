@@ -41,6 +41,7 @@ namespace PlayHouse.Service.Play.Base.Command
                 PayloadId = outcome.MsgId
             };
 
+            
             baseStage.Reply(new ReplyPacket(outcome.ErrorCode, res));
 
             if (outcome.IsSuccess())

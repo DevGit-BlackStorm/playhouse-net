@@ -20,7 +20,7 @@ message RouteHeaderMsg {
   bool is_backend = 6;
   bytes stage_id = 7;
   bytes account_id = 8;
-  bool for_client = 9;
+//  bool for_client = 9;
 }
 
 message RoutePacketMsg {

@@ -66,8 +66,10 @@ namespace PlayHouse.Service.Api
                         {
                             try
                             {
-                                LOG.Debug($"[Call Packet: accountId:{routePacket.AccountId},MsgId={routeHeader.MsgId},IsBackend={routeHeader.IsBackend}]",this.GetType());
-                                
+                                LOG.Debug(
+                                    $"[Call Packet: accountId:{routePacket.AccountId},MsgId={routeHeader.MsgId},IsBackend={routeHeader.IsBackend}]",
+                                    this.GetType());
+
                                 if (routeHeader.IsBackend)
                                 {
                                     await _apiReflection.BackendCallMethod(routeHeader, item.ToPacket(), apiSender);
@@ -76,14 +78,30 @@ namespace PlayHouse.Service.Api
                                 {
                                     await _apiReflection.CallMethod(routeHeader, item.ToPacket(), apiSender);
                                 }
+                            }
+                            catch (ApiException.NotRegisterApiMethod e)
+                            {
+                                // if (routeHeader.Header.MsgSeq > 0)
+                                {
+                                    apiSender.ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.NotRegisteredMessage);    
+                                }
                                 
-                                
+                                LOG.Error(e.Message, GetType(), e);
+                            }
+                            catch (ApiException.NotRegisterApiInstance e)
+                            {
+                                if (routeHeader.Header.MsgSeq > 0)
+                                {
+                                    apiSender.ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.SystemError);
+                                }
+
+                                LOG.Error(e.Message, GetType(), e);
                             }
                             catch (Exception e)
                             {
                                 // Use this error code when it's set in the content.
                                 // Use the default content error code if it's not set in the content.
-                                if(routeHeader.Header.MsgSeq > 0)
+                                if (routeHeader.Header.MsgSeq > 0)
                                 {
                                     //ushort errorCode = ExceptionContextStorage.ErrorCode;
                                     var errorCode = AsyncContext.ErrorCode;
@@ -94,9 +112,10 @@ namespace PlayHouse.Service.Api
 
                                     apiSender.ErrorReply(routePacket.RouteHeader, errorCode);
                                 }
-                                
-                                LOG.Error(e.Message,GetType(),e);
+
+                                LOG.Error(e.Message, GetType(), e);
                             }
+                            
                         }
                         
                     }

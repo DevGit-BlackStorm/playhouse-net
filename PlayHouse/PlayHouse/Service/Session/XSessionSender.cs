@@ -20,7 +20,7 @@ namespace PlayHouse.Service.Session
             routePacket.RouteHeader.AccountId = accountId;
             routePacket.RouteHeader.Header.MsgSeq = packet.GetMsgSeq();
             routePacket.RouteHeader.Sid = sid;
-            routePacket.RouteHeader.ForClient = true;
+            routePacket.RouteHeader.IsToClient = false;
             _clientCommunicator.Send(playEndpoint, routePacket);
         }
 
@@ -29,7 +29,7 @@ namespace PlayHouse.Service.Session
             var routePacket = RoutePacket.ApiOf( packet.ToPacket(), false, false);
             routePacket.RouteHeader.Sid = sid;
             routePacket.RouteHeader.Header.MsgSeq = packet.GetMsgSeq();
-            routePacket.RouteHeader.ForClient = true;
+            routePacket.RouteHeader.IsToClient = false;
             routePacket.RouteHeader.AccountId = accountId;
 
             _clientCommunicator.Send(apiEndpoint, routePacket);

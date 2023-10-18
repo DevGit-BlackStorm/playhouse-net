@@ -89,34 +89,53 @@ namespace PlayHouse.Communicator.PlaySocket
 
         public void Send(string endpoint, RoutePacket routePacket)
         {
-            LOG.Trace($"sendTo:{endpoint}, packetInfo:{routePacket.RouteHeader}", this.GetType());
+            LOG.Trace($"sendTo:{endpoint}, packetInfo:{routePacket.RouteHeader},forClient:{routePacket.IsToClient()}", this.GetType());
             using (routePacket)
             {
                 NetMQMessage message = new NetMQMessage();
                 IPayload payload = routePacket.Payload;
 
                 NetMQFrame frame;
-
-                if(payload is FramePayload)
+                //
+                // if(payload is FramePayload)
+                // {
+                //     frame = ((FramePayload)payload).Frame;
+                // }
+                // else
+                // {
+                //     _buffer.Clear();
+                //     if (routePacket.ForClient())
+                //     {
+                //         routePacket.WriteClientPacketBytes(_buffer);
+                //     }
+                //     else
+                //     {
+                //         _buffer.Write(payload.Data);
+                //     }
+                //
+                //     frame = new NetMQFrame(_buffer.Buffer(), _buffer.Count);
+                // }
+                _buffer.Clear();
+                if (routePacket.IsToClient())
                 {
-                    frame = ((FramePayload)payload).Frame;
+                    routePacket.WriteClientPacketBytes(_buffer);
+                    frame = new NetMQFrame(_buffer.Buffer(), _buffer.Count);
                 }
                 else
                 {
-                    _buffer.Clear();
-                    if (routePacket.ForClient())
+                    if (payload is FramePayload)
                     {
-                        routePacket.WriteClientPacketBytes(_buffer);
+                        frame = ((FramePayload)payload).Frame;
                     }
                     else
                     {
-                        _buffer.Write(payload.Data);
+                        _buffer.Write(payload.Data);    
+                        frame = new NetMQFrame(_buffer.Buffer(), _buffer.Count);
                     }
-
-                    frame = new NetMQFrame(_buffer.Buffer(), _buffer.Count);
+                    
                 }
-
-
+                      
+              
                 message.Append(new NetMQFrame(Encoding.UTF8.GetBytes(endpoint)));
                 var routerHeaderMsg = routePacket.RouteHeader.ToMsg();
 

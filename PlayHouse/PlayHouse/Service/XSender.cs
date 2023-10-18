@@ -47,10 +47,10 @@ namespace PlayHouse.Service
                 {
                     int sid = _currentHeader.Sid;
                     string from = _currentHeader.From;
-                    bool forClient = _currentHeader.ForClient;
-                    RoutePacket routePacket = RoutePacket.ReplyOf(_serviceId, msgSeq, sid, forClient, reply);
+                    RoutePacket routePacket = RoutePacket.ReplyOf(_serviceId, msgSeq, sid, !_currentHeader.IsBackend, reply);
                     routePacket.RouteHeader.Sid = sid;
-                    routePacket.RouteHeader.ForClient = _currentHeader.ForClient;
+                    routePacket.RouteHeader.IsBase = _currentHeader.IsBase;
+                    routePacket.RouteHeader.IsBackend = _currentHeader.IsBackend;
                     _clientCommunicator.Send(from, routePacket);
                 }
                 else
@@ -244,10 +244,10 @@ namespace PlayHouse.Service
             ushort msgSeq = routeHeader.Header.MsgSeq;
             string from = routeHeader.From;
             int sid = routeHeader.Sid;
-            bool forClient = routeHeader.ForClient;
+            bool forClient = routeHeader.IsToClient;
             if (msgSeq > 0)
             {
-                RoutePacket reply = RoutePacket.ReplyOf(_serviceId, msgSeq,sid,forClient, new ReplyPacket(errorCode));
+                RoutePacket reply = RoutePacket.ReplyOf(_serviceId, msgSeq,sid,!routeHeader.IsBackend, new ReplyPacket(errorCode));
                 _clientCommunicator.Send(from, reply);
             }
         }

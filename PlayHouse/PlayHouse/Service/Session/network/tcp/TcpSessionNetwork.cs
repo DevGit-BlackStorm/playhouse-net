@@ -93,7 +93,7 @@ namespace PlayHouse.Service.Session.network.tcp
         {
             using (packet)
             {
-                base.Send(packet.Data);
+                base.SendAsync(packet.Data);
             }
         }
     }

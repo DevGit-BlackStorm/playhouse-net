@@ -3,7 +3,6 @@ using PlayHouse.Communicator;
 using PlayHouse.Production;
 using PlayHouse.Production.Api;
 using CommonLib;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace PlayHouse.Service.Api
 {
