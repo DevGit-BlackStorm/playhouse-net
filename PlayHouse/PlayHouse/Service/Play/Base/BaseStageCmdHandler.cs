@@ -1,10 +1,5 @@
 ﻿using PlayHouse.Communicator.Message;
 using PlayHouse.Production;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PlayHouse.Service.Play.Base
 {
@@ -32,12 +27,12 @@ namespace PlayHouse.Service.Play.Base
                 }
                 else
                 {
-                    LOG.Error($"not registered message : {msgId}", this.GetType());
+                    LOG.Error(()=>$"not registered message : {msgId}", this.GetType());
                 }
             }
             else
             {
-                LOG.Error($"Invalid packet : {msgId}", this.GetType());
+                LOG.Error(()=>$"Invalid packet : {msgId}", this.GetType());
             }
         }
     }

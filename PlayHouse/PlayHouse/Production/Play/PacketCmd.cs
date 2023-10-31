@@ -1,14 +1,5 @@
-﻿using PlayHouse.Production;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PlayHouse.Production.Play
+﻿namespace PlayHouse.Production.Play;
+public interface IPacketCmd<in TS, in TA> where TA : IActor
 {
-    public interface IPacketCmd<S, A> where A : IActor
-    {
-        public Task Execute(S stage, A actor, Packet packet);
-    }
+    public Task Execute(TS stage, TA actor, Packet packet);
 }

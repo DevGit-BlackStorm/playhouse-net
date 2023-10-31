@@ -1,14 +1,13 @@
 ﻿using System.Collections.Concurrent;
-using Playhouse.Protocol;
 using PlayHouse.Production;
 
 namespace PlayHouse.Communicator
 {
     public class XServerInfoCenter : IServerInfoCenter
     {
-        private IDictionary<string, XServerInfo> _serverInfoMap = new ConcurrentDictionary<string, XServerInfo>();
-        private List<XServerInfo> _serverInfoList = new List<XServerInfo>();
-        private int _offset = 0;
+        private readonly IDictionary<string, XServerInfo> _serverInfoMap = new ConcurrentDictionary<string, XServerInfo>();
+        private List<XServerInfo> _serverInfoList = new();
+        private int _offset;
 
         public XServerInfoCenter()
         {

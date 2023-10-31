@@ -2,46 +2,37 @@
 using Playhouse.Protocol;
 using PlayHouse.Communicator;
 using PlayHouse.Production;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace PlayHouse.Service.Api
+namespace PlayHouse.Service.Api;
+public class XApiCommonSender : XSender, IApiCommonSender
 {
-    public class XApiCommonSender : XSender, IApiCommonSender
+    private ushort serviceId;
+    private IClientCommunicator clientCommunicator;
+    private RequestCache reqCache;
+
+    public XApiCommonSender(ushort serviceId, IClientCommunicator clientCommunicator, RequestCache reqCache)
+        : base(serviceId, clientCommunicator, reqCache)
     {
-        private ushort serviceId;
-        private IClientCommunicator clientCommunicator;
-        private RequestCache reqCache;
+        this.serviceId = serviceId;
+        this.clientCommunicator = clientCommunicator;
+        this.reqCache = reqCache;
+    }
 
-        public XApiCommonSender(ushort serviceId, IClientCommunicator clientCommunicator, RequestCache reqCache)
-            : base(serviceId, clientCommunicator, reqCache)
+    public Guid AccountId => CurrentHeader?.AccountId ?? Guid.Empty;
+
+    public async Task<CreateStageResult> CreateStage(string playEndpoint, string stageType, Guid stageId, Packet packet)
+    {
+        var req = new CreateStageReq()
         {
-            this.serviceId = serviceId;
-            this.clientCommunicator = clientCommunicator;
-            this.reqCache = reqCache;
-        }
+            StageType = stageType,
+            PayloadId = packet.MsgId,
+            Payload = ByteString.CopyFrom(packet.Data)
+        };
 
-        public Guid AccountId => _currentHeader?.AccountId ?? Guid.Empty;
+        var reply = await RequestToBaseStage(playEndpoint, stageId, Guid.Empty, new Packet(req));
 
-        public async Task<CreateStageResult> CreateStage(string playEndpoint, string stageType, Guid stageId, Packet packet)
-        {
-            var req = new CreateStageReq()
-            {
-                StageType = stageType,
-                PayloadId = packet.MsgId,
-                Payload = ByteString.CopyFrom(packet.Data)
-            };
+        var res = CreateStageRes.Parser.ParseFrom(reply.Data);
 
-            var reply = await RequestToBaseStage(playEndpoint, stageId, Guid.Empty, new Packet(req));
-
-            var res = CreateStageRes.Parser.ParseFrom(reply.Data);
-
-            return new CreateStageResult(reply.ErrorCode, new Packet(res.PayloadId, res.Payload));
-        }
-
-       
+        return new CreateStageResult(reply.ErrorCode, new Packet(res.PayloadId, res.Payload));
     }
 }

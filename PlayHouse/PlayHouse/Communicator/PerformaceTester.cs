@@ -1,11 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
-using PlayHouse.Production;
-using System;
-using System.Collections.Generic;
+﻿using PlayHouse.Production;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PlayHouse.Communicator
 {
@@ -59,7 +53,7 @@ namespace PlayHouse.Communicator
 
                 int qps = (messageCount == 0 || seconds == 0L) ? 0 : messageCount / (int)seconds;
 
-                LOG.Info($"{_from}, {messageCount}, qps: {qps}", this.GetType());
+                LOG.Info(()=>$"{_from}, {messageCount}, qps: {qps}", this.GetType());
             }
             finally
             {

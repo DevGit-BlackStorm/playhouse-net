@@ -1,15 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
-using PlayHouse.Communicator.Message;
+﻿using PlayHouse.Communicator.Message;
 using PlayHouse.Communicator;
 using PlayHouse.Service.Play.Base;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Playhouse.Protocol;
-using System.Numerics;
 using PlayHouse.Utils;
 using PlayHouse.Production;
 using PlayHouse.Production.Play;
@@ -18,10 +11,10 @@ namespace PlayHouse.Service.Play
 {
     public class PlayProcessor : IProcessor
     {
-        private AtomicEnum<ServerState> _state = new(ServerState.DISABLE);
+        private readonly AtomicEnum<ServerState> _state = new(ServerState.DISABLE);
         private readonly ConcurrentDictionary<Guid, BaseActor> _baseUsers = new();
         private readonly ConcurrentDictionary<Guid, BaseStage> _baseRooms = new();
-        private Thread _threadForCoroutine;
+        private readonly Thread _threadForCoroutine;
         private readonly ConcurrentQueue<RoutePacket> _msgQueue = new();
         private readonly TimerManager _timerManager;
         private readonly XSender _sender;
@@ -94,8 +87,6 @@ namespace PlayHouse.Service.Play
                         {
                             roomPacket = RoutePacket.MoveOf(routePacket);
                         }
-                        
-
                         if (isBase)
                         {
                             Task.Run(async () => await DoBaseRoomPacket(msgId, roomPacket, stageId));
@@ -104,20 +95,19 @@ namespace PlayHouse.Service.Play
                         {
                             Task.Run(async () =>
                             {
-                                var baseStage = _baseRooms[stageId];
+                                _baseRooms.TryGetValue(stageId,out var baseStage);
                                 if (baseStage != null)
                                 {
                                    await  baseStage.Send(roomPacket);
                                 }
                                 else
                                 {
-                                    LOG.Error($"stageId:{stageId} is not exist, msgName:{msgId}", this.GetType());
+                                    LOG.Error(()=>$"stageId:{stageId} is not exist, msgName:{msgId}", this.GetType());
                                 }
                             });
                         }
                     }
-
-                     _msgQueue.TryDequeue(out routePacket);
+                    _msgQueue.TryDequeue(out routePacket);
                 }
 
                 Thread.Sleep(10);
@@ -166,11 +156,9 @@ namespace PlayHouse.Service.Play
             {
                 if (!_baseRooms.TryGetValue(stageId, out var room))
                 {
-                    if(msgId != StageTimer.Descriptor.Index)
-                    {
-                        LOG.Error($"Room is not exist : {stageId},{msgId}", this.GetType());
-                        ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.StageIsNotExist);
-                    }
+                    if (msgId == StageTimer.Descriptor.Index) return;
+                    LOG.Error(()=>$"Room is not exist : {stageId},{msgId}", this.GetType());
+                    ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.StageIsNotExist);
                     return;
                 }
 
@@ -183,14 +171,14 @@ namespace PlayHouse.Service.Play
                 }
                 else
                 {
-                    LOG.Error($"{msgId} is not base packet", this.GetType());
+                    LOG.Error(()=>$"{msgId} is not base packet", this.GetType());
                 }
             }
         }
 
         private void TimerProcess(Guid stageId, long timerId, TimerMsg timerMsg, TimerCallbackTask timerCallback)
         {
-            var room = _baseRooms[stageId];
+            _baseRooms.TryGetValue(stageId, out var room);
 
             if (room != null)
             {
@@ -220,13 +208,13 @@ namespace PlayHouse.Service.Play
                 }
                 else
                 {
-                    LOG.Error($"Invalid timer type : {timerMsg.Type}", this.GetType());
+                    LOG.Error(()=>$"Invalid timer type : {timerMsg.Type}", this.GetType());
                 }
 
             }
             else
             {
-                LOG.Error($"Stage for timer is not exist: stageId:{stageId}, timerType:{timerMsg.Type}", this.GetType());
+                LOG.Error(()=>$"Stage for timer is not exist: stageId:{stageId}, timerType:{timerMsg.Type}", this.GetType());
             }
         }
 
@@ -280,16 +268,16 @@ namespace PlayHouse.Service.Play
             return _baseRooms[stageId];
         }
 
-        public string Endpoint()
+        private string Endpoint()
         {
             return _publicEndpoint;
         }
 
         public void CancelTimer(Guid stageId, long timerId)
         {
-            if (_baseRooms.ContainsKey(stageId))
+            if (_baseRooms.TryGetValue(stageId, out var room))
             {
-                _baseRooms[stageId].CancelTimer(timerId);
+                room.CancelTimer(timerId);
             }
         }
 

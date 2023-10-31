@@ -1,64 +1,54 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using PlayHouse.Production;
+﻿using PlayHouse.Production;
 
-namespace PlayHouse.Communicator
+namespace PlayHouse.Communicator;
+public class MessageLoop
 {
-    public class MessageLoop
+    private readonly IServerCommunicator _server;
+    private readonly IClientCommunicator _client;
+    private readonly Thread _serverThread;
+    private readonly Thread _clientThread;
+
+    public MessageLoop(IServerCommunicator server, IClientCommunicator client)
     {
-        private readonly IServerCommunicator _server;
-        private readonly IClientCommunicator _client;
-        private readonly Thread _serverThread;
-        private readonly Thread _clientThread;
+        _server = server;
+        _client = client;
 
-        public MessageLoop(IServerCommunicator server, IClientCommunicator client)
+        _serverThread = new Thread(() =>
         {
-            _server = server;
-            _client = client;
-
-            _serverThread = new Thread(() =>
-            {
-                LOG.Info("start Server Communicator",this.GetType());
-                _server.Communicate();
-            })
-            {
-                Name = "server:Communicator"
-            };
-
-            _clientThread = new Thread(() =>
-            {
-                LOG.Info("start client Communicator", this.GetType());
-                _client.Communicate();
-            })
-            {
-                Name = "client:Communicator"
-            };
-        }
-
-        public void Start()
+            LOG.Info(()=>"start Server Communicator",this.GetType());
+            _server.Communicate();
+        })
         {
-            _serverThread.Start();
-            _clientThread.Start();
-        }
+            Name = "server:Communicator"
+        };
 
-        public void Stop()
+        _clientThread = new Thread(() =>
         {
-            _server.Stop();
-            _client.Stop();
-        }
-
-        public void AwaitTermination()
+            LOG.Info(()=>"start client Communicator", this.GetType());
+            _client.Communicate();
+        })
         {
-            _clientThread.Join();
-            _serverThread.Join();
-        }
+            Name = "client:Communicator"
+        };
     }
 
+    public void Start()
+    {
+        _serverThread.Start();
+        _clientThread.Start();
+    }
 
+    public void Stop()
+    {
+        _server.Stop();
+        _client.Stop();
+    }
 
-
+    public void AwaitTermination()
+    {
+        _clientThread.Join();
+        _serverThread.Join();
+    }
 }
+
 

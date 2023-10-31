@@ -5,7 +5,7 @@ using Playhouse.Protocol;
 using PlayHouse.Service.Session;
 using Xunit;
 using Moq;
-using PlayHouse.Service.Session.network;
+using PlayHouse.Service.Session.Network;
 using PlayHouse.Production;
 using Google.Protobuf;
 

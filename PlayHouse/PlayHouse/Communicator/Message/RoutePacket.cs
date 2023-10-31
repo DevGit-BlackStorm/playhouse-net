@@ -322,7 +322,7 @@ namespace PlayHouse.Communicator.Message
 
             int bodySize = body.Length;
 
-            if (bodySize > ConstOption.MAX_PACKET_SIZE)
+            if (bodySize > ConstOption.MaxPacketSize)
             {
                 throw new Exception($"body size is over : {bodySize}");
             }

@@ -72,12 +72,7 @@ namespace PlayHouse.Communicator
 
         public bool Update(XServerInfo serverInfo)
         {
-            var stateChanged = false;
-
-            if (State != serverInfo.State)
-            {
-                stateChanged = true;
-            }
+            bool stateChanged = State != serverInfo.State;
 
             State = serverInfo.State;
 

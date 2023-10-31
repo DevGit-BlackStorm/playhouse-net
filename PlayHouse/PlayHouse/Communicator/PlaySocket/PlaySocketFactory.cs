@@ -4,13 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PlayHouse.Communicator.PlaySocket
+namespace PlayHouse.Communicator.PlaySocket;
+public abstract class PlaySocketFactory
 {
-    public class PlaySocketFactory
+    public static IPlaySocket CreatePlaySocket(SocketConfig config, String id)
     {
-        static public IPlaySocket CreatePlaySocket(SocketConfig config, String id)
-        {
-            return new NetMQPlaySocket(config, id);
-        }
+        return new NetMQPlaySocket(config, id);
     }
 }

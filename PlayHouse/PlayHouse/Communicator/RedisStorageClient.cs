@@ -1,5 +1,4 @@
-﻿using CommonLib;
-using Playhouse.Protocol;
+﻿using Playhouse.Protocol;
 using StackExchange.Redis;
 
 namespace PlayHouse.Communicator
@@ -31,7 +30,7 @@ namespace PlayHouse.Communicator
     //}
     public class RedisStorageClient : IStorageClient
     {
-        private string _redisURI = "";
+        private readonly string _redisUri;
         private IConnectionMultiplexer? _connectionMultiplexer;
         private readonly string _redisKey = "playhouse_serverinfos";
         private readonly string _nodeIdeKey = "playhouse_nodeId_net";
@@ -40,12 +39,12 @@ namespace PlayHouse.Communicator
 
         public RedisStorageClient(string redisIp, int redisBindPort)
         {
-            _redisURI = $"{redisIp}:{redisBindPort}";
+            _redisUri = $"{redisIp}:{redisBindPort}";
         }
 
         public void Connect()
         {
-            _connectionMultiplexer = ConnectionMultiplexer.Connect(_redisURI);
+            _connectionMultiplexer = ConnectionMultiplexer.Connect(_redisUri);
             _database = _connectionMultiplexer.GetDatabase();
         }
 
@@ -67,7 +66,7 @@ namespace PlayHouse.Communicator
             byte[] key = System.Text.Encoding.UTF8.GetBytes(bindEndpoint);
             byte[] nodeIdBytes = _database!.HashGet(_nodeIdeKey, key)!;
 
-            if (nodeIdBytes != null && nodeIdBytes.Length > 0)
+            if (nodeIdBytes.Length > 0)
             {
                 return BitConverter.ToInt32(nodeIdBytes, 0);
             }

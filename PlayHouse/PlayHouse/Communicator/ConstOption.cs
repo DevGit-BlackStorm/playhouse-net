@@ -8,16 +8,15 @@ namespace PlayHouse.Communicator
 {
     public static class ConstOption
     {
-        public const int ThreadSleep = 50;
-
-        public static int ADDRESS_RESOLVER_INITIAL_DELAY { get; internal set; } = 3000;
-        public static int ADDRESS_RESOLVER_PERIOD { get; internal set; } = 3000;
-        public static ushort DEFAULT_SERVICE_ID { get; internal set; } = 0;
+        public const int ThreadSleep = 10;
+        public static int AddressResolverInitialDelay { get; internal set; } = 3000;
+        public static int AddressResolverPeriod { get; internal set; } = 3000;
+        public static ushort DefaultServiceId { get; internal set; } = 0;
 
         public const int SessionBufferSize = 4 * 1024;
 
-        public const int MAX_PACKET_SIZE = 65535;
-        public const int HEADER_SIZE = 256;
-        public const int LENGTH_FIELD_SIZE = 3;
+        public const int MaxPacketSize = 65535;
+        public const int HeaderSize = 256;
+        public const int LengthFieldSize = 3;
     }
 }

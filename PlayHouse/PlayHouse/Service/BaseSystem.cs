@@ -50,7 +50,7 @@ namespace PlayHouse.Service
         {
             while (_running)
             {
-                if (_msgQueue.TryDequeue(out RoutePacket? routePacket))
+                while (_msgQueue.TryDequeue(out RoutePacket? routePacket))
                 {
                     do
                     {
@@ -75,7 +75,7 @@ namespace PlayHouse.Service
                                             _serverSystem.OnStop();
                                             break;
                                         default:
-                                            LOG.Error($"Invalid baseSystem packet {routePacket.MsgId}", this.GetType());
+                                            LOG.Error(()=>$"Invalid baseSystem packet {routePacket.MsgId}", this.GetType());
                                             break;
                                     }
                                 }
@@ -87,7 +87,7 @@ namespace PlayHouse.Service
                             }
                             catch (Exception e)
                             {
-                                LOG.Error(e.StackTrace, this.GetType());
+                                LOG.Error(()=>e.Message, this.GetType());
                                 _baseSender.ErrorReply(routePacket.RouteHeader, (int)BaseErrorCode.SystemError);
                             }
                             finally

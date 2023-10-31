@@ -1,7 +1,7 @@
 ﻿using PlayHouse.Communicator.Message;
 using PlayHouse.Communicator;
 using System.Collections.Concurrent;
-using PlayHouse.Service.Session.network;
+using PlayHouse.Service.Session.Network;
 using PlayHouse.Utils;
 using PlayHouse.Production;
 using PlayHouse.Production.Session;
@@ -70,10 +70,10 @@ namespace PlayHouse.Service.Session
 
                     using (clientPacket)
                     {
-                        LOG.Trace($"SessionService:onReceive {clientPacket.Header} : from client", this.GetType());
+                        LOG.Trace(()=>$"SessionService:onReceive {clientPacket.Header} : from client", this.GetType());
                         if (!_clients.TryGetValue(sessionId, out var sessionClient))
                         {
-                            LOG.Error($"sessionId is not exist {sessionId},{clientPacket.GetMsgId()}", this.GetType());
+                            LOG.Error(()=>$"sessionId is not exist {sessionId},{clientPacket.GetMsgId()}", this.GetType());
                         }
                         else
                         {
@@ -97,7 +97,7 @@ namespace PlayHouse.Service.Session
                         var packetName = routePacket.MsgId;
                         if (!_clients.TryGetValue(sessionId, out var sessionClient))
                         {
-                            LOG.Error($"sessionId is already disconnected  {sessionId},{packetName}", this.GetType());
+                            LOG.Error(()=>$"sessionId is already disconnected  {sessionId},{packetName}", this.GetType());
                         }
                         else
                         {
@@ -166,7 +166,7 @@ namespace PlayHouse.Service.Session
             }
             else
             {
-                LOG.Error($"sessionId is exist {sid}", this.GetType());
+                LOG.Error(()=>$"sessionId is exist {sid}", this.GetType());
             }
         }
 
@@ -184,7 +184,7 @@ namespace PlayHouse.Service.Session
             }
             else
             {
-                LOG.Error($"sessionId is not exist {sid}", this.GetType());
+                LOG.Error(()=>$"sessionId is not exist {sid}", this.GetType());
             }
         }
         

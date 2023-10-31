@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PlayHouse.Service.Session.network
+namespace PlayHouse.Service.Session.Network
 {
     internal interface ISessionNetwork
     {

@@ -1,23 +1,17 @@
-﻿using PlayHouse.Communicator.Message;
-using System.Collections.Concurrent;
-
-namespace PlayHouse.Communicator
+﻿
+namespace PlayHouse.Communicator;
+public delegate void JobAction();
+public class JobBucket
 {
-    public delegate void JobAction();
+    private readonly Queue<JobAction> _queue = new();
 
-    public class JobBucket
+    public void Add(JobAction job)
     {
-        private readonly Queue<JobAction> _queue = new();
-
-        public void Add(JobAction job)
-        {
-            _queue.Enqueue(job);
-        }
-
-        public JobAction? Get()
-        {
-            return _queue.TryDequeue(out JobAction? job) ? job : null;
-        }
+        _queue.Enqueue(job);
     }
 
+    public JobAction? Get()
+    {
+        return _queue.TryDequeue(out JobAction? job) ? job : null;
+    }
 }

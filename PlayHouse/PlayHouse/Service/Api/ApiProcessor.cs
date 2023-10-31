@@ -67,7 +67,7 @@ namespace PlayHouse.Service.Api
 
             while (_state.Get() != ServerState.DISABLE)
             {
-                if (_msgQueue.TryDequeue(out var routePacket))
+                while (_msgQueue.TryDequeue(out var routePacket))
                 {
                     var routeHeader = routePacket.RouteHeader;
 
@@ -102,7 +102,7 @@ namespace PlayHouse.Service.Api
                             {
                                 try
                                 { 
-                                    LOG.Debug($"[Call Packet: accountId:{routePacket.AccountId},MsgId={routeHeader.MsgId},IsBackend={routeHeader.IsBackend}]",this.GetType());
+                                    LOG.Debug(() => $"[Call Packet: accountId:{routePacket.AccountId},MsgId={routeHeader.MsgId},IsBackend={routeHeader.IsBackend}]",this.GetType());
                                     AsyncContext.ApiSender = apiSender;
                                     AsyncContext.InitErrorCode();
                                     
@@ -127,7 +127,7 @@ namespace PlayHouse.Service.Api
                                     {
                                         apiSender.ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.NotRegisteredMessage);    
                                     }
-                                    LOG.Error(e.Message, GetType(), e);
+                                    LOG.Error(() => e.Message, GetType());
                                 }
                                 catch (ApiException.NotRegisterApiInstance e)
                                 {
@@ -135,7 +135,7 @@ namespace PlayHouse.Service.Api
                                     {
                                         apiSender.ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.SystemError);    
                                     }
-                                    LOG.Error(e.Message, GetType(), e);
+                                    LOG.Error(() => e.Message, GetType());
                                 }
                                 catch (Exception e)
                                 {
@@ -151,14 +151,14 @@ namespace PlayHouse.Service.Api
 
                                         apiSender.ErrorReply(routePacket.RouteHeader, errorCode);
                                     }
-                                    LOG.Error(e.Message,GetType(),e);
+                                    LOG.Error(() => e.Message, GetType());
                                 }
                             });
                         }
                     }
                     catch (Exception e)
                     {
-                        LOG.Error(e.StackTrace, this.GetType(), e);
+                        LOG.Error(()=> e.StackTrace, this.GetType());
                     }
                 }
                 Thread.Sleep(10);

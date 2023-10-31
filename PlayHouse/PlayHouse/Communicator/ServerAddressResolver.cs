@@ -1,90 +1,68 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using PlayHouse.Production;
 
-namespace PlayHouse.Communicator
+namespace PlayHouse.Communicator;
+class ServerAddressResolver
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading;
-    using PlayHouse.Production;
+    private readonly string _bindEndpoint;
+    private readonly XServerInfoCenter _serverInfoCenter;
+    private readonly XClientCommunicator _communicateClient;
+    private readonly IProcessor _service;
+    private readonly IStorageClient _storageClient;
 
-    class ServerAddressResolver
+    private Timer? _timer;
+
+    public ServerAddressResolver(string bindEndpoint, XServerInfoCenter serverInfoCenter,
+        XClientCommunicator communicateClient, IProcessor service, IStorageClient storageClient)
     {
-        private readonly string bindEndpoint;
-        private readonly XServerInfoCenter serverInfoCenter;
-        private readonly XClientCommunicator communicateClient;
-        private readonly IProcessor service;
-        private readonly IStorageClient storageClient;
-
-        private Timer? _timer;
-
-        public ServerAddressResolver(string bindEndpoint, XServerInfoCenter serverInfoCenter,
-            XClientCommunicator communicateClient, IProcessor service, IStorageClient storageClient)
-        {
-            this.bindEndpoint = bindEndpoint;
-            this.serverInfoCenter = serverInfoCenter;
-            this.communicateClient = communicateClient;
-            this.service = service;
-            this.storageClient = storageClient;
-        }
-
-        public void Start()
-        {
-            LOG.Info("Server address resolver start", this.GetType());
-
-            _timer = new Timer(_ =>
-            {
-                try
-                {
-                    storageClient.UpdateServerInfo(new XServerInfo(
-                        bindEndpoint,
-                        service.GetServiceType(),
-                        service.ServiceId,
-                        service.GetServerState(),
-                        service.GetWeightPoint(),
-                        DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-                    ));
-
-                    IList<XServerInfo> serverInfoList = storageClient.GetServerList(bindEndpoint);
-
-//                    LOG.Debug($"================ ServerInfoList size:{serverInfoList.Count}",this.GetType());
-
-                    IList<XServerInfo> updateList = serverInfoCenter.Update(serverInfoList);
-
-//                    LOG.Debug($"================= updateList size:{updateList.Count}", this.GetType());
-
-                    foreach (XServerInfo serverInfo in updateList)
-                    {
-                        //LOG.Trace($"update server info : {serverInfo}",this.GetType());
-                        switch (serverInfo.State)
-                        {
-                            case ServerState.RUNNING:
-                                communicateClient.Connect(serverInfo.BindEndpoint);
-                                break;
-                            case ServerState.DISABLE:
-                                communicateClient.Disconnect(serverInfo.BindEndpoint);
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    LOG.Error(e.ToString(), this.GetType(), e);
-                }
-            }, null, ConstOption.ADDRESS_RESOLVER_INITIAL_DELAY, ConstOption.ADDRESS_RESOLVER_PERIOD);
-            
-            
-        }
-
-        public void Stop()
-        {
-            _timer?.Dispose();
-        }
+        this._bindEndpoint = bindEndpoint;
+        this._serverInfoCenter = serverInfoCenter;
+        this._communicateClient = communicateClient;
+        this._service = service;
+        this._storageClient = storageClient;
     }
 
+    public void Start()
+    {
+        LOG.Info(()=>"Server address resolver start", this.GetType());
+
+        _timer = new Timer(_ =>
+        {
+            try
+            {
+                _storageClient.UpdateServerInfo(new XServerInfo(
+                    _bindEndpoint,
+                    _service.GetServiceType(),
+                    _service.ServiceId,
+                    _service.GetServerState(),
+                    _service.GetWeightPoint(),
+                    DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                ));
+
+                IList<XServerInfo> serverInfoList = _storageClient.GetServerList(_bindEndpoint);
+                IList<XServerInfo> updateList = _serverInfoCenter.Update(serverInfoList);
+
+                foreach (XServerInfo serverInfo in updateList)
+                {
+                    switch (serverInfo.State)
+                    {
+                        case ServerState.RUNNING:
+                            _communicateClient.Connect(serverInfo.BindEndpoint);
+                            break;
+                        case ServerState.DISABLE:
+                            _communicateClient.Disconnect(serverInfo.BindEndpoint);
+                            break;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                LOG.Error(()=>e.Message, this.GetType());
+            }
+        }, null, ConstOption.AddressResolverInitialDelay, ConstOption.AddressResolverPeriod);
+    }
+
+    public void Stop()
+    {
+        _timer?.Dispose();
+    }
 }

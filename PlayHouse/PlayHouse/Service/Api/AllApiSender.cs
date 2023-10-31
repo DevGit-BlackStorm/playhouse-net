@@ -2,11 +2,6 @@
 using Playhouse.Protocol;
 using PlayHouse.Communicator;
 using PlayHouse.Production;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PlayHouse.Service.Api
 {
@@ -26,11 +21,11 @@ namespace PlayHouse.Service.Api
 
         public string GetFromEndpoint()
         {
-            return _currentHeader?.From ?? "";
+            return CurrentHeader?.From ?? "";
         }
 
-        public string SessionEndpoint => _currentHeader?.From ?? "";
-        public int Sid => _currentHeader?.Sid ?? 0;
+        public string SessionEndpoint => CurrentHeader?.From ?? "";
+        public int Sid => CurrentHeader?.Sid ?? 0;
 
         public void Authenticate(Guid accountId)
         {
@@ -40,9 +35,9 @@ namespace PlayHouse.Service.Api
                 AccountId = ByteString.CopyFrom(accountId.ToByteArray())
             };
 
-            if (_currentHeader != null)
+            if (CurrentHeader != null)
             {
-                SendToBaseSession(_currentHeader.From, _currentHeader.Sid, new Packet(message));
+                SendToBaseSession(CurrentHeader.From, CurrentHeader.Sid, new Packet(message));
             }
             else
             {

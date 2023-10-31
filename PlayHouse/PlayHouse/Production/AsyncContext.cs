@@ -1,7 +1,5 @@
 ﻿using PlayHouse.Production;
 
-namespace PlayHouse;
-
 public class AsyncContext
 {
     private class ErrorCodeWrapper

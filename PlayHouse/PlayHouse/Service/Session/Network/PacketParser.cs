@@ -1,18 +1,14 @@
-﻿
-using CommonLib;
+﻿using CommonLib;
 using NetMQ;
-using Playhouse.Protocol;
 using PlayHouse.Communicator.Message;
 using PlayHouse.Production;
-using System.Net;
 
-namespace PlayHouse.Service.Session.network
+namespace PlayHouse.Service.Session.Network
 {
     public class PacketParser
     {
-
-        public const int MAX_PACKET_SIZE = 65535;
-        public const int HEADER_SIZE = 11;
+        private const int MaxPacketSize = 65535;
+        private const int HeaderSize = 11;
 
         public PacketParser() { }
 
@@ -22,20 +18,14 @@ namespace PlayHouse.Service.Session.network
             var packets = new List<ClientPacket>();
 
 
-            while (buffer.Count >= HEADER_SIZE)
+            while (buffer.Count >= HeaderSize)
             {
                 try
                 {
                     int bodySize = XBitConverter.ToHostOrder(buffer.PeekInt16(buffer.ReaderIndex));
 
-                    if (bodySize > MAX_PACKET_SIZE)
-                    {
-                        LOG.Error($"Body size over : {bodySize}", GetType());
-                        throw new IndexOutOfRangeException("BodySizeOver");
-                    }
-
                     // If the remaining buffer is smaller than the expected packet size, wait for more data
-                    if (buffer.Count < bodySize + HEADER_SIZE)
+                    if (buffer.Count < bodySize + HeaderSize)
                     {
                         return packets;
                     }
@@ -59,7 +49,7 @@ namespace PlayHouse.Service.Session.network
                 }
                 catch (Exception e)
                 {
-                    LOG.Error($"Exception while parsing packet", GetType(), e);
+                    LOG.Error(()=>$"Exception while parsing packet, {e.Message}", GetType());
                 }
             }
 

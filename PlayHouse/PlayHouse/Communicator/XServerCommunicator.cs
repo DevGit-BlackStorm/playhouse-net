@@ -3,7 +3,6 @@ using PlayHouse.Production;
 
 namespace PlayHouse.Communicator
 {
-
     public class XServerCommunicator : IServerCommunicator
     {
         private readonly IPlaySocket _playSocket;
@@ -37,7 +36,7 @@ namespace PlayHouse.Communicator
                     catch (Exception e)
                     {
 
-                        LOG.Error($"{_playSocket.Id()} Error during communication", this.GetType(), e);
+                        LOG.Error(()=>$"{_playSocket.Id()} Error during communication - {e.Message}", this.GetType());
                     }
 
                     packet = _playSocket.Receive();

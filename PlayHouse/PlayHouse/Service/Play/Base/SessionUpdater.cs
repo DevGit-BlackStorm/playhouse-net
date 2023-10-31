@@ -12,8 +12,8 @@ namespace PlayHouse.Service.Play.Base
 
     public class XSessionUpdater : ISessionUpdater
     {
-        private XStageSender _stageSender;
-        private string _playEndpoint;
+        private readonly XStageSender _stageSender;
+        private readonly string _playEndpoint;
         public XSessionUpdater(string playEndpoint,XStageSender stageSender)
         {
             _stageSender = stageSender;

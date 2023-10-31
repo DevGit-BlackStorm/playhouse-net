@@ -9,12 +9,12 @@ using CommonLib;
 using PlayHouse.Production.Session;
 using NetMQ;
 
-namespace PlayHouse.Service.Session.network
+namespace PlayHouse.Service.Session.Network
 {
     public class SessionServerListener : ISessionListener
     {
         public bool UseWebSocket { get; set; }
-        public RingBuffer Buffer { get; } = new RingBuffer(ConstOption.MAX_PACKET_SIZE);
+        public RingBuffer Buffer { get; } = new RingBuffer(ConstOption.MaxPacketSize);
 
         public string ResultValue { get; set; } = "";
         private ISession? _session;

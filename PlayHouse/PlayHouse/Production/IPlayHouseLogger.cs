@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PlayHouse.Production
+﻿namespace PlayHouse.Production
 {
     public interface IPlayHouseLogger
     {
-        void Debug(string message, string className);
-        void Info(string message, string className);
-        void Warn(string message, string className);
-        void Error(string? message, string className, Exception? ex = null);
-        void Trace(string message, string className);
-        void Fatal(string message, string className);
+        void Debug(Func<string> messageFactory, string className);
+        void Info(Func<string> messageFactory, string className);
+        void Warn(Func<string> messageFactory, string className);
+        void Error(Func<string> messageFactory, string className);
+        void Trace(Func<string> messageFactory, string className);
+        void Fatal(Func<string> messageFactory, string className);
     }
 
     public enum LogLevel
@@ -33,41 +27,34 @@ namespace PlayHouse.Production
             return DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
         }
 
-        public void Trace(string message, string className)
+        public void Trace(Func<string> messageFactory, string className)
         {
-            Console.WriteLine($"{GetTimeStamp()} TRACE: ({className}) - {message}");
+            Console.WriteLine($"{GetTimeStamp()} TRACE: ({className}) - {messageFactory()}");
         }
 
-        public void Debug(string message, string className)
+        public void Debug(Func<string> messageFactory, string className)
         {
-            Console.WriteLine($"{GetTimeStamp()} DEBUG: ({className}) - {message}");
+            Console.WriteLine($"{GetTimeStamp()} DEBUG: ({className}) - {messageFactory()}");
         }
 
-        public void Info(string message, string className)
+        public void Info(Func<string> messageFactory, string className)
         {
-            Console.WriteLine($"{GetTimeStamp()} INFO: ({className}) - {message}");
+            Console.WriteLine($"{GetTimeStamp()} INFO: ({className}) - {messageFactory()}");
         }
 
-        public void Warn(string message, string className)
+        public void Warn(Func<string> messageFactory, string className)
         {
-            Console.WriteLine($"{GetTimeStamp()} WARN: ({className}) - {message}");
+            Console.WriteLine($"{GetTimeStamp()} WARN: ({className}) - {messageFactory()}");
         }
 
-        public void Error(string? message, string className, Exception? ex = null)
+        public void Error(Func<string> messageFactory, string className)
         {
-            if (ex != null)
-            {
-                Console.WriteLine($"{GetTimeStamp()} ERROR: ({className}) - {message} [{ex}]");
-            }
-            else
-            {
-                Console.WriteLine($"{GetTimeStamp()} ERROR: ({className}) - {message}");
-            }
+            Console.WriteLine($"{GetTimeStamp()} ERROR: ({className}) - {messageFactory()}");
         }
 
-        public void Fatal(string message, string className)
+        public void Fatal(Func<string> messageFactory, string className)
         {
-            Console.WriteLine($"{GetTimeStamp()} FATAL: ({className}) - {message}");
+            Console.WriteLine($"{GetTimeStamp()} FATAL: ({className}) - {messageFactory()}");
         }
     }
 
@@ -82,59 +69,59 @@ namespace PlayHouse.Production
             _logLevel = logLevel;
         }
 
-        public static void Trace(string message, Type clazz)
+        public static void Trace(Func<string> messageFactory, Type clazz)
         {
             if (LogLevel.Trace >= _logLevel)
             {
-                _logger.Trace(message, clazz.Name);
+                _logger.Trace(messageFactory, clazz.Name);
             }
         }
 
-        public static void Debug(string message, Type clazz)
+        public static void Debug(Func<string> messageFactory, Type clazz)
         {
             if (LogLevel.Debug >= _logLevel)
             {
-                _logger.Debug(message, clazz.Name);
+                _logger.Debug(messageFactory, clazz.Name);
             }
         }
 
-        public static void Info(string message, Type clazz)
+        public static void Info(Func<string> messageFactory, Type clazz)
         {
             if (LogLevel.Info >= _logLevel)
             {
-                _logger.Info(message, clazz.Name);
+                _logger.Info(messageFactory, clazz.Name);
             }
         }
 
-        public static void Warn(string message, Type clazz)
+        public static void Warn(Func<string> messageFactory, Type clazz)
         {
             if (LogLevel.Warning >= _logLevel)
             {
-                _logger.Warn(message, clazz.Name);
+                _logger.Warn(messageFactory, clazz.Name);
             }
         }
 
-        public static void Error(string? message, Type clazz)
+        public static void Error(Func<string> messageFactory, Type clazz)
         {
             if (LogLevel.Error >= _logLevel)
             {
-                _logger.Error(message, clazz.Name);
+                _logger.Error(messageFactory, clazz.Name);
             }
         }
 
-        public static void Error(string? message, Type clazz, Exception ex)
-        {
-            if (LogLevel.Error >= _logLevel)
-            {
-                _logger.Error(message, clazz.Name, ex);
-            }
-        }
+        // public static void Error(Func<string> messageFactory, Type clazz, Exception ex)
+        // {
+        //     if (LogLevel.Error >= _logLevel)
+        //     {
+        //         _logger.Error(messageFactory, clazz.Name, ex);
+        //     }
+        // }
 
-        public static void Fatal(string message, Type clazz)
+        public static void Fatal(Func<string> messageFactory, Type clazz)
         {
             if (LogLevel.Fatal >= _logLevel)
             {
-                _logger.Fatal(message, clazz.Name);
+                _logger.Fatal(messageFactory, clazz.Name);
             }
         }
     }

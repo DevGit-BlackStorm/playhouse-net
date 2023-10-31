@@ -1,67 +1,61 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 using PlayHouse.Production.Api;
 
-namespace PlayHouse.Service.Api
+namespace PlayHouse.Service.Api;
+public class XHandlerRegister : IHandlerRegister
 {
-    public class XHandlerRegister : IHandlerRegister
+    public readonly Dictionary<int, Delegate> Handles = new Dictionary<int, Delegate>();
+
+    public void Add(int msgId, ApiHandler handler)
     {
-        public readonly Dictionary<int, Delegate> Handles = new Dictionary<int, Delegate>();
-
-        public void Add(int msgId, ApiHandler handler)
+        if (Handles.ContainsKey(msgId))
         {
-            if (Handles.ContainsKey(msgId))
-            {
-                throw new InvalidOperationException($"Already exists message ID: {msgId}");
-            }
-            else
-            {
-                Handles[msgId] = handler;
-            }
+            throw new InvalidOperationException($"Already exists message ID: {msgId}");
         }
-
-        public ApiHandler GetHandler(int msgId)
+        else
         {
-            if (Handles.TryGetValue(msgId, out var handler))
-            {
-                return (ApiHandler)handler;
-            }
-            else
-            {
-                throw new KeyNotFoundException($"Handler for message ID {msgId} not found");
-            }
+            Handles[msgId] = handler;
         }
     }
 
-    public class XBackendHandlerRegister : IBackendHandlerRegister
+    public ApiHandler GetHandler(int msgId)
     {
-        public  readonly Dictionary<int, Delegate> Handles = new Dictionary<int, Delegate>();
-
-        public void Add(int msgId, ApiBackendHandler handler)
+        if (Handles.TryGetValue(msgId, out var handler))
         {
-            if (Handles.ContainsKey(msgId))
-            {
-                throw new InvalidOperationException($"Already exists message ID: {msgId}");
-            }
-            else
-            {
-                Handles[msgId] = handler;
-            }
+            return (ApiHandler)handler;
         }
-
-        public ApiBackendHandler GetHandler(int msgId)
+        else
         {
-            if (Handles.TryGetValue(msgId, out var handler))
-            {
-                return (ApiBackendHandler)handler;
-            }
-            else
-            {
-                throw new KeyNotFoundException($"Handler for message ID {msgId} not found");
-            }
+            throw new KeyNotFoundException($"Handler for message ID {msgId} not found");
+        }
+    }
+}
+
+public class XBackendHandlerRegister : IBackendHandlerRegister
+{
+    public  readonly Dictionary<int, Delegate> Handles = new Dictionary<int, Delegate>();
+
+    public void Add(int msgId, ApiBackendHandler handler)
+    {
+        if (Handles.ContainsKey(msgId))
+        {
+            throw new InvalidOperationException($"Already exists message ID: {msgId}");
+        }
+        else
+        {
+            Handles[msgId] = handler;
+        }
+    }
+
+    public ApiBackendHandler GetHandler(int msgId)
+    {
+        if (Handles.TryGetValue(msgId, out var handler))
+        {
+            return (ApiBackendHandler)handler;
+        }
+        else
+        {
+            throw new KeyNotFoundException($"Handler for message ID {msgId} not found");
         }
     }
 }
