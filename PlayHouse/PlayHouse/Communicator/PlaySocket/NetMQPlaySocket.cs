@@ -6,6 +6,7 @@ using Playhouse.Protocol;
 using PlayHouse.Communicator.Message;
 using PlayHouse.Production;
 using System.Text;
+using PlayHouse.Utils;
 
 namespace PlayHouse.Communicator.PlaySocket;
 public class NetMQPlaySocket : IPlaySocket
@@ -13,6 +14,7 @@ public class NetMQPlaySocket : IPlaySocket
     private readonly RouterSocket _socket = new();
     private readonly String _bindEndpoint;
     private readonly RingBuffer _buffer = new RingBuffer(ConstOption.MaxPacketSize);
+    private readonly LOG<NetMQPlaySocket> _log = new ();
 
     public NetMQPlaySocket(SocketConfig socketConfig,String bindEndpoint)
     {
@@ -34,7 +36,7 @@ public class NetMQPlaySocket : IPlaySocket
     public void Bind()
     {
         _socket.Bind(_bindEndpoint);
-        LOG.Info(()=>$"socket bind {_bindEndpoint}",this.GetType());
+        _log.Info(()=>$"socket bind {_bindEndpoint}");
     }
 
     public void Close()
@@ -69,7 +71,7 @@ public class NetMQPlaySocket : IPlaySocket
         {
             if(message.Count() < 3)
             {
-                LOG.Error(()=>$"message size is invalid : {message.Count()}", this.GetType());
+                _log.Error(()=>$"message size is invalid : {message.Count()}");
                 return null;
             }
 
@@ -87,7 +89,7 @@ public class NetMQPlaySocket : IPlaySocket
 
     public void Send(string endpoint, RoutePacket routePacket)
     {
-        LOG.Trace(()=>$"sendTo:{endpoint}, packetInfo:{routePacket.RouteHeader},forClient:{routePacket.IsToClient()}", this.GetType());
+        
         using (routePacket)
         {
             NetMQMessage message = new NetMQMessage();
@@ -128,7 +130,7 @@ public class NetMQPlaySocket : IPlaySocket
 
             if (!_socket.TrySendMultipartMessage(message))
             {
-                LOG.Error(()=>$"Send fail to {endpoint}, MsgName:{routePacket.MsgId}", this.GetType());
+                _log.Error(()=>$"Send fail to {endpoint}, MsgName:{routePacket.MsgId}");
             }
         }
     }

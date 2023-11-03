@@ -28,8 +28,5 @@
     <ProjectReference Include="..\Protocol\Common.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Communicator\Message\" />
-  </ItemGroup>
 
 </Project>

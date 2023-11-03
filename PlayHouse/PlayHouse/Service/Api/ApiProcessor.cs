@@ -12,6 +12,7 @@ namespace PlayHouse.Service.Api
 {
     public class ApiProcessor : IProcessor
     {
+        private readonly LOG<ApiProcessor> _log = new ();
         private readonly ushort _serviceId;
         private readonly ApiOption _apiOption;
         private readonly RequestCache _requestCache;
@@ -41,18 +42,20 @@ namespace PlayHouse.Service.Api
             _apiOption = apiOption;
             _requestCache = requestCache;
             _clientCommunicator = clientCommunicator;
-            this._sender = sender;
+            _sender = sender;
             _systemPanel = systemPanel;
 
             _apiReflection = new ApiReflection();
 
-            _policy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(60*5) };
-            var cacheSettings = new NameValueCollection();
-            cacheSettings.Add("CacheMemoryLimitMegabytes", "10");
-            cacheSettings.Add("PhysicalMemoryLimitPercentage", "1");
+            _policy = new CacheItemPolicy { SlidingExpiration =TimeSpan.FromMinutes(5) };
+            var cacheSettings = new NameValueCollection
+            {
+                { "CacheMemoryLimitMegabytes", "10" },
+                { "PhysicalMemoryLimitPercentage", "1" }
+            };
             _cache = new MemoryCache("ApiProcessor", cacheSettings);
 
-            _threadLoop = new Thread(() => MessageLoop()) { Name = "apiProcessor:message-loop"};
+            _threadLoop = new Thread(MessageLoop) { Name = "apiProcessor:message-loop"};
 
         }
 
@@ -88,36 +91,40 @@ namespace PlayHouse.Service.Api
                                 _cache.Add(new CacheItem(routeHeader.AccountId.ToString(), accountApiProcessor),_policy);
                             }
 
+                            var result = routePacket;
                             Task.Run( async ()  => {
-                                 await accountApiProcessor.Dispatch(routePacket).ConfigureAwait(false);
+                                 await accountApiProcessor.Dispatch(result).ConfigureAwait(false);
                              });
                             
                         }
                         else
                         {
-                            var apiSender = new AllApiSender(_serviceId, _clientCommunicator, _requestCache);
-                            apiSender.SetCurrentPacketHeader(routeHeader);
-
+                            var packet = routePacket;
                             _ = Task.Run(async () =>
                             {
+                                var apiSender = new AllApiSender(_serviceId, _clientCommunicator, _requestCache);
+                                apiSender.SetCurrentPacketHeader(routeHeader);
+
                                 try
-                                { 
-                                    LOG.Debug(() => $"[Call Packet: accountId:{routePacket.AccountId},MsgId={routeHeader.MsgId},IsBackend={routeHeader.IsBackend}]",this.GetType());
+                                {
+                                    // var result = packet;
+                                    // _log.Debug(
+                                    //     () => $"before Call Method - [AccountId:{result.AccountId},MsgId={routeHeader.MsgId},MsgSeq:{routeHeader.Header.MsgSeq},IsBackend={routeHeader.IsBackend}]");
                                     AsyncContext.ApiSender = apiSender;
                                     AsyncContext.InitErrorCode();
                                     
-                                    if(routePacket.IsBackend())
+                                    if(packet.IsBackend())
                                     {
                                         await _apiReflection.BackendCallMethod(
                                         routeHeader,
-                                        routePacket.ToPacket(),
+                                        packet.ToPacket(),
                                         apiSender).ConfigureAwait(false);
                                     }
                                     else
                                     {
                                         await _apiReflection.CallMethod(
                                         routeHeader,
-                                        routePacket.ToPacket(),
+                                        packet.ToPacket(),
                                         apiSender).ConfigureAwait(false);
                                     }
                                 }
@@ -125,17 +132,17 @@ namespace PlayHouse.Service.Api
                                 {
                                     if (routeHeader.Header.MsgSeq > 0)
                                     {
-                                        apiSender.ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.NotRegisteredMessage);    
+                                        apiSender.ErrorReply(packet.RouteHeader, (ushort)BaseErrorCode.NotRegisteredMessage);    
                                     }
-                                    LOG.Error(() => e.Message, GetType());
+                                    _log.Error(() => e.Message);
                                 }
                                 catch (ApiException.NotRegisterApiInstance e)
                                 {
                                     if (routeHeader.Header.MsgSeq > 0)
                                     {
-                                        apiSender.ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.SystemError);    
+                                        apiSender.ErrorReply(packet.RouteHeader, (ushort)BaseErrorCode.SystemError);    
                                     }
-                                    LOG.Error(() => e.Message, GetType());
+                                    _log.Error(() => e.Message);
                                 }
                                 catch (Exception e)
                                 {
@@ -149,21 +156,19 @@ namespace PlayHouse.Service.Api
                                             errorCode = (ushort)BaseErrorCode.UncheckedContentsError;
                                         }
 
-                                        apiSender.ErrorReply(routePacket.RouteHeader, errorCode);
+                                        apiSender.ErrorReply(packet.RouteHeader, errorCode);
                                     }
-                                    LOG.Error(() => e.Message, GetType());
+                                    _log.Error(() => e.Message);
                                 }
                             });
                         }
                     }
                     catch (Exception e)
                     {
-                        LOG.Error(()=> e.StackTrace, this.GetType());
+                        _log.Error(()=> e.StackTrace ?? e.Message);
                     }
                 }
-                Thread.Sleep(10);
-
-                //Task.Delay(10);
+                Thread.Sleep(ConstOption.ThreadSleep);
             }
         }
 

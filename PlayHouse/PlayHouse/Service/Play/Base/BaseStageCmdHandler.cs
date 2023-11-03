@@ -1,17 +1,18 @@
 ﻿using PlayHouse.Communicator.Message;
-using PlayHouse.Production;
+using PlayHouse.Utils;
 
 namespace PlayHouse.Service.Play.Base
 {
     public class BaseStageCmdHandler
     {
+        private readonly LOG<BaseStageCmdHandler> _log = new ();
         private readonly Dictionary<int, IBaseStageCmd> _maps = new();
 
         public void Register(int msgId, IBaseStageCmd baseStageCmd)
         {
             if (_maps.ContainsKey(msgId))
             {
-                throw new InvalidOperationException($"Already exist command : {msgId}");
+                throw new InvalidOperationException($"Already exist command - [msgId:{msgId}]");
             }
             _maps[msgId] = baseStageCmd;
         }
@@ -27,14 +28,13 @@ namespace PlayHouse.Service.Play.Base
                 }
                 else
                 {
-                    LOG.Error(()=>$"not registered message : {msgId}", this.GetType());
+                    _log.Error(()=>$"not registered message - [msgId:{msgId}]");
                 }
             }
             else
             {
-                LOG.Error(()=>$"Invalid packet : {msgId}", this.GetType());
+                _log.Error(()=>$"Invalid packet - [msgId:{msgId}]");
             }
         }
     }
-
 }

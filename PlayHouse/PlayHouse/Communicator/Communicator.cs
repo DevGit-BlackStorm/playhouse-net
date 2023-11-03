@@ -1,6 +1,7 @@
 ﻿using PlayHouse.Communicator.Message;
 using PlayHouse.Production;
 using PlayHouse.Service;
+using PlayHouse.Utils;
 
 namespace PlayHouse.Communicator;
 public delegate IServerSystem ServerSystemFactory(ISystemPanel systemPanel, ISender baseSender);
@@ -66,6 +67,7 @@ public class Communicator : ICommunicateListener
     private ServerAddressResolver _addressResolver;
     private BaseSystem _baseSystem;
     private readonly PerformanceTester _performanceTester;
+    private readonly LOG<Communicator> _log = new ();
 
     public Communicator(
         CommunicatorOption option,
@@ -120,8 +122,8 @@ public class Communicator : ICommunicateListener
         _service.OnStart();
         _performanceTester.Start();
 
-        LOG.Info(()=>"============== server start ==============", this.GetType());
-        LOG.Info(()=>$"Ready for bind: {bindEndpoint}", this.GetType());
+        _log.Info(()=>"============== server start ==============");
+        _log.Info(()=>$"Ready for bind: {bindEndpoint}");
     }
 
     private void UpdateDisable()
@@ -141,7 +143,7 @@ public class Communicator : ICommunicateListener
         _addressResolver.Stop();
         _messageLoop.Stop();
 
-        LOG.Info(()=>"============== server stop ==============", this.GetType());
+        _log.Info(()=>"============== server stop ==============");
     }
 
     public void AwaitTermination()
@@ -152,7 +154,7 @@ public class Communicator : ICommunicateListener
 
     public void OnReceive(RoutePacket routePacket)
     {
-        LOG.Trace(()=>$"onReceive: from:{routePacket.RouteHeader.From}, packetInfo:${routePacket.RouteHeader}", this.GetType());
+        
 
         _performanceTester.IncCounter();
 

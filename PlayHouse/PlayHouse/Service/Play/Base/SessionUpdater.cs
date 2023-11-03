@@ -9,7 +9,6 @@ namespace PlayHouse.Service.Play.Base
         public Task<int> UpdateStageInfo(string sessionEndpoint, int sid);
     }
 
-
     public class XSessionUpdater : ISessionUpdater
     {
         private readonly XStageSender _stageSender;

@@ -10,35 +10,33 @@ namespace PlayHouse.Service.Session
 {
     public class SessionProcessor : IProcessor, ISessionListener
     {
+        private readonly LOG<SessionProcessor> _log = new ();
         private readonly ushort _serviceId;
         private readonly SessionOption _sessionOption;
         private readonly IServerInfoCenter _serverInfoCenter;
         private readonly IClientCommunicator _clientCommunicator;
         private readonly RequestCache _requestCache;
-        private readonly int _sessionPort;
-        private readonly bool _showQps;
 
-        private readonly ConcurrentDictionary<int, SessionClient> _clients = new ConcurrentDictionary<int, SessionClient>();
-        private readonly AtomicEnum<ServerState> _state = new AtomicEnum<ServerState>(ServerState.DISABLE);
+        private readonly ConcurrentDictionary<int, SessionClient> _clients = new();
+        private readonly AtomicEnum<ServerState> _state = new(ServerState.DISABLE);
         private readonly SessionNetwork _sessionNetwork;
         private readonly PerformanceTester _performanceTester;
-        private readonly ConcurrentQueue<(int, ClientPacket)> _clientQueue = new ConcurrentQueue<(int, ClientPacket)>();
-        private readonly ConcurrentQueue<RoutePacket> _serverQueue = new ConcurrentQueue<RoutePacket>();
+        private readonly ConcurrentQueue<(int, ClientPacket)> _clientQueue = new();
+        private readonly ConcurrentQueue<RoutePacket> _serverQueue = new();
         private Thread? _clientMessageLoopThread;
         private Thread? _serverMessageLoopThread;
 
         public ushort ServiceId => _serviceId;
+        
 
         public SessionProcessor(ushort serviceId, SessionOption sessionOption, IServerInfoCenter serverInfoCenter,
                                IClientCommunicator clientCommunicator, RequestCache requestCache, int sessionPort, bool showQps)
         {
-            this._serviceId = serviceId;
-            this._sessionOption = sessionOption;
-            this._serverInfoCenter = serverInfoCenter;
-            this._clientCommunicator = clientCommunicator;
-            this._requestCache = requestCache;
-            this._sessionPort = sessionPort;
-            this._showQps = showQps;
+            _serviceId = serviceId;
+            _sessionOption = sessionOption;
+            _serverInfoCenter = serverInfoCenter;
+            _clientCommunicator = clientCommunicator;
+            _requestCache = requestCache;
 
             _sessionNetwork = new SessionNetwork(sessionOption, this);
             _performanceTester = new PerformanceTester(showQps, "client");
@@ -70,10 +68,10 @@ namespace PlayHouse.Service.Session
 
                     using (clientPacket)
                     {
-                        LOG.Trace(()=>$"SessionService:onReceive {clientPacket.Header} : from client", this.GetType());
+                        //LOG.Trace(()=>$"OnRecevie From Client: {clientPacket.Header}", this.GetType());
                         if (!_clients.TryGetValue(sessionId, out var sessionClient))
                         {
-                            LOG.Error(()=>$"sessionId is not exist {sessionId},{clientPacket.GetMsgId()}", this.GetType());
+                            _log.Error(()=>$"sessionId is not exist - [sessionId:{sessionId},packetInfo:{clientPacket.Header}]");
                         }
                         else
                         {
@@ -94,10 +92,10 @@ namespace PlayHouse.Service.Session
                     using (routePacket)
                     {
                         var sessionId = routePacket.RouteHeader.Sid;
-                        var packetName = routePacket.MsgId;
                         if (!_clients.TryGetValue(sessionId, out var sessionClient))
                         {
-                            LOG.Error(()=>$"sessionId is already disconnected  {sessionId},{packetName}", this.GetType());
+                            var result = routePacket;
+                            _log.Error(()=>$"sessionId is already disconnected - [sessionId:{sessionId},packetInfo:{result.RouteHeader}]");
                         }
                         else
                         {
@@ -166,7 +164,7 @@ namespace PlayHouse.Service.Session
             }
             else
             {
-                LOG.Error(()=>$"sessionId is exist {sid}", this.GetType());
+                _log.Error(()=>$"sessionId is exist - [sid:{sid}]");
             }
         }
 
@@ -184,7 +182,7 @@ namespace PlayHouse.Service.Session
             }
             else
             {
-                LOG.Error(()=>$"sessionId is not exist {sid}", this.GetType());
+                _log.Error(()=>$"sessionId is not exist - [sid:{sid}]");
             }
         }
         

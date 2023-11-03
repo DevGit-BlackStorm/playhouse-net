@@ -102,7 +102,7 @@ public class ApiReflection
     public async Task CallMethod(RouteHeader routeHeader, Packet packet, IApiSender apiSender)
     {
         var msgId = routeHeader.MsgId;
-        var targetMethod = _methods.ContainsKey(msgId) ? _methods[msgId] : null;
+        var targetMethod = _methods.TryGetValue(msgId, value: out var method) ? method : null;
         if (targetMethod == null) throw new ApiException.NotRegisterApiMethod($"not registered message msgId:{msgId}");
 
         if (!_instances.ContainsKey(targetMethod.ClassName)) throw new ApiException.NotRegisterApiInstance(targetMethod.ClassName);
@@ -116,7 +116,7 @@ public class ApiReflection
     public async Task BackendCallMethod(RouteHeader routeHeader, Packet packet,IApiBackendSender apiBackendSender)
     {
         var msgId = routeHeader.MsgId;
-        var targetMethod = _backendMethods.ContainsKey(msgId) ? _backendMethods[msgId] : null;
+        var targetMethod = _backendMethods.TryGetValue(msgId, out var method) ? method : null;
         if (targetMethod == null) throw new ApiException.NotRegisterApiMethod($"not registered message msgId:{msgId}");
 
         if (!_instances.ContainsKey(targetMethod.ClassName)) throw new ApiException.NotRegisterApiInstance(targetMethod.ClassName);

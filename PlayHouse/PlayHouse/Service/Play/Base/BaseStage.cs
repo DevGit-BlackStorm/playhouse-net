@@ -11,6 +11,7 @@ using Google.Protobuf;
 namespace PlayHouse.Service.Play.Base;
 public class BaseStage
 {
+    private readonly LOG<BaseStage> _log = new ();
     private readonly Guid _stageId;
     private readonly PlayProcessor _playProcessor;
     private IClientCommunicator _clientCommunicator;
@@ -74,7 +75,7 @@ public class BaseStage
         catch (Exception e)
         {
             _stageSender.ErrorReply(routePacket.RouteHeader,(ushort) BaseErrorCode.SystemError);
-            LOG.Error(()=>e.Message, this.GetType());
+            _log.Error(()=>e.ToString());
         }
         finally
         {
@@ -101,7 +102,7 @@ public class BaseStage
                     catch (Exception e)
                     {
                         _stageSender.ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.UncheckedContentsError);
-                        LOG.Error(()=>e.Message, this.GetType());
+                        _log.Error(()=>e.ToString());
                     }
                 }
          
@@ -187,7 +188,7 @@ public class BaseStage
         }
         catch (Exception e)
         {
-            LOG.Error(()=>e.Message, this.GetType());
+            _log.Error(()=>e.ToString());
         }
     }
 
@@ -203,13 +204,13 @@ public class BaseStage
             }
             else
             {
-                LOG.Error(()=>$"user is not exist : {accountId}", this.GetType());
+                _log.Error(()=>$"user is not exist - [accountId:{accountId}]");
             }
 
         }
         catch (Exception e)
         {
-            LOG.Error(()=>e.Message, this.GetType());
+            _log.Error(()=>e.ToString());
         }
     }
 
@@ -223,7 +224,7 @@ public class BaseStage
         }
         else
         {
-            LOG.Error(()=>$"user is not exist : {accountId}", this.GetType());
+            _log.Error(()=>$"user is not exist - [accountId:{accountId}]");
         }
     }
 }

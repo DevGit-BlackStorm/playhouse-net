@@ -6,16 +6,9 @@ using PlayHouse.Production;
 namespace PlayHouse.Service.Api;
 public class XApiCommonSender : XSender, IApiCommonSender
 {
-    private ushort serviceId;
-    private IClientCommunicator clientCommunicator;
-    private RequestCache reqCache;
-
-    public XApiCommonSender(ushort serviceId, IClientCommunicator clientCommunicator, RequestCache reqCache)
+    protected XApiCommonSender(ushort serviceId, IClientCommunicator clientCommunicator, RequestCache reqCache)
         : base(serviceId, clientCommunicator, reqCache)
     {
-        this.serviceId = serviceId;
-        this.clientCommunicator = clientCommunicator;
-        this.reqCache = reqCache;
     }
 
     public Guid AccountId => CurrentHeader?.AccountId ?? Guid.Empty;

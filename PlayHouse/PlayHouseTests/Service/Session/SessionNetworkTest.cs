@@ -33,7 +33,7 @@ namespace PlayHouse.Service.Session.Network
             if (testMsg.TestMsg_ == "request")
             {
                 Buffer.Clear();
-                clientPacket.Header.ErrorCode = 60003;
+                clientPacket.Header.ErrorCode = 0;
                 RoutePacket.WriteClientPacketBytes(clientPacket, Buffer);
 
                 NetMQFrame frame = new NetMQFrame(Buffer.Buffer(), Buffer.Count);
@@ -90,22 +90,27 @@ namespace PlayHouse.Service.Session.Network
                 await Task.Delay(100);
 
 
-                var connector = new Connector(new ConnectorConfig() { ReqestTimeout = 0 });
+                var connector = new Connector(new ConnectorConfig() { RequestTimeout = 0 });
 
                 var localIp = IpFinder.FindLocalIp();
 
-                connector.Start();
+                Timer timer = new Timer((task) =>
+                {
+                    connector.MainThreadAction();    
+                }, null, 0, 10);
+                
+                
                 connector.Connect(localIp, port);
 
                 await Task.Delay(100);
                 serverListener.ResultValue.Should().Be("onConnect");
 
-                connector.SendToApi(API, new Packet(new TestMsg { TestMsg_ = "test" }));
+                connector.Send(API, new Packet(new TestMsg { TestMsg_ = "test" }));
 
                 await Task.Delay(100);
 
 
-                var replyPacket = await connector.RequestToApi(SESSION, new Packet(new TestMsg { TestMsg_ = "request" }));
+                var replyPacket = await connector.RequestAsync(SESSION, new Packet(new TestMsg { TestMsg_ = "request" }));
 
                 using (replyPacket)
                 {
@@ -113,7 +118,7 @@ namespace PlayHouse.Service.Session.Network
                 }
 
 
-                replyPacket = await connector.RequestToApi(SESSION, new Packet(new TestMsg { TestMsg_ = "request" }));
+                replyPacket = await connector.RequestAsync(SESSION, new Packet(new TestMsg { TestMsg_ = "request" }));
 
                 using (replyPacket)
                 {
@@ -126,6 +131,8 @@ namespace PlayHouse.Service.Session.Network
                 serverListener.ResultValue.Should().Be("onDisconnect");
 
                 sessionNetwork.Stop();
+                await timer.DisposeAsync();
+
             }
         }
     }

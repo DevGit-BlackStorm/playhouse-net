@@ -2,10 +2,12 @@
 using PlayHouse.Communicator;
 using Playhouse.Protocol;
 using PlayHouse.Production;
+using PlayHouse.Utils;
 
 namespace PlayHouse.Service;
 public class XSender : ISender
 {
+    private readonly LOG<XSender> _log = new ();
     private readonly ushort _serviceId;
     private readonly IClientCommunicator _clientCommunicator;
     private readonly RequestCache _reqCache;
@@ -45,18 +47,21 @@ public class XSender : ISender
                 routePacket.RouteHeader.Sid = sid;
                 routePacket.RouteHeader.IsBase = CurrentHeader.IsBase;
                 routePacket.RouteHeader.IsBackend = CurrentHeader.IsBackend;
+                
                 //for test
                 routePacket.RouteHeader.AccountId = CurrentHeader.AccountId;
+                //_log.Trace(() => $"Before Send - [packetInfo:${routePacket.RouteHeader}]");
+                
                 _clientCommunicator.Send(from, routePacket);
             }
             else
             {
-                LOG.Error(()=>$"Not exist request packet - reply msgId:{reply.MsgId}, current msgId:{CurrentHeader.Header.MsgId}", GetType());
+                _log.Error(()=>$"Not exist request packet - reply msgId:{reply.MsgId}, current msgId:{CurrentHeader.Header.MsgId}");
             }
         }
         else
         {
-            LOG.Error(()=>$"Not exist request packet {reply.MsgId}", GetType());
+            _log.Error(()=>$"Not exist request packet {reply.MsgId}");
         }
     }
 

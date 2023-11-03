@@ -1,6 +1,8 @@
 ﻿using PlayHouse.Communicator.Message;
 using PlayHouse.Communicator.PlaySocket;
 using PlayHouse.Production;
+using PlayHouse.Utils;
+using System.Collections.Concurrent;
 
 namespace PlayHouse.Communicator;
 public class XClientCommunicator : IClientCommunicator
@@ -9,8 +11,9 @@ public class XClientCommunicator : IClientCommunicator
 
     private readonly HashSet<string> _connected = new();
     private readonly HashSet<string> _disconnected = new();
-    private readonly JobBucket _jobBucket = new();
+    private readonly ConcurrentQueue<Action> _queue = new();
     private bool _running = true;
+    private readonly LOG<XClientCommunicator> _log = new ();
 
     public XClientCommunicator(IPlaySocket playSocket)
     {
@@ -24,18 +27,18 @@ public class XClientCommunicator : IClientCommunicator
             return;
         }
 
-        _jobBucket.Add(() =>
+        _queue.Enqueue(() =>
         {
             try
             {
                 _playSocket.Connect(endpoint);
                 _connected.Add(endpoint);
                 _disconnected.Remove(endpoint);
-                LOG.Info(()=>$"connected with {endpoint}", this.GetType());
+                _log.Info(()=>$"connected with {endpoint}");
             }
             catch(Exception ex) 
             {
-                LOG.Error(()=>$"connect error - endpoint:{endpoint}, error:{ex.Message}", this.GetType());
+                _log.Error(()=>$"connect error - endpoint:{endpoint}, error:{ex.Message}");
             }
         });
     }
@@ -47,16 +50,16 @@ public class XClientCommunicator : IClientCommunicator
             return;
         }
 
-        _jobBucket.Add(() =>
+        _queue.Enqueue(() =>
         {
             try
             {
                 _playSocket.Disconnect(endpoint);
-                LOG.Info(()=>$"disconnected with {endpoint}", this.GetType());
+                _log.Info(()=>$"disconnected with {endpoint}");
             }
             catch(Exception ex)
             {
-                LOG.Error(()=>$"disconnect error - endpoint:{endpoint}, error:{ex.Message}", this.GetType());
+                _log.Error(()=>$"disconnect error - endpoint:{endpoint}, error:{ex.Message}");
                 
             }finally {
                 _connected.Remove(endpoint);
@@ -73,22 +76,20 @@ public class XClientCommunicator : IClientCommunicator
 
     public void Send(string endpoint, RoutePacket routePacket)
     {
-        _jobBucket.Add(() =>
+        _queue.Enqueue(() =>
         {
             try
             {
                 using (routePacket)
                 {
-                    var routeHeader = routePacket.RouteHeader;
-                    LOG.Debug(() => $"[Send Account Dispatch Packet: accountId:{routePacket.AccountId},MsgId={routeHeader.MsgId},MsgSeq={routeHeader.Header.MsgSeq})", this.GetType());
+                    _log.Trace(() => $"sendTo:{endpoint} - [packetInfo:{routePacket.RouteHeader}]");
                     _playSocket.Send(endpoint, routePacket);
                 }
             }
             catch (Exception e)
             {
-                LOG.Error(
+                _log.Error(
                     ()=>$"{_playSocket.Id()} socket send error : {endpoint},{routePacket.MsgId} - {e.Message}"
-                    , this.GetType()
                 );
             }
         });
@@ -98,8 +99,8 @@ public class XClientCommunicator : IClientCommunicator
     {
         while (_running)
         {
-            var action = _jobBucket.Get();
-            while (action != null)
+            //var action = _jobBucket.Get();
+            while (_queue.TryDequeue(out var action))
             {
                 try
                 {
@@ -107,12 +108,10 @@ public class XClientCommunicator : IClientCommunicator
                 }
                 catch (Exception e)
                 {
-                    LOG.Error(
+                    _log.Error(
                         ()=>$"{_playSocket.Id()} Error during communication - {e.Message}"
-                        , this.GetType()
                     );
                 }
-                action = _jobBucket.Get();
             }
             Thread.Sleep(ConstOption.ThreadSleep);
         }

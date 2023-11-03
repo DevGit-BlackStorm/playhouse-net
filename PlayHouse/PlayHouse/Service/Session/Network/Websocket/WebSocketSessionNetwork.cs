@@ -3,11 +3,12 @@ using PlayHouse.Communicator.Message;
 using System.Net.Sockets;
 using CommonLib;
 using PlayHouse.Production.Session;
-using PlayHouse.Production;
+using PlayHouse.Utils;
 
 namespace PlayHouse.Service.Session.Network.websocket;
 class XWsSession : WsSession, ISession
 {
+    private readonly LOG<XWsSession> _log = new ();
     private readonly PacketParser _packetParser;
     private readonly ISessionListener _sessionListener;
     private readonly RingBuffer _buffer = new RingBuffer(1024 * 8, 1024 * 64 * 4);
@@ -28,12 +29,12 @@ class XWsSession : WsSession, ISession
     {
         try
         {
-            LOG.Info(()=>$"Websocket session with Id {GetSid()} connected!", this.GetType());
+            _log.Debug(()=>$"WS session OnConnected - [Sid:{GetSid()}]");
             _sessionListener.OnConnect(GetSid(), this);
         }
         catch (Exception e)
         {
-            LOG.Error(()=>e.Message, this.GetType());
+            _log.Error(()=>e.ToString());
         }
 
       
@@ -44,12 +45,12 @@ class XWsSession : WsSession, ISession
     {
         try
         {
-            LOG.Info(()=>$"Websocket session with Id {GetSid()} disconnected!", this.GetType());
+            _log.Debug(()=>$"WS session OnDisConnected - [Sid:{GetSid()}]");
             _sessionListener.OnDisconnect(GetSid());
         }
         catch(Exception e)
         {
-            LOG.Error(()=>e.Message, this.GetType());
+            _log.Error(()=>e.ToString());
         }
         
     }
@@ -67,7 +68,7 @@ class XWsSession : WsSession, ISession
         }
         catch (Exception e)
         {
-            LOG.Error(()=>e.Message, this.GetType());
+            _log.Error(()=>e.ToString());
         }
     }
 
@@ -75,12 +76,12 @@ class XWsSession : WsSession, ISession
     {
         try
         {
-            LOG.Error(()=>$"Chat TCP session caught an error with code {error}", this.GetType());
+            _log.Error(()=>$"socket caught an error - [codeCode:{error}]");
             Disconnect();
         }
         catch(Exception e)
         {
-            LOG.Error(()=>e.Message, this.GetType());
+            _log.Error(()=>e.ToString());
         }
     }
 
@@ -120,32 +121,31 @@ public class WsSessionServer : WsServer
 }
 class WsSessionNetwork : ISessionNetwork
 {
-    private WsSessionServer _wsSessionServer;
+    private readonly LOG<WsSessionNetwork> _log = new ();
+    private readonly WsSessionServer _wsSessionServer;
+    
     public WsSessionNetwork(SessionOption sessionOption, ISessionListener sessionListener)
     {
         //_wsSessionServer = new WsSessionServer(IpFinder.FindLocalIp(), sessionOption.SessionPort, sessionListener);
         _wsSessionServer = new WsSessionServer("0.0.0.0", sessionOption.SessionPort, sessionListener);
-        
     }
-
 
     public void Start()
     {
-        
         if (_wsSessionServer.Start())
         {
-            LOG.Info(()=>"WsSessionNetwork Start", this.GetType());
+            _log.Info(()=>"WsSessionNetwork Start");
         }
         else
         {
-            LOG.Fatal(()=>"WsSessionNetwork Start Fail", this.GetType());
+            _log.Fatal(()=>"WsSessionNetwork Start Fail");
             Environment.Exit(0);
         }
     }
 
     public void Stop()
     {
-        LOG.Info(()=>"WsSessionNetwork Stop", this.GetType());
+        _log.Info(()=>"WsSessionNetwork Stop");
         _wsSessionServer.Stop();
     }
 }

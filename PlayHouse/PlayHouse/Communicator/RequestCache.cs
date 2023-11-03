@@ -10,6 +10,7 @@ public class ReplyObject
 {
     private readonly ReplyCallback? _replyCallback = null;
     private readonly TaskCompletionSource<ReplyPacket>? _taskCompletionSource= null;
+    
     public ReplyObject(ReplyCallback? callback = null, TaskCompletionSource<ReplyPacket>? taskCompletionSource = null)  
     { 
         _replyCallback = callback;
@@ -33,9 +34,10 @@ public class ReplyObject
 }
 public class RequestCache
 {
-    private readonly AtomicShort _sequence = new AtomicShort();
+    private readonly AtomicShort _sequence = new();
     private readonly CacheItemPolicy _policy;
     private MemoryCache _cache;
+    private readonly LOG<RequestCache> _log = new ();
 
     public RequestCache(int timeout) 
     {
@@ -81,7 +83,6 @@ public class RequestCache
         try
         {
             int msgSeq = routePacket.Header.MsgSeq;
-            int msgId = routePacket.Header.MsgId;
             string key = msgSeq.ToString();
             ReplyObject? replyObject = (ReplyObject?)MemoryCache.Default.Get(key);
 
@@ -92,11 +93,11 @@ public class RequestCache
             }
             else
             {
-                LOG.Error(()=>$"{msgSeq},${msgId} request is not exist", this.GetType());
+                _log.Error(()=>$"request is not exist - [packetInfo:{routePacket.RouteHeader}]");
             }
-        }catch (Exception e)
+        }catch (Exception ex)
         {
-            LOG.Error(()=>$"{e.StackTrace}",this.GetType());
+            _log.Error(()=>$"{ex}");
         }
         
     }

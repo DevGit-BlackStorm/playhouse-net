@@ -11,6 +11,7 @@ namespace PlayHouse.Service.Play
 {
     public class PlayProcessor : IProcessor
     {
+        private readonly LOG<PlayProcessor> _log = new ();
         private readonly AtomicEnum<ServerState> _state = new(ServerState.DISABLE);
         private readonly ConcurrentDictionary<Guid, BaseActor> _baseUsers = new();
         private readonly ConcurrentDictionary<Guid, BaseStage> _baseRooms = new();
@@ -18,19 +19,18 @@ namespace PlayHouse.Service.Play
         private readonly ConcurrentQueue<RoutePacket> _msgQueue = new();
         private readonly TimerManager _timerManager;
         private readonly XSender _sender;
-        private readonly ushort _serviceId;
         private readonly string _publicEndpoint;
         private readonly PlayOption _playOption;
         private readonly IClientCommunicator _clientCommunicator;
         private readonly RequestCache _requestCache;
         private readonly IServerInfoCenter _serverInfoCenter;
 
-        public ushort ServiceId => _serviceId;
+        public ushort ServiceId { get; }
 
         public PlayProcessor(ushort serviceId, string publicEndpoint, PlayOption playOption,
             IClientCommunicator clientCommunicator, RequestCache requestCache, IServerInfoCenter serverInfoCenter)
         {
-            _serviceId = serviceId;
+            ServiceId = serviceId;
             _publicEndpoint = publicEndpoint;
             _playOption = playOption;
             _clientCommunicator = clientCommunicator;
@@ -102,15 +102,15 @@ namespace PlayHouse.Service.Play
                                 }
                                 else
                                 {
-                                    LOG.Error(()=>$"stageId:{stageId} is not exist, msgName:{msgId}", this.GetType());
+                                    _log.Error(()=>$"stage is not exist - [stageId:{stageId},msgName:{msgId}]");
                                 }
                             });
                         }
                     }
-                    _msgQueue.TryDequeue(out routePacket);
+                    //_msgQueue.TryDequeue(out routePacket);
                 }
 
-                Thread.Sleep(10);
+                Thread.Sleep(ConstOption.ThreadSleep);
             }
         }
 
@@ -157,7 +157,7 @@ namespace PlayHouse.Service.Play
                 if (!_baseRooms.TryGetValue(stageId, out var room))
                 {
                     if (msgId == StageTimer.Descriptor.Index) return;
-                    LOG.Error(()=>$"Room is not exist : {stageId},{msgId}", this.GetType());
+                    _log.Error(()=>$"Room is not exist : {stageId},{msgId}");
                     ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.StageIsNotExist);
                     return;
                 }
@@ -171,7 +171,7 @@ namespace PlayHouse.Service.Play
                 }
                 else
                 {
-                    LOG.Error(()=>$"{msgId} is not base packet", this.GetType());
+                    _log.Error(()=>$"message is not base packet - [msgId:{msgId}]");
                 }
             }
         }
@@ -208,13 +208,13 @@ namespace PlayHouse.Service.Play
                 }
                 else
                 {
-                    LOG.Error(()=>$"Invalid timer type : {timerMsg.Type}", this.GetType());
+                    _log.Error(()=>$"Invalid timer type - [timerType:{timerMsg.Type}]");
                 }
 
             }
             else
             {
-                LOG.Error(()=>$"Stage for timer is not exist: stageId:{stageId}, timerType:{timerMsg.Type}", this.GetType());
+                _log.Debug(()=>$"Stage for timer is not exist - [stageId:{stageId}, timerType:{timerMsg.Type}]");
             }
         }
 

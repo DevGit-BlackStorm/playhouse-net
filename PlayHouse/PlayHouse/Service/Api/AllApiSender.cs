@@ -7,16 +7,12 @@ namespace PlayHouse.Service.Api
 {
     public class AllApiSender : XApiCommonSender, IApiSender, IApiBackendSender
     {
-        private ushort serviceId;
-        private IClientCommunicator clientCommunicator;
-        private RequestCache reqCache;
+        private readonly ushort _serviceId;
 
         public AllApiSender(ushort serviceId, IClientCommunicator clientCommunicator, RequestCache reqCache)
             : base(serviceId, clientCommunicator, reqCache)
         {
-            this.serviceId = serviceId;
-            this.clientCommunicator = clientCommunicator;
-            this.reqCache = reqCache;
+            this._serviceId = serviceId;
         }
 
         public string GetFromEndpoint()
@@ -31,7 +27,7 @@ namespace PlayHouse.Service.Api
         {
             var message = new AuthenticateMsg()
             {
-                ServiceId = (int)serviceId,
+                ServiceId = (int)_serviceId,
                 AccountId = ByteString.CopyFrom(accountId.ToByteArray())
             };
 

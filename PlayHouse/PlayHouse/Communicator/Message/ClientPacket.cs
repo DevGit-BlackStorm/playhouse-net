@@ -4,12 +4,6 @@ namespace PlayHouse.Communicator.Message
 {
     public class ClientPacket : IBasePacket
     {
-
-        //public static ClientPacket Of(HeaderMsg headerMsg,IPayload payload)
-        //{
-        //    return new ClientPacket(Header.Of(headerMsg), payload);
-        //}
-
         public Header Header { get; set; }
         public IPayload Payload;
 

@@ -1,17 +1,18 @@
 ﻿using PlayHouse.Communicator.Message;
 using PlayHouse.Production;
+using PlayHouse.Utils;
 
 
 namespace PlayHouse.Service.Play.Base.Command;
 
 public class StageTimerCmd : IBaseStageCmd
 {
-    private readonly PlayProcessor _playProcessor;
-    public PlayProcessor PlayProcessor => _playProcessor;
+    private readonly LOG<StageTimerCmd> _log = new ();
+    public PlayProcessor PlayProcessor { get; }
 
     public StageTimerCmd(PlayProcessor playProcessor)
     {
-        _playProcessor = playProcessor;
+        PlayProcessor = playProcessor;
     }
 
     public async Task Execute(BaseStage baseStage, RoutePacket routePacket)
@@ -25,7 +26,7 @@ public class StageTimerCmd : IBaseStageCmd
         }
         else
         {
-            LOG.Warn(()=>$"timer already canceled stageId:{baseStage.StageId}, timerId:{timerId}", this.GetType());
+            _log.Debug(()=>$"timer already canceled - [stageId:{baseStage.StageId}, timerId:{timerId}]");
         }
     }
 }

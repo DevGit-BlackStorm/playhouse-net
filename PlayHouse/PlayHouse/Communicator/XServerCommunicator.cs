@@ -1,5 +1,5 @@
 ﻿using PlayHouse.Communicator.PlaySocket;
-using PlayHouse.Production;
+using PlayHouse.Utils;
 
 namespace PlayHouse.Communicator
 {
@@ -9,6 +9,7 @@ namespace PlayHouse.Communicator
 
         private ICommunicateListener? _listener;
         private bool _running = true;
+        private readonly LOG<XServerCommunicator> _log = new ();
 
         public XServerCommunicator(IPlaySocket playSocket)
         {
@@ -31,12 +32,13 @@ namespace PlayHouse.Communicator
                 {
                     try
                     {
+                        _log.Trace(() => $"recvFrom:{packet.RouteHeader.From} - [packetInfo:${packet.RouteHeader}]");
                         _listener!.OnReceive(packet);
                     }
                     catch (Exception e)
                     {
 
-                        LOG.Error(()=>$"{_playSocket.Id()} Error during communication - {e.Message}", this.GetType());
+                        _log.Error(()=>$"{_playSocket.Id()} Error during communication - {e.Message}");
                     }
 
                     packet = _playSocket.Receive();

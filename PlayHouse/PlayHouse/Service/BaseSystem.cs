@@ -3,11 +3,13 @@ using Playhouse.Protocol;
 using System.Collections.Concurrent;
 using PlayHouse.Communicator;
 using PlayHouse.Production;
+using PlayHouse.Utils;
 
 namespace PlayHouse.Service
 {
     public class BaseSystem
     {
+        private readonly LOG<BaseSystem> _log = new ();
         private readonly IServerSystem _serverSystem;
         private readonly XSender _baseSender;
 
@@ -75,7 +77,7 @@ namespace PlayHouse.Service
                                             _serverSystem.OnStop();
                                             break;
                                         default:
-                                            LOG.Error(()=>$"Invalid baseSystem packet {routePacket.MsgId}", this.GetType());
+                                            _log.Error(()=>$"Invalid baseSystem packet - [packetInfo:{routePacket.RouteHeader}");
                                             break;
                                     }
                                 }
@@ -87,7 +89,7 @@ namespace PlayHouse.Service
                             }
                             catch (Exception e)
                             {
-                                LOG.Error(()=>e.Message, this.GetType());
+                                _log.Error(()=>e.ToString());
                                 _baseSender.ErrorReply(routePacket.RouteHeader, (int)BaseErrorCode.SystemError);
                             }
                             finally

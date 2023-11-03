@@ -15,7 +15,5 @@ namespace PlayHouse.Communicator.PlaySocket
 
         String Id();
 
-
-
     }
 }

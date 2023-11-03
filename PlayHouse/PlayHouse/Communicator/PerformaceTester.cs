@@ -1,15 +1,18 @@
 ﻿using PlayHouse.Production;
 using System.Diagnostics;
+using PlayHouse.Utils;
 
 namespace PlayHouse.Communicator
 {
+    
     class PerformanceTester
     {
         private bool _showQps;
         private string _from;
         private Stopwatch _stopWatch = new Stopwatch();
         private int _counter;
-        private Timer _timer; 
+        private Timer _timer;
+        private readonly LOG<MessageLoop> _log = new ();
 
         public PerformanceTester(bool showQps,  string from = "Server")
         {
@@ -53,7 +56,7 @@ namespace PlayHouse.Communicator
 
                 int qps = (messageCount == 0 || seconds == 0L) ? 0 : messageCount / (int)seconds;
 
-                LOG.Info(()=>$"{_from}, {messageCount}, qps: {qps}", this.GetType());
+                _log.Info(()=>$"{_from}, {messageCount}, qps: {qps}");
             }
             finally
             {

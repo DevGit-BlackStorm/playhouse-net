@@ -1,4 +1,5 @@
 ﻿using PlayHouse.Production;
+using PlayHouse.Utils;
 
 namespace PlayHouse.Communicator;
 class ServerAddressResolver
@@ -8,6 +9,7 @@ class ServerAddressResolver
     private readonly XClientCommunicator _communicateClient;
     private readonly IProcessor _service;
     private readonly IStorageClient _storageClient;
+    private readonly LOG<ServerAddressResolver> _log = new ();
 
     private Timer? _timer;
 
@@ -23,7 +25,7 @@ class ServerAddressResolver
 
     public void Start()
     {
-        LOG.Info(()=>"Server address resolver start", this.GetType());
+        _log.Info(()=>"Server address resolver start");
 
         _timer = new Timer(_ =>
         {
@@ -56,7 +58,7 @@ class ServerAddressResolver
             }
             catch (Exception e)
             {
-                LOG.Error(()=>e.Message, this.GetType());
+                _log.Error(()=>e.Message);
             }
         }, null, ConstOption.AddressResolverInitialDelay, ConstOption.AddressResolverPeriod);
     }

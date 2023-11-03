@@ -7,8 +7,6 @@ namespace PlayHouse.Service.Session.Network;
 public class SessionNetwork 
 {
     private readonly ISessionNetwork _sessionNetwork;
-    private Thread? _sessionThread;
-    private bool _isRunning = true;
 
     public SessionNetwork(SessionOption sessionOption, ISessionListener sessionListener)
     {
@@ -25,16 +23,17 @@ public class SessionNetwork
     public void Start()
     {
 
-        _sessionThread = new Thread(() =>
-        {
-            _sessionNetwork.Start();
+        _sessionNetwork.Start();
+        //_sessionThread = new Thread(() =>
+        //{
+        //    _sessionNetwork.Start();
 
-            while (_isRunning)
-            {
-                Thread.Sleep(100);
-            }
-        });
-        _sessionThread.Start();
+        //    while (_isRunning)
+        //    {
+        //        Thread.Sleep(100);
+        //    }
+        //});
+        //_sessionThread.Start();
 
 
     }
@@ -42,11 +41,11 @@ public class SessionNetwork
     public void Stop()
     {
         _sessionNetwork.Stop();
-        _isRunning = false;
+        //_isRunning = false;
     }
 
     public void Await()
     {
-        _sessionThread!.Join();
+        //_sessionThread!.Join();
     }
 }

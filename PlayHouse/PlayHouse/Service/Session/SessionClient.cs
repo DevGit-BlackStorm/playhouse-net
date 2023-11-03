@@ -37,13 +37,10 @@ class StageIndexGenerator
 
 public class SessionClient
 {
-    private ushort _serviceId;
+    private readonly LOG<SessionClient> _log = new ();
     private readonly int _sid;
     private readonly IServerInfoCenter _serviceInfoCenter;
     private readonly ISession _session;
-    private IClientCommunicator _clientCommunicator;
-    private List<string> _urls;
-    private RequestCache _reqCache;
 
     private readonly XSessionSender _sessionSender;
     private readonly TargetServiceCache _targetServiceCache;
@@ -63,19 +60,15 @@ public class SessionClient
         ushort serviceId, 
         int sid, 
         IServerInfoCenter serviceInfoCenter, 
-        ISession session, 
+        ISession session ,
         IClientCommunicator clientCommunicator, 
         List<string> urls, 
         RequestCache reqCache
         )
     {
-        _serviceId = serviceId;
         _sid = sid;
         _serviceInfoCenter = serviceInfoCenter;
-        _clientCommunicator = clientCommunicator;
         _session = session;
-        _urls = urls;
-        _reqCache = reqCache;
 
         _sessionSender = new XSessionSender(serviceId, clientCommunicator, reqCache);
         _targetServiceCache = new TargetServiceCache(serviceInfoCenter);
@@ -143,10 +136,11 @@ public class SessionClient
     {
         try
         {
+            _log.Trace(() => $"recvFrom:client - [accountId:{_accountId},packetInfo:{clientPacket.Header}]");
+
             ushort serviceId = clientPacket.ServiceId();
             int msgId = clientPacket.GetMsgId();
 
-            //RelayTo(serviceId, clientPacket);
 
             if (IsAuthenticated)
             {
@@ -156,6 +150,7 @@ public class SessionClient
             {
                 string uri = $"{serviceId}:{msgId}";
 
+                //for test check - don't remove
                 //var packet = new ClientPacket(clientPacket.Header, new EmptyPayload());
                 //RingBuffer ringBuffer = new RingBuffer(100);
                 //RoutePacket.WriteClientPacketBytes(packet, ringBuffer);
@@ -170,13 +165,13 @@ public class SessionClient
                 }
                 else
                 {
-                    LOG.Warn(() => $"client is not authenticated :{msgId}", this.GetType());
+                    _log.Warn(() => $"client is not authenticated :{msgId}");
                     _session.ClientDisconnect();
                 }
             }
         }catch (Exception ex)
         {
-            LOG.Error(()=>ex.Message, this.GetType());
+            _log.Error(()=>ex.Message);
         }
         
     }
@@ -214,7 +209,7 @@ public class SessionClient
                 var targetId = _playEndpoints.GetValueOrDefault(clientPacket.Header.StageIndex);
                 if (targetId == null)
                 {
-                    LOG.Error(()=>$"Target Stage is not exist - service type:{type}, msgId:{clientPacket.GetMsgId()}", this.GetType());
+                    _log.Error(()=>$"Target Stage is not exist - [service type:{type}, msgId:{clientPacket.GetMsgId()}]");
                 }
                 else
                 {
@@ -224,7 +219,7 @@ public class SessionClient
                 break;
 
             default:
-                LOG.Error(()=>$"Invalid Service Type request - service type:{type}, msgId:{clientPacket.GetMsgId()}", this.GetType());
+                _log.Error(()=>$"Invalid Service Type request - [service type:{type}, msgId:{clientPacket.GetMsgId()}]");
                 break;
         }
     }
@@ -248,7 +243,7 @@ public class SessionClient
                     catch (Exception e)
                     {
                         _sessionSender.ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.SystemError);
-                        LOG.Error(()=>e.Message, this.GetType());
+                        _log.Error(()=>e.ToString());
                     }
                 }
                 _isUsing.Set(false);
@@ -268,12 +263,12 @@ public class SessionClient
                 AuthenticateMsg authenticateMsg = AuthenticateMsg.Parser.ParseFrom(packet.Data);
                 var apiEndpoint = packet.RouteHeader.From;
                 Authenticate((ushort)authenticateMsg.ServiceId, apiEndpoint, new Guid(authenticateMsg.AccountId.ToByteArray()));
-                LOG.Debug(()=>$"{_accountId} is authenticated", this.GetType());
+                _log.Debug(()=>$"session authenticated - [accountId:{_accountId}]");
             }
             else if(msgId == SessionCloseMsg.Descriptor.Index)
             {
                 _session.ClientDisconnect();
-                LOG.Debug(()=>$"{_accountId} is required to session close", this.GetType());
+                _log.Debug(()=>$"force session close - [accountId:{_accountId}]");
             }
             else if(msgId == JoinStageInfoUpdateReq.Descriptor.Index)
             {
@@ -287,18 +282,18 @@ public class SessionClient
                         StageIdx = stageIndex,
                     })
                 );
-                LOG.Debug(()=>$"{_accountId} is stageInfo updated: playEndpoint:{playEndpoint},stageId:{stageId}, stageIndex:{stageIndex}", this.GetType());
+                _log.Debug(()=>$"stageInfo updated - [accountId:{_accountId},playEndpoint:{playEndpoint},stageId:{stageId},stageIndex:{stageIndex}");
             }
             else if (msgId == LeaveStageMsg.Descriptor.Index)
             {
                 Guid stageId = new (LeaveStageMsg.Parser.ParseFrom(packet.Data).StageId.ToByteArray());
                 ClearRoomInfo(stageId);
-                LOG.Debug(()=>$"stage info clear - accountId: {_accountId}, stageId: {stageId}", this.GetType());
+                _log.Debug(()=>$"stage info clear - [accountId: {_accountId}, stageId: {stageId}]");
 
             }
             else
             {
-                LOG.Error(()=>$"Invalid Packet {msgId}", this.GetType());
+                _log.Error(()=>$"invalid base packet - [msgId:{msgId}]");
             }
           
         }
@@ -333,7 +328,7 @@ public class SessionClient
     {
         using (clientPacket)
         {
-            LOG.Trace(()=>$"SendTo Client - PacketInfo:{clientPacket.Header}",this.GetType());
+            _log.Trace(()=>$"sendTo:client - [accountId:{_accountId},packetInfo:{clientPacket.Header}]");
             _session.Send(clientPacket);
         }
     }

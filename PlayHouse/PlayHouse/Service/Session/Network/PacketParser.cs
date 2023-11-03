@@ -1,18 +1,19 @@
 ﻿using CommonLib;
 using NetMQ;
 using PlayHouse.Communicator.Message;
-using PlayHouse.Production;
+using PlayHouse.Utils;
 
 namespace PlayHouse.Service.Session.Network
 {
-    public class PacketParser
+    public sealed class PacketParser
     {
-        private const int MaxPacketSize = 65535;
+        
+        private readonly LOG<PacketParser> _log = new ();
         private const int HeaderSize = 11;
 
         public PacketParser() { }
 
-        public virtual List<ClientPacket> Parse(RingBuffer buffer)
+        public List<ClientPacket> Parse(RingBuffer buffer)
         {
 
             var packets = new List<ClientPacket>();
@@ -49,7 +50,7 @@ namespace PlayHouse.Service.Session.Network
                 }
                 catch (Exception e)
                 {
-                    LOG.Error(()=>$"Exception while parsing packet, {e.Message}", GetType());
+                    _log.Error(()=>$"{e}");
                 }
             }
 

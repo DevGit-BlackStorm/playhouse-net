@@ -7,20 +7,15 @@ namespace PlayHouse.Service.Play
 {
     public class XStageSender : XSender, IStageSender
     {
-        private readonly ushort _serviceId;
         private readonly Guid _stageId;
         private readonly PlayProcessor _playProcessor;
-        private readonly IClientCommunicator _clientCommunicator;
         private readonly HashSet<long> _timerIds = new();
         private string _stateType = "";
-        //public  string StageType { get; set; }
 
         public XStageSender(ushort serviceId, Guid stageId, PlayProcessor playProcessor,IClientCommunicator clientCommunicator, RequestCache reqCache) : base(serviceId, clientCommunicator, reqCache)
         {
-            _serviceId = serviceId;
             _stageId = stageId;
             _playProcessor = playProcessor;
-            _clientCommunicator = clientCommunicator;
         }
 
         public Guid StageId => _stageId;

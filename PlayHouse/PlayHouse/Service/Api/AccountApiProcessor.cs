@@ -16,8 +16,9 @@ namespace PlayHouse.Service.Api
         private readonly ApiReflection _apiReflection;
         private readonly IApiCallBack _apiCallBack;
 
-        private readonly ConcurrentQueue<RoutePacket> _msgQueue = new ConcurrentQueue<RoutePacket>();
-        private readonly AtomicBoolean _isUsing = new AtomicBoolean(false);
+        private readonly ConcurrentQueue<RoutePacket> _msgQueue = new();
+        private readonly AtomicBoolean _isUsing = new(false);
+        private readonly LOG<AccountApiProcessor> _log = new ();
 
         public AccountApiProcessor(
             ushort serviceId,
@@ -58,16 +59,16 @@ namespace PlayHouse.Service.Api
                         }
                         else
                         {
-                            LOG.Error(()=>$"Invalid base Api packet: {routeHeader.MsgId}", this.GetType());
+                            _log.Error(()=>$"Invalid base Api packet - [packetInfo:{routeHeader}]");
                         }
                     }
                     else
                     {
                         try
                         {
-                            LOG.Debug(()=>
-                                $"[Call Packet: accountId:{routePacket.AccountId},MsgId={routeHeader.MsgId},IsBackend={routeHeader.IsBackend}]",
-                                this.GetType());
+                            // _log.Debug(()=>
+                            //     $"Before Call Method - [packetInfo:{routeHeader}]"
+                            // );
 
                             if (routeHeader.IsBackend)
                             {
@@ -80,12 +81,12 @@ namespace PlayHouse.Service.Api
                         }
                         catch (ApiException.NotRegisterApiMethod e)
                         {
-                            // if (routeHeader.Header.MsgSeq > 0)
+                            if (routeHeader.Header.MsgSeq > 0)
                             {
                                 apiSender.ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.NotRegisteredMessage);    
                             }
                                 
-                            LOG.Error(()=>e.Message, GetType());
+                            _log.Error(()=>e.Message);
                         }
                         catch (ApiException.NotRegisterApiInstance e)
                         {
@@ -94,7 +95,7 @@ namespace PlayHouse.Service.Api
                                 apiSender.ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.SystemError);
                             }
 
-                            LOG.Error(()=>e.Message, GetType());
+                            _log.Error(()=>e.Message);
                         }
                         catch (Exception e)
                         {
@@ -112,7 +113,7 @@ namespace PlayHouse.Service.Api
                                 apiSender.ErrorReply(routePacket.RouteHeader, errorCode);
                             }
 
-                            LOG.Error(() => e.Message, GetType());
+                            _log.Error(() => e.StackTrace ?? e.Message);
                         }
                             
                     }   

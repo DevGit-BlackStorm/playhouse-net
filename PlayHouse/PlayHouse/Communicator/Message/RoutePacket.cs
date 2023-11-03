@@ -2,7 +2,6 @@
 using Google.Protobuf;
 using Playhouse.Protocol;
 using PlayHouse.Production;
-using System.Net;
 
 namespace PlayHouse.Communicator.Message
 {
@@ -24,7 +23,7 @@ namespace PlayHouse.Communicator.Message
 
         }
 
-         static public Header Of(HeaderMsg headerMsg)
+         public static Header Of(HeaderMsg headerMsg)
         {
             return new Header((ushort)headerMsg.ServiceId, headerMsg.MsgId, (ushort)headerMsg.MsgSeq, (ushort)headerMsg.ErrorCode,(byte)headerMsg.StageIndex);
         }
@@ -38,7 +37,6 @@ namespace PlayHouse.Communicator.Message
                 MsgSeq = MsgSeq,
                 ErrorCode = ErrorCode,
                 StageIndex = StageIndex
-
             };
         }
         public override string ToString()
@@ -118,7 +116,7 @@ namespace PlayHouse.Communicator.Message
         }
         public override string ToString()
         {
-            return $"RouteHeader(Header={Header}, Sid={Sid}, IsSystem={IsSystem}, IsBase={IsBase}, IsBackend={IsBackend}, IsReply={IsReply}, AccountId={AccountId}, StageId={StageId}, From={From}, ForClient={IsToClient})";
+            return $"RouteHeader(Header={Header},AccountId={AccountId}, Sid={Sid}, IsSystem={IsSystem}, IsBase={IsBase}, IsBackend={IsBackend}, IsReply={IsReply},  StageId={StageId}, From={From}, ForClient={IsToClient})";
         }
     }
 

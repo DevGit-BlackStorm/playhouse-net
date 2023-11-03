@@ -1,4 +1,5 @@
 ﻿using PlayHouse.Production;
+using PlayHouse.Utils;
 
 namespace PlayHouse.Communicator;
 public class MessageLoop
@@ -7,6 +8,7 @@ public class MessageLoop
     private readonly IClientCommunicator _client;
     private readonly Thread _serverThread;
     private readonly Thread _clientThread;
+    private readonly LOG<MessageLoop> _log = new ();
 
     public MessageLoop(IServerCommunicator server, IClientCommunicator client)
     {
@@ -15,7 +17,7 @@ public class MessageLoop
 
         _serverThread = new Thread(() =>
         {
-            LOG.Info(()=>"start Server Communicator",this.GetType());
+            _log.Info(()=>"start Server Communicator");
             _server.Communicate();
         })
         {
@@ -24,7 +26,7 @@ public class MessageLoop
 
         _clientThread = new Thread(() =>
         {
-            LOG.Info(()=>"start client Communicator", this.GetType());
+            _log.Info(()=>"start client Communicator");
             _client.Communicate();
         })
         {
