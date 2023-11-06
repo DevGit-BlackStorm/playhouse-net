@@ -78,7 +78,6 @@ namespace PlayHouse.Service.Session.Network
 
                 var sessionNetwork = new SessionNetwork(new SessionOption { UseWebSocket = useWebSocket, SessionPort = port }, serverListener);
 
-
                 var serverThread = new Thread(() =>
                 {
                     sessionNetwork.Start();
@@ -89,10 +88,9 @@ namespace PlayHouse.Service.Session.Network
 
                 await Task.Delay(100);
 
-
-                var connector = new Connector(new ConnectorConfig() { RequestTimeout = 0 });
-
                 var localIp = IpFinder.FindLocalIp();
+                var connector = new Connector(new ConnectorConfig() { RequestTimeout = 0 ,Host = localIp,Port = port});
+                
 
                 Timer timer = new Timer((task) =>
                 {
@@ -100,7 +98,7 @@ namespace PlayHouse.Service.Session.Network
                 }, null, 0, 10);
                 
                 
-                connector.Connect(localIp, port);
+                connector.Connect();
 
                 await Task.Delay(100);
                 serverListener.ResultValue.Should().Be("onConnect");
