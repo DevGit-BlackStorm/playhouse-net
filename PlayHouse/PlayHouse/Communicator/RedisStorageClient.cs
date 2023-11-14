@@ -63,26 +63,27 @@ namespace PlayHouse.Communicator
 
         public int GetNodeId(string bindEndpoint)
         {
-            byte[] key = System.Text.Encoding.UTF8.GetBytes(bindEndpoint);
-            byte[] nodeIdBytes = _database!.HashGet(_nodeIdeKey, key)!;
-
-            if (nodeIdBytes.Length > 0)
-            {
-                return BitConverter.ToInt32(nodeIdBytes, 0);
-            }
-            else
-            {
-                int nodeId = (int)_database.StringIncrement(_nodeSequenceKey);
-
-                if (nodeId > 4095)
-                {
-                    throw new ArgumentException("Node ID value exceeds maximum value");
-                }
-                _database!.HashSet(_nodeIdeKey,key,BitConverter.GetBytes(nodeId));
-
-
-                return nodeId;
-            }
+            return 0;
+            // byte[] key = System.Text.Encoding.UTF8.GetBytes(bindEndpoint);
+            // byte[] nodeIdBytes = _database!.HashGet(_nodeIdeKey, key)!;
+            //
+            // if (nodeIdBytes.Length > 0)
+            // {
+            //     return BitConverter.ToInt32(nodeIdBytes, 0);
+            // }
+            // else
+            // {
+            //     int nodeId = (int)_database.StringIncrement(_nodeSequenceKey);
+            //
+            //     if (nodeId > 4095)
+            //     {
+            //         throw new ArgumentException("Node ID value exceeds maximum value");
+            //     }
+            //     _database!.HashSet(_nodeIdeKey,key,BitConverter.GetBytes(nodeId));
+            //
+            //
+            //     return nodeId;
+            // }
         }
     }
 }
