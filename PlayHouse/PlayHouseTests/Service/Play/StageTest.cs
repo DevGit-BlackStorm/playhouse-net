@@ -29,15 +29,15 @@ namespace PlayHouseTests.Service.Play
         private readonly List<RoutePacket> resultList = new();
         private readonly string stageType = "dungeon";
         private PlayProcessor playProcessor;
-        private readonly Guid testStageId = Guid.NewGuid();
+        private readonly string testStageId = string.Empty;
         private readonly string sessionEndpoint = "tcp://127.0.0.1:5555";
         private readonly string bindEndpoint = "tcp://127.0.0.1:8777";
         private BaseStage stage;
         private XStageSender xStageSender;
         private IStage contentStage = Mock.Of<IStage>();
-        private Guid stageId = Guid.NewGuid();
+        private string stageId = string.Empty;
         Mock<IClientCommunicator> clientCommunicator;
-        private Guid accountId= Guid.NewGuid();
+        private string accountId= string.Empty;
 
      
         public StageTest()
@@ -185,12 +185,12 @@ namespace PlayHouseTests.Service.Play
                 StageType = stageType
             });
 
-            var result = RoutePacket.StageOf(Guid.Empty, Guid.Empty, packet, true, true);
+            var result = RoutePacket.StageOf(string.Empty, string.Empty, packet, true, true);
             result.SetMsgSeq(1);
             return result;
         }
 
-        private RoutePacket JoinRoomPacket(Guid stageId, Guid accountId)
+        private RoutePacket JoinRoomPacket(string stageId, string accountId)
         {
             var packet = new Packet(new JoinStageReq
             {
@@ -204,7 +204,7 @@ namespace PlayHouseTests.Service.Play
             return result;
         }
 
-        private RoutePacket CreateJoinRoomPacket(string stageType, Guid stageId, Guid accountId)
+        private RoutePacket CreateJoinRoomPacket(string stageType, string stageId, string accountId)
         {
             var req = new CreateJoinStageReq
             {

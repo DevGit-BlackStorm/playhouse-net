@@ -12,7 +12,7 @@ namespace PlayHouse.Service.Play.Base;
 public class BaseStage
 {
     private readonly LOG<BaseStage> _log = new ();
-    private readonly Guid _stageId;
+    private readonly string _stageId;
     private readonly PlayProcessor _playProcessor;
     private IClientCommunicator _clientCommunicator;
     private RequestCache _reqCache;
@@ -28,7 +28,7 @@ public class BaseStage
     private IStage?  _stage; 
     public bool IsCreated { get; private set; }
 
-    public BaseStage(Guid stageId, 
+    public BaseStage(string stageId, 
                      PlayProcessor playProcessor, 
                      IClientCommunicator clientCommunicator,
                      RequestCache reqCache, 
@@ -64,7 +64,7 @@ public class BaseStage
             }
             else
             {
-                Guid accountId = routePacket.AccountId;
+                string accountId = routePacket.AccountId;
                 var baseUser = _playProcessor.FindUser(accountId);
                 if (baseUser != null)
                 {
@@ -121,7 +121,7 @@ public class BaseStage
     }
 
 
-    public async Task<(ReplyPacket, int)> Join(Guid accountId, string sessionEndpoint, int sid, string apiEndpoint, Packet packet)
+    public async Task<(ReplyPacket, int)> Join(string accountId, string sessionEndpoint, int sid, string apiEndpoint, Packet packet)
     {
         BaseActor? baseUser = _playProcessor.FindUser(accountId);
 
@@ -160,15 +160,15 @@ public class BaseStage
         this._stageSender.Reply(packet);
     }
 
-    public void LeaveStage(Guid accountId, string sessionEndpoint, int sid)
+    public void LeaveStage(string accountId, string sessionEndpoint, int sid)
     {
         this._playProcessor.RemoveUser(accountId);
         var request = new LeaveStageMsg();
-        request.StageId = ByteString.CopyFrom(_stageId.ToByteArray());
+        request.StageId = _stageId;
         this._stageSender.SendToBaseSession(sessionEndpoint, sid,new Packet(request));
     }
 
-    public Guid StageId => _stageSender.StageId;
+    public string StageId => _stageSender.StageId;
 
     public void CancelTimer(long timerId)
     {
@@ -192,7 +192,7 @@ public class BaseStage
         }
     }
 
-    public async Task OnPostJoinRoom(Guid accountId)
+    public async Task OnPostJoinRoom(string accountId)
     {
         try
         {
@@ -214,7 +214,7 @@ public class BaseStage
         }
     }
 
-    public async Task OnDisconnect(Guid accountId)
+    public async Task OnDisconnect(string accountId)
     {
         var baseUser = _playProcessor.FindUser(accountId);
 

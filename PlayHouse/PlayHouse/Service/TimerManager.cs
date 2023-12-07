@@ -15,7 +15,7 @@ public class TimerManager
         _service = service;
     }
 
-    public long RegisterRepeatTimer(Guid stageId, long timerId, long initialDelay, long period, TimerCallbackTask timerCallback)
+    public long RegisterRepeatTimer(string stageId, long timerId, long initialDelay, long period, TimerCallbackTask timerCallback)
     {
         var timer = new Timer(timerState =>
         {
@@ -28,7 +28,7 @@ public class TimerManager
         return timerId;
     }
 
-    public long RegisterCountTimer(Guid stageId, long timerId, long initialDelay, int count, long period, TimerCallbackTask timerCallback)
+    public long RegisterCountTimer(string stageId, long timerId, long initialDelay, int count, long period, TimerCallbackTask timerCallback)
     {
         int remainingCount = count;
 

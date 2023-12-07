@@ -76,7 +76,7 @@ namespace PlayHouse.Service.Api
 
                     try
                     {
-                        if (routeHeader.AccountId != Guid.Empty)
+                        if (routeHeader.AccountId != string.Empty)
                         {
                             var accountApiProcessor =(AccountApiProcessor?) _cache.Get($"{ routeHeader.AccountId}");
                             if (accountApiProcessor == null)
@@ -159,7 +159,7 @@ namespace PlayHouse.Service.Api
                                         apiSender.ErrorReply(packet.RouteHeader, errorCode);
                                     }
 
-                                    _log.Error(() => $"Packet processing failed due to an unexpected error. - [msgId:{routeHeader.MsgId}");
+                                    _log.Error(() => $"Packet processing failed due to an unexpected error. - [msgId:{routeHeader.MsgId}]");
                                     _log.Error(() => "exception message:" + e.Message);
                                     _log.Error(() => "exception trace:" + e.StackTrace);
 
@@ -174,7 +174,7 @@ namespace PlayHouse.Service.Api
                     }
                     catch (Exception e)
                     {
-                        _log.Error(() => $"Packet processing failed due to an unexpected error. - [msgId:{routeHeader.MsgId}");
+                        _log.Error(() => $"Packet processing failed due to an unexpected error. - [msgId:{routeHeader.MsgId}]");
                         _log.Error(() => "exception message:" + e.Message);
                         _log.Error(() => "exception trace:" + e.StackTrace);
 

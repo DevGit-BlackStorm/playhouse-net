@@ -79,8 +79,8 @@ namespace PlayHouse.Communicator.Socket.Tests
             };
 
             var routeHeader = RouteHeader.Of(header);
-            routeHeader.AccountId = Guid.NewGuid(); 
-            routeHeader.StageId = Guid.NewGuid();   
+            routeHeader.AccountId = string.Empty; 
+            routeHeader.StageId = string.Empty;   
 
             var sendRoutePacket = RoutePacket.Of(routeHeader,new ProtoPayload(message));
 

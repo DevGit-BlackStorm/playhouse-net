@@ -68,12 +68,12 @@ namespace PlayHouseTests.Service.Session
         {
             // api 서버로부터 authenticate 패킷을 받을 경우 인증 확인 및 session info 정보 확인
             //long accountId = 1000L;
-            Guid accountId = Guid.NewGuid();
+            string accountId = string.Empty;
 
             var message = new AuthenticateMsg()
             {
                 ServiceId = _idApi,
-                AccountId = ByteString.CopyFrom(accountId.ToByteArray()),
+                AccountId = accountId,
             };
             var routePacket = RoutePacket.SessionOf(_sid, new Packet(message), true, true);
 

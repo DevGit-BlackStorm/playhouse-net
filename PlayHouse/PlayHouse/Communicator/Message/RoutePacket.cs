@@ -2,6 +2,7 @@
 using Google.Protobuf;
 using Playhouse.Protocol;
 using PlayHouse.Production;
+using System.Runtime.InteropServices;
 
 namespace PlayHouse.Communicator.Message
 {
@@ -52,8 +53,8 @@ namespace PlayHouse.Communicator.Message
         public bool IsBase { get; set; } = false;
         public bool IsBackend { get; set; } = false;
         public bool IsReply { get; set; } = false;
-        public Guid AccountId { get; set; } = Guid.Empty;
-        public Guid StageId { get; set; } = Guid.Empty;
+        public string AccountId { get; set; } = string.Empty;
+        public string StageId { get; set; } = string.Empty;
 
         public string From { get; set; } = "";
 
@@ -72,8 +73,8 @@ namespace PlayHouse.Communicator.Message
             IsBase = headerMsg.IsBase;
             IsBackend = headerMsg.IsBackend;
             IsReply = headerMsg.IsReply;
-            AccountId = new Guid(headerMsg.AccountId.ToByteArray());
-            StageId = new Guid(headerMsg.StageId.ToByteArray());
+            AccountId = headerMsg.AccountId;
+            StageId = headerMsg.StageId;
         }
 
         public byte[] ToByteArray()
@@ -92,8 +93,8 @@ namespace PlayHouse.Communicator.Message
             message.IsBase = IsBase;
             message.IsBackend = IsBackend;
             message.IsReply = IsReply;
-            message.AccountId = ByteString.CopyFrom(AccountId.ToByteArray());
-            message.StageId = ByteString.CopyFrom(StageId.ToByteArray());
+            message.AccountId = AccountId;
+            message.StageId = StageId;
             return message;
         }
 
@@ -107,7 +108,7 @@ namespace PlayHouse.Communicator.Message
             return new RouteHeader(header);
         }
 
-        public static RouteHeader TimerOf(Guid stageId, short msgId)
+        public static RouteHeader TimerOf(string stageId, short msgId)
         {
             return new RouteHeader(new Header(msgId: msgId))
             {
@@ -157,7 +158,7 @@ namespace PlayHouse.Communicator.Message
             return RouteHeader.IsBase;
         }
 
-        public Guid AccountId => RouteHeader.AccountId;
+        public string AccountId => RouteHeader.AccountId;
 
         public void SetMsgSeq(ushort msgSeq)
         {
@@ -174,7 +175,7 @@ namespace PlayHouse.Communicator.Message
             return RouteHeader.IsReply;
         }
 
-        public Guid StageId => RouteHeader.StageId;
+        public string StageId => RouteHeader.StageId;
 
         public bool IsSystem()
         {
@@ -229,7 +230,7 @@ namespace PlayHouse.Communicator.Message
             return new RoutePacket(routeHeader, packet.MovePayload());
         }
 
-        public static RoutePacket AddTimerOf(TimerMsg.Types.Type type, Guid stageId, long timerId, TimerCallbackTask timerCallback, TimeSpan initialDelay, TimeSpan period, int count = 0)
+        public static RoutePacket AddTimerOf(TimerMsg.Types.Type type, string stageId, long timerId, TimerCallbackTask timerCallback, TimeSpan initialDelay, TimeSpan period, int count = 0)
         {
             Header header = new Header(msgId:(short)TimerMsg.Descriptor.Index);
             RouteHeader routeHeader = RouteHeader.Of(header);
@@ -251,7 +252,7 @@ namespace PlayHouse.Communicator.Message
             };
         }
 
-        public static RoutePacket StageTimerOf(Guid stageId, long timerId, TimerCallbackTask timerCallback, object? timerState)
+        public static RoutePacket StageTimerOf(string stageId, long timerId, TimerCallbackTask timerCallback, object? timerState)
         {
             Header header = new Header(msgId: StageTimer.Descriptor.Index);
             RouteHeader routeHeader = RouteHeader.Of(header);
@@ -264,7 +265,7 @@ namespace PlayHouse.Communicator.Message
             };
         }
 
-        public static RoutePacket StageOf(Guid stageId, Guid accountId, Packet packet, bool isBase, bool isBackend)
+        public static RoutePacket StageOf(string stageId, string accountId, Packet packet, bool isBase, bool isBackend)
         {
             Header header = new Header(msgId: packet.MsgId);
             RouteHeader routeHeader = RouteHeader.Of(header);
@@ -275,18 +276,38 @@ namespace PlayHouse.Communicator.Message
             return new RoutePacket(routeHeader, packet.MovePayload());
         }
 
-        public static RoutePacket ReplyOf(ushort serviceId, ushort msgSeq, int sid,bool forClient, ReplyPacket reply)
+        //public static RoutePacket ReplyOf(ushort serviceId, ushort msgSeq, int sid,bool forClient, ReplyPacket reply)
+        //{
+        //    Header header = new(msgId:reply.MsgId)
+        //    {
+        //        ServiceId = serviceId,
+        //        MsgSeq = msgSeq
+        //    };
+
+        //    RouteHeader routeHeader = RouteHeader.Of(header);
+        //    routeHeader.IsReply = true;
+        //    routeHeader.IsToClient = forClient;
+        //    routeHeader.Sid = sid;
+
+        //    var routePacket = new RoutePacket(routeHeader, reply.MovePayload());
+        //    routePacket.RouteHeader.Header.ErrorCode = reply.ErrorCode;
+        //    return routePacket;
+        //}
+        public static RoutePacket ReplyOf(ushort serviceId, RouteHeader sourceHeader, ReplyPacket reply)
         {
-            Header header = new(msgId:reply.MsgId)
+            Header header = new(msgId: reply.MsgId)
             {
                 ServiceId = serviceId,
-                MsgSeq = msgSeq
+                MsgSeq = sourceHeader.Header.MsgSeq
             };
 
             RouteHeader routeHeader = RouteHeader.Of(header);
             routeHeader.IsReply = true;
-            routeHeader.IsToClient = forClient;
-            routeHeader.Sid = sid;
+            routeHeader.IsToClient = !sourceHeader.IsBackend ;
+            routeHeader.Sid = sourceHeader.Sid;
+            routeHeader.IsBackend = sourceHeader.IsBackend;
+            routeHeader.IsBase = sourceHeader.IsBase;
+            routeHeader.AccountId = sourceHeader.AccountId;
 
             var routePacket = new RoutePacket(routeHeader, reply.MovePayload());
             routePacket.RouteHeader.Header.ErrorCode = reply.ErrorCode;
@@ -370,7 +391,7 @@ namespace PlayHouse.Communicator.Message
             Result = result;
         }
 
-        public static RoutePacket Of(Guid stageId, AsyncPostCallback asyncPostCallback, Object result)
+        public static RoutePacket Of(string stageId, AsyncPostCallback asyncPostCallback, Object result)
         {
             var header = new Header(msgId: AsyncBlock.Descriptor.Index);
             var routeHeader = RouteHeader.Of(header);

@@ -13,8 +13,8 @@ namespace PlayHouse.Service.Play
     {
         private readonly LOG<PlayProcessor> _log = new ();
         private readonly AtomicEnum<ServerState> _state = new(ServerState.DISABLE);
-        private readonly ConcurrentDictionary<Guid, BaseActor> _baseUsers = new();
-        private readonly ConcurrentDictionary<Guid, BaseStage> _baseRooms = new();
+        private readonly ConcurrentDictionary<string, BaseActor> _baseUsers = new();
+        private readonly ConcurrentDictionary<string, BaseStage> _baseRooms = new();
         private readonly Thread _threadForCoroutine;
         private readonly ConcurrentQueue<RoutePacket> _msgQueue = new();
         private readonly TimerManager _timerManager;
@@ -47,12 +47,12 @@ namespace PlayHouse.Service.Play
             _threadForCoroutine.Start();
         }
 
-        public void RemoveRoom(Guid stageId)
+        public void RemoveRoom(string stageId)
         {
             _baseRooms.Remove(stageId,out _);
         }
 
-        public void RemoveUser(Guid accountId)
+        public void RemoveUser(string accountId)
         {
             _baseUsers.Remove(accountId, out _);
         }
@@ -61,7 +61,7 @@ namespace PlayHouse.Service.Play
         {
             _sender.ErrorReply(routeHeader, errorCode);
         }
-        private BaseStage MakeBaseRoom(Guid stageId)
+        private BaseStage MakeBaseRoom(string stageId)
         {
             var stageSender =  new XStageSender(ServiceId, stageId, this, _clientCommunicator, _requestCache);
             var sessionUpdator = new XSessionUpdater(Endpoint(), stageSender);
@@ -115,7 +115,7 @@ namespace PlayHouse.Service.Play
         }
 
 
-        private async Task DoBaseRoomPacket(int msgId, RoutePacket routePacket, Guid stageId)
+        private async Task DoBaseRoomPacket(int msgId, RoutePacket routePacket, string stageId)
         {
 
             if (msgId == CreateStageReq.Descriptor.Index)
@@ -176,7 +176,7 @@ namespace PlayHouse.Service.Play
             }
         }
 
-        private void TimerProcess(Guid stageId, long timerId, TimerMsg timerMsg, TimerCallbackTask timerCallback)
+        private void TimerProcess(string stageId, long timerId, TimerMsg timerMsg, TimerCallbackTask timerCallback)
         {
             _baseRooms.TryGetValue(stageId, out var room);
 
@@ -251,7 +251,7 @@ namespace PlayHouse.Service.Play
             _state.Set(ServerState.RUNNING);
         }
 
-        public BaseActor? FindUser(Guid accountId)
+        public BaseActor? FindUser(string accountId)
         {
             if(_baseUsers.TryGetValue(accountId, out var user)) return user;
             return null;
@@ -263,7 +263,7 @@ namespace PlayHouse.Service.Play
             _baseUsers[baseActor.ActorSender.AccountId()] = baseActor;
         }
 
-        public BaseStage? FindRoom(Guid stageId)
+        public BaseStage? FindRoom(string stageId)
         {
             return _baseRooms[stageId];
         }
@@ -273,7 +273,7 @@ namespace PlayHouse.Service.Play
             return _publicEndpoint;
         }
 
-        public void CancelTimer(Guid stageId, long timerId)
+        public void CancelTimer(string stageId, long timerId)
         {
             if (_baseRooms.TryGetValue(stageId, out var room))
             {

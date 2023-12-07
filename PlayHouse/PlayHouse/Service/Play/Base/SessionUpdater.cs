@@ -23,7 +23,7 @@ namespace PlayHouse.Service.Play.Base
         {
             var joinStageInfoUpdateReq = new JoinStageInfoUpdateReq()
             {
-                StageId = ByteString.CopyFrom(_stageSender.StageId.ToByteArray()),
+                StageId = _stageSender.StageId,
                 PlayEndpoint = _playEndpoint,
             };
 

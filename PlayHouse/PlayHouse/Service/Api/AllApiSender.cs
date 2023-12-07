@@ -23,12 +23,16 @@ namespace PlayHouse.Service.Api
         public string SessionEndpoint => CurrentHeader?.From ?? "";
         public int Sid => CurrentHeader?.Sid ?? 0;
 
-        public void Authenticate(Guid accountId)
+        public void Authenticate(string accountId)
         {
+            if(accountId == null || accountId == string.Empty) 
+            {
+                throw new InvalidDataException("accountId is null or empty");
+            }
             var message = new AuthenticateMsg()
             {
                 ServiceId = (int)_serviceId,
-                AccountId = ByteString.CopyFrom(accountId.ToByteArray())
+                AccountId = accountId
             };
 
             if (CurrentHeader != null)
@@ -43,7 +47,7 @@ namespace PlayHouse.Service.Api
 
   
 
-        public async Task<JoinStageResult> JoinStage(string playEndpoint, Guid stageId, Packet packet)
+        public async Task<JoinStageResult> JoinStage(string playEndpoint, string stageId, Packet packet)
         {
             var req = new JoinStageReq()
             {
@@ -62,7 +66,7 @@ namespace PlayHouse.Service.Api
 
         public async Task<CreateJoinStageResult> CreateJoinStage(string playEndpoint,
                                                 string stageType,
-                                                Guid stageId,
+                                                string stageId,
                                                 Packet createPacket,                
                                                 Packet joinPacket)
         {

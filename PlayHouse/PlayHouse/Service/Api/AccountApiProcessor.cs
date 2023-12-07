@@ -113,7 +113,7 @@ namespace PlayHouse.Service.Api
                                 apiSender.ErrorReply(routePacket.RouteHeader, errorCode);
                             }
 
-                            _log.Error(() => $"Packet processing failed due to an unexpected error. - [msgId:{routeHeader.MsgId}");
+                            _log.Error(() => $"Packet processing failed due to an unexpected error. - [msgId:{routeHeader.MsgId}]");
                             _log.Error(() => "exception message:" + e.Message);
                             _log.Error(() => "exception trace:" + e.StackTrace);
 

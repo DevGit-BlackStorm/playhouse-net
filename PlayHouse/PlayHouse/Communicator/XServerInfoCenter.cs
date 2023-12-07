@@ -102,7 +102,7 @@ namespace PlayHouse.Communicator
             return _serverInfoList;
         }
 
-        public XServerInfo FindServerByAccountId(ushort serviceId, Guid accountId)
+        public XServerInfo FindServerByAccountId(ushort serviceId, string accountId)
         {
             var list = _serverInfoList
                 .Where(info => info.State.Equals(ServerState.RUNNING) && info.ServiceId == serviceId)

@@ -11,9 +11,9 @@ public class XApiCommonSender : XSender, IApiCommonSender
     {
     }
 
-    public Guid AccountId => CurrentHeader?.AccountId ?? Guid.Empty;
+    public string AccountId => CurrentHeader?.AccountId ?? string.Empty;
 
-    public async Task<CreateStageResult> CreateStage(string playEndpoint, string stageType, Guid stageId, Packet packet)
+    public async Task<CreateStageResult> CreateStage(string playEndpoint, string stageType, string stageId, Packet packet)
     {
         var req = new CreateStageReq()
         {
@@ -22,7 +22,7 @@ public class XApiCommonSender : XSender, IApiCommonSender
             Payload = ByteString.CopyFrom(packet.Data)
         };
 
-        var reply = await RequestToBaseStage(playEndpoint, stageId, Guid.Empty, new Packet(req));
+        var reply = await RequestToBaseStage(playEndpoint, stageId, string.Empty, new Packet(req));
 
         var res = CreateStageRes.Parser.ParseFrom(reply.Data);
 

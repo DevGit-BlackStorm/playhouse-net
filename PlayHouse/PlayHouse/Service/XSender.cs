@@ -41,12 +41,13 @@ public class XSender : ISender
             ushort msgSeq = CurrentHeader.Header.MsgSeq;
             if (msgSeq != 0)
             {
-                int sid = CurrentHeader.Sid;
+                //int sid = CurrentHeader.Sid;
                 string from = CurrentHeader.From;
-                RoutePacket routePacket = RoutePacket.ReplyOf(_serviceId, msgSeq, sid, !CurrentHeader.IsBackend, reply);
-                routePacket.RouteHeader.Sid = sid;
-                routePacket.RouteHeader.IsBase = CurrentHeader.IsBase;
-                routePacket.RouteHeader.IsBackend = CurrentHeader.IsBackend;
+                //RoutePacket routePacket = RoutePacket.ReplyOf(_serviceId, msgSeq, sid, !CurrentHeader.IsBackend, reply);
+                RoutePacket routePacket = RoutePacket.ReplyOf(_serviceId, CurrentHeader,  reply);
+                //routePacket.RouteHeader.Sid = sid;
+                //routePacket.RouteHeader.IsBase = CurrentHeader.IsBase;
+                //routePacket.RouteHeader.IsBackend = CurrentHeader.IsBackend;
                 
                 //for test
                 routePacket.RouteHeader.AccountId = CurrentHeader.AccountId;
@@ -93,7 +94,7 @@ public class XSender : ISender
     {
         return _reqCache.GetSequence();
     }
-    public void SendToApi(string apiEndpoint, Guid accountId, Packet packet)
+    public void SendToApi(string apiEndpoint, string accountId, Packet packet)
     {
         var routePacket = RoutePacket.ApiOf(packet, isBase: false, isBackend: true);
         routePacket.RouteHeader.AccountId = accountId;
@@ -116,7 +117,7 @@ public class XSender : ISender
         _clientCommunicator.Send(apiEndpoint, routePacket);
     }
 
-    public void SendToBaseApi(string apiEndpoint, Guid accountId,Packet packet)
+    public void SendToBaseApi(string apiEndpoint, string accountId,Packet packet)
     {
         RoutePacket routePacket = RoutePacket.ApiOf( packet, true, true);
         routePacket.RouteHeader.AccountId = accountId;
@@ -124,13 +125,13 @@ public class XSender : ISender
         _clientCommunicator.Send(apiEndpoint, routePacket);
     }
 
-    public void SendToStage(string playEndpoint, Guid stageId, Guid accountId, Packet packet)
+    public void SendToStage(string playEndpoint, string stageId, string accountId, Packet packet)
     {
         RoutePacket routePacket = RoutePacket.StageOf(stageId, accountId, packet, false, true);
         _clientCommunicator.Send(playEndpoint, routePacket);
     }
 
-    public void SendToBaseStage(string playEndpoint, Guid stageId, Guid accountId, Packet packet)
+    public void SendToBaseStage(string playEndpoint, string stageId, string accountId, Packet packet)
     {
         RoutePacket routePacket = RoutePacket.StageOf(stageId, accountId, packet, true, true);
         _clientCommunicator.Send(playEndpoint, routePacket);
@@ -149,11 +150,11 @@ public class XSender : ISender
     {
         return await AsyncToApi(apiEndpoint,  packet).Task;
     }
-    public async Task<ReplyPacket> RequestToApi(string apiEndpoint, Guid accountId, Packet packet)
+    public async Task<ReplyPacket> RequestToApi(string apiEndpoint, string accountId, Packet packet)
     {
         return await AsyncToApi(apiEndpoint, accountId, packet);
     }
-    public async Task<ReplyPacket> AsyncToApi(string apiEndpoint, Guid accountId, Packet packet)
+    public async Task<ReplyPacket> AsyncToApi(string apiEndpoint, string accountId, Packet packet)
     {
         ushort seq = GetSequence();
         var taskCompletionSource = new TaskCompletionSource<ReplyPacket>();
@@ -176,7 +177,7 @@ public class XSender : ISender
         return deferred;
     }
 
-    public void RequestToStage(string playEndpoint, Guid stageId, Guid accountId, Packet packet, ReplyCallback replyCallback)
+    public void RequestToStage(string playEndpoint, string stageId, string accountId, Packet packet, ReplyCallback replyCallback)
     {
         ushort seq = GetSequence();
         _reqCache.Put(seq, new ReplyObject(replyCallback));
@@ -185,7 +186,7 @@ public class XSender : ISender
         _clientCommunicator.Send(playEndpoint, routePacket);
     }
 
-    public ReplyPacket CallToBaseRoom(string playEndpoint, Guid stageId, Guid accountId, Packet packet)
+    public ReplyPacket CallToBaseRoom(string playEndpoint, string stageId, string accountId, Packet packet)
     {
         ushort seq = GetSequence();
         var future = new TaskCompletionSource<ReplyPacket>();
@@ -197,7 +198,7 @@ public class XSender : ISender
         return future.Task.Result;
     }
 
-    public TaskCompletionSource<ReplyPacket> AsyncToStage(string playEndpoint, Guid stageId, Guid accountId, Packet packet)
+    public TaskCompletionSource<ReplyPacket> AsyncToStage(string playEndpoint, string stageId, string accountId, Packet packet)
     {
         ushort seq = GetSequence();
         var deferred = new TaskCompletionSource<ReplyPacket>();
@@ -208,12 +209,12 @@ public class XSender : ISender
         return deferred;
     }
 
-    public async Task<ReplyPacket> RequestToStage(string playEndpoint, Guid stageId, Guid accountId, Packet packet)
+    public async Task<ReplyPacket> RequestToStage(string playEndpoint, string stageId, string accountId, Packet packet)
     {
         return await AsyncToStage(playEndpoint, stageId, accountId, packet).Task;
     }
 
-    public async Task<ReplyPacket> RequestToBaseStage(string playEndpoint, Guid stageId, Guid accountId, Packet packet)
+    public async Task<ReplyPacket> RequestToBaseStage(string playEndpoint, string stageId, string accountId, Packet packet)
     {
         ushort seq = GetSequence();
         var deferred = new TaskCompletionSource<ReplyPacket>();
@@ -244,11 +245,12 @@ public class XSender : ISender
     {
         ushort msgSeq = routeHeader.Header.MsgSeq;
         string from = routeHeader.From;
-        int sid = routeHeader.Sid;
-        bool forClient = routeHeader.IsToClient;
+        //int sid = routeHeader.Sid;
+        //bool forClient = routeHeader.IsToClient;
         if (msgSeq > 0)
         {
-            RoutePacket reply = RoutePacket.ReplyOf(_serviceId, msgSeq,sid,!routeHeader.IsBackend, new ReplyPacket(errorCode));
+            //RoutePacket reply = RoutePacket.ReplyOf(_serviceId, msgSeq,sid,!routeHeader.IsBackend, new ReplyPacket(errorCode));
+            RoutePacket reply = RoutePacket.ReplyOf(_serviceId, routeHeader,  new ReplyPacket(errorCode));
             _clientCommunicator.Send(from, reply);
         }
     }

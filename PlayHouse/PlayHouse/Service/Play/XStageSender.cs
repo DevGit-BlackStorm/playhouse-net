@@ -7,18 +7,18 @@ namespace PlayHouse.Service.Play
 {
     public class XStageSender : XSender, IStageSender
     {
-        private readonly Guid _stageId;
+        private readonly string _stageId;
         private readonly PlayProcessor _playProcessor;
         private readonly HashSet<long> _timerIds = new();
         private string _stateType = "";
 
-        public XStageSender(ushort serviceId, Guid stageId, PlayProcessor playProcessor,IClientCommunicator clientCommunicator, RequestCache reqCache) : base(serviceId, clientCommunicator, reqCache)
+        public XStageSender(ushort serviceId, string stageId, PlayProcessor playProcessor,IClientCommunicator clientCommunicator, RequestCache reqCache) : base(serviceId, clientCommunicator, reqCache)
         {
             _stageId = stageId;
             _playProcessor = playProcessor;
         }
 
-        public Guid StageId => _stageId;
+        public string StageId => _stageId;
         public string StageType => _stateType;
 
 
@@ -90,7 +90,7 @@ namespace PlayHouse.Service.Play
             }
             _timerIds.Clear();
 
-            var packet2 = RoutePacket.StageOf(_stageId, Guid.Empty,new Packet(DestroyStage.Descriptor.Index), true, false);
+            var packet2 = RoutePacket.StageOf(_stageId, string.Empty,new Packet(DestroyStage.Descriptor.Index), true, false);
             _playProcessor.OnReceive(packet2);
         }
 
