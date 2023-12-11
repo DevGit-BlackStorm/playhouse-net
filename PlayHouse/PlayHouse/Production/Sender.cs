@@ -12,7 +12,7 @@ namespace PlayHouse.Production
         void Resume();
         void Shutdown();
         ServerState GetServerState();
-        //long GenerateUUID();
+        long GenerateUUID();
     }
 
     public interface ISender

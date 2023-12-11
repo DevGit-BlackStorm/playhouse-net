@@ -10,12 +10,14 @@ public class CommunicatorOption
     public string BindEndpoint { get; }
     public ServerSystemFactory ServerSystem { get; }
     public bool ShowQps { get; }
+    public int NodeId { get; }
 
-    private CommunicatorOption(string bindEndpoint, ServerSystemFactory serverSystem, bool showQps)
+    private CommunicatorOption(string bindEndpoint, ServerSystemFactory serverSystem, bool showQps, int nodeId)
     {
         BindEndpoint = bindEndpoint;
         ServerSystem = serverSystem;
         ShowQps = showQps;
+        NodeId = nodeId;
     }
 
     public class Builder
@@ -23,6 +25,7 @@ public class CommunicatorOption
         private int _port;
         private ServerSystemFactory? _serverSystem;
         private bool _showQps;
+        private int _nodeId;
 
         public Builder SetPort(int port)
         {
@@ -46,7 +49,20 @@ public class CommunicatorOption
         {
             var localIp = IpFinder.FindLocalIp();
             var bindEndpoint = $"tcp://{localIp}:{_port}";
-            return new CommunicatorOption(bindEndpoint, _serverSystem!, _showQps);
+            return new CommunicatorOption(bindEndpoint, _serverSystem!, _showQps,_nodeId);
+        }
+
+        public Builder SetNodeId(int nodeId)
+        {
+            if(nodeId > 0 && nodeId < 4096)
+            {
+                _nodeId = nodeId;
+            }
+            else
+            {
+                throw new Exception("invalid nodeId , ");
+            }
+            return this;
         }
     }
 }

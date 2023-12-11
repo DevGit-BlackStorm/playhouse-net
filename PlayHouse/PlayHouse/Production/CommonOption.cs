@@ -19,6 +19,7 @@ namespace PlayHouse.Production
         public ServerSystemFactory? ServerSystem { get; set; }
         public int RequestTimeoutSec { get; set; } = 5;
         public bool ShowQps { get; set; }
+        public int NodeId { get; set; } // 0~ 4096
 
         public int MaxBufferPoolSize = 1024 * 1024 * 100;
 

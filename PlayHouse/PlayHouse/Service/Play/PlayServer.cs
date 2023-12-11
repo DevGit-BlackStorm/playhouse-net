@@ -24,6 +24,7 @@ namespace PlayHouse.Service.Play
                 .SetPort(_commonOption.Port)
                 .SetServerSystem(_commonOption.ServerSystem!)
                 .SetShowQps(_commonOption.ShowQps)
+                .SetNodeId(_commonOption.NodeId)
                 .Build();
 
             var bindEndpoint = communicatorOption.BindEndpoint;
@@ -43,7 +44,7 @@ namespace PlayHouse.Service.Play
 
             var xSender = new XSender(serviceId, communicateClient, requestCache);
 
-            var nodeId = storageClient.GetNodeId(bindEndpoint);
+            var nodeId = communicatorOption.NodeId;
             var systemPanelImpl = new XSystemPanel(serverInfoCenter, communicateClient, nodeId);
             ControlContext.BaseSender = xSender;
             ControlContext.SystemPanel = systemPanelImpl;

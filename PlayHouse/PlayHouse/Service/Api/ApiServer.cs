@@ -26,6 +26,7 @@ public class ApiServer : IServer
           .SetPort(_commonOption.Port)
           .SetServerSystem(_commonOption.ServerSystem!)
           .SetShowQps(_commonOption.ShowQps)
+          .SetNodeId(_commonOption.NodeId)
           .Build();
 
         var bindEndpoint = communicatorOption.BindEndpoint;
@@ -43,8 +44,8 @@ public class ApiServer : IServer
         var communicateClient = new XClientCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(), bindEndpoint));
 
         var sender = new XSender(serviceId, communicateClient, requestCache);
-
-        var nodeId = storageClient.GetNodeId(bindEndpoint);
+                
+        var nodeId = communicatorOption.NodeId;
 
         var systemPanel = new XSystemPanel(serverInfoCenter, communicateClient, nodeId);
 
