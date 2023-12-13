@@ -105,14 +105,10 @@ namespace PlayHouse.Service.Api
                                 var apiSender = new AllApiSender(_serviceId, _clientCommunicator, _requestCache);
                                 apiSender.SetCurrentPacketHeader(routeHeader);
 
+                                AsyncContext.ApiSender = apiSender;
+
                                 try
                                 {
-                                    // var result = packet;
-                                    // _log.Debug(
-                                    //     () => $"before Call Method - [AccountId:{result.AccountId},MsgId={routeHeader.MsgId},MsgSeq:{routeHeader.Header.MsgSeq},IsBackend={routeHeader.IsBackend}]");
-                                    AsyncContext.ApiSender = apiSender;
-                                    AsyncContext.InitErrorCode();
-                                    
                                     if(packet.IsBackend())
                                     {
                                         await _apiReflection.BackendCallMethod(
@@ -169,6 +165,8 @@ namespace PlayHouse.Service.Api
                                         _log.Error(() => "internal exception trace:" + e.InnerException.StackTrace);
                                     }
                                 }
+
+                                AsyncContext.Clear();
                             });
                         }
                     }

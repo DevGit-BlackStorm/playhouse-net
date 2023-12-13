@@ -54,7 +54,7 @@ public class CommunicatorOption
 
         public Builder SetNodeId(int nodeId)
         {
-            if(nodeId > 0 && nodeId < 4096)
+            if(nodeId >= 0 && nodeId < 4096)
             {
                 _nodeId = nodeId;
             }
