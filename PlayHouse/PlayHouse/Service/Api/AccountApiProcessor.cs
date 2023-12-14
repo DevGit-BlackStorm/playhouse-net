@@ -48,7 +48,7 @@ namespace PlayHouse.Service.Api
                     apiSender.SetCurrentPacketHeader(routeHeader);
 
                     AsyncContext.ApiSender = apiSender;
-                    //AsyncContext.InitErrorCode();
+                    AsyncContext.InitErrorCode();
 
                     if (routeHeader.IsBase)
                     {
