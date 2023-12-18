@@ -13,7 +13,7 @@ public class AsyncContext
     private static readonly AsyncLocal<ErrorCodeWrapper?> _errorCode = new()  ;
     private static readonly ConcurrentDictionary<string, AsyncLocal<object?>> _storage = new();
 
-    internal static void InitErrorCode()
+    private static void InitErrorCode()
     {
         _errorCode.Value = new ErrorCodeWrapper();
     }
@@ -26,8 +26,22 @@ public class AsyncContext
 
     public static ushort ErrorCode
     {
-        get => _errorCode.Value!.Code;
-        set => _errorCode.Value!.Code = value;
+        get
+        {
+            if( _errorCode.Value == null )
+            {
+                InitErrorCode();
+            }
+            return _errorCode.Value!.Code;
+        }
+        set
+        {
+            if(_errorCode.Value == null ) 
+            {
+                InitErrorCode();
+            }
+            _errorCode.Value!.Code = value;
+        }
     }
 
     public static T? GetLocal<T>(string name)  where T : class
