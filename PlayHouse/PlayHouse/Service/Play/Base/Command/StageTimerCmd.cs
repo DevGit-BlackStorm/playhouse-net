@@ -5,7 +5,7 @@ using PlayHouse.Utils;
 
 namespace PlayHouse.Service.Play.Base.Command;
 
-public class StageTimerCmd : IBaseStageCmd
+internal class StageTimerCmd : IBaseStageCmd
 {
     private readonly LOG<StageTimerCmd> _log = new ();
     public PlayProcessor PlayProcessor { get; }

@@ -1,5 +1,5 @@
 ﻿namespace PlayHouse.Communicator;
-public interface IServerCommunicator 
+internal interface IServerCommunicator 
 { 
     void Bind(ICommunicateListener listener);
     void Communicate();

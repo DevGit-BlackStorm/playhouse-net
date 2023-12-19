@@ -67,7 +67,7 @@ public class CommunicatorOption
     }
 }
 
-public class Communicator : ICommunicateListener
+internal class Communicator : ICommunicateListener
 {
     private readonly CommunicatorOption _option;
     private readonly RequestCache _requestCache;

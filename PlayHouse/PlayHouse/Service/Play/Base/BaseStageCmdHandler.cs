@@ -3,7 +3,7 @@ using PlayHouse.Utils;
 
 namespace PlayHouse.Service.Play.Base
 {
-    public class BaseStageCmdHandler
+    internal class BaseStageCmdHandler
     {
         private readonly LOG<BaseStageCmdHandler> _log = new ();
         private readonly Dictionary<int, IBaseStageCmd> _maps = new();

@@ -123,7 +123,7 @@ namespace PlayHouse.Communicator.Message
 
 
 
-    public class RoutePacket : IBasePacket {
+    internal class RoutePacket : IBasePacket {
         public RouteHeader RouteHeader;
         private IPayload _payload;
 
@@ -380,7 +380,7 @@ namespace PlayHouse.Communicator.Message
         }
     }
 
-    public class AsyncBlockPacket : RoutePacket
+    internal class AsyncBlockPacket : RoutePacket
     {
         public AsyncPostCallback AsyncPostCallback { get; }
         public object Result { get; }

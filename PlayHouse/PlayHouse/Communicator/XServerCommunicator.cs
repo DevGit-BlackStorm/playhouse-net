@@ -3,7 +3,7 @@ using PlayHouse.Utils;
 
 namespace PlayHouse.Communicator
 {
-    public class XServerCommunicator : IServerCommunicator
+    internal class XServerCommunicator : IServerCommunicator
     {
         private readonly IPlaySocket _playSocket;
 

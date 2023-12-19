@@ -1,7 +1,7 @@
 ﻿using PlayHouse.Production.Play;
 
 namespace PlayHouse.Service.Play.Base;
-public class BaseActor
+internal class BaseActor
 {
     public IActor Actor { get; }
     public XActorSender ActorSender { get; }

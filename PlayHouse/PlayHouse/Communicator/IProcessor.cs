@@ -9,7 +9,7 @@ public enum ServiceType
     Play
 }
 
-public interface IProcessor
+internal interface IProcessor
 {
     ushort ServiceId { get; }
     void OnStart();

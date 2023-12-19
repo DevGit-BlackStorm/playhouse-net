@@ -9,7 +9,7 @@ using CommonLib;
 using NetMQ;
 
 namespace PlayHouse.Service.Session;
-public class TargetAddress
+internal class TargetAddress
 {
     public string Endpoint { get; }
     public string StageId { get; }
@@ -20,7 +20,7 @@ public class TargetAddress
         StageId = stageId ?? string.Empty;
     }
 }
-class StageIndexGenerator
+internal class StageIndexGenerator
 {
     private byte _byteValue;
 
@@ -35,7 +35,7 @@ class StageIndexGenerator
     }
 }
 
-public class SessionClient
+internal class SessionClient
 {
     private readonly LOG<SessionClient> _log = new ();
     private readonly int _sid;

@@ -8,7 +8,7 @@ using System.Collections.Concurrent;
 
 namespace PlayHouse.Service.Api
 {
-    public class AccountApiProcessor
+    internal class AccountApiProcessor
     {
         private readonly ushort _serviceId;
         private readonly RequestCache _requestCache;

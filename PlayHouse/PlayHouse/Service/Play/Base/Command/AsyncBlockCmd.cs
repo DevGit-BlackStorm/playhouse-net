@@ -1,7 +1,7 @@
 ﻿using PlayHouse.Communicator.Message;
 
 namespace PlayHouse.Service.Play.Base.Command;
-public class AsyncBlockCmd : IBaseStageCmd
+internal class AsyncBlockCmd : IBaseStageCmd
 {
     public PlayProcessor PlayProcessor { get; }
 

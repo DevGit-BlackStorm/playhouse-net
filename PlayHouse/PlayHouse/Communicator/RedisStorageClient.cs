@@ -28,7 +28,7 @@ namespace PlayHouse.Communicator
     //                          .ToList();
     //    }
     //}
-    public class RedisStorageClient : IStorageClient
+    internal class RedisStorageClient : IStorageClient
     {
         private readonly string _redisUri;
         private IConnectionMultiplexer? _connectionMultiplexer;

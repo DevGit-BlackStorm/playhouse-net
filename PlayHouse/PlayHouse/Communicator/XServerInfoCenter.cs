@@ -3,7 +3,7 @@ using PlayHouse.Production;
 
 namespace PlayHouse.Communicator
 {
-    public class XServerInfoCenter : IServerInfoCenter
+    internal class XServerInfoCenter : IServerInfoCenter
     {
         private readonly IDictionary<string, XServerInfo> _serverInfoMap = new ConcurrentDictionary<string, XServerInfo>();
         private List<XServerInfo> _serverInfoList = new();

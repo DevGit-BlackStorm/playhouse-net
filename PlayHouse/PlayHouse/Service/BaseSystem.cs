@@ -7,7 +7,7 @@ using PlayHouse.Utils;
 
 namespace PlayHouse.Service
 {
-    public class BaseSystem
+    internal class BaseSystem
     {
         private readonly LOG<BaseSystem> _log = new ();
         private readonly IServerSystem _serverSystem;

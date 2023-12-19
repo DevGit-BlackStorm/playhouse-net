@@ -5,7 +5,7 @@ using PlayHouse.Production;
 
 namespace PlayHouse.Service.Play
 {
-    public class XStageSender : XSender, IStageSender
+    internal class XStageSender : XSender, IStageSender
     {
         private readonly string _stageId;
         private readonly PlayProcessor _playProcessor;

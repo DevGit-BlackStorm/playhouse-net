@@ -5,7 +5,7 @@ using PlayHouse.Production;
 
 namespace PlayHouse.Service.Play.Base.Command;
 
-public class JoinStageCmd : IBaseStageCmd
+internal class JoinStageCmd : IBaseStageCmd
 {
     public PlayProcessor PlayProcessor { get; }
 

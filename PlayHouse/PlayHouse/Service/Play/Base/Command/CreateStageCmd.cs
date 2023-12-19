@@ -4,7 +4,7 @@ using Playhouse.Protocol;
 using PlayHouse.Production;
 
 namespace PlayHouse.Service.Play.Base.Command;
-public class CreateStageCmd : IBaseStageCmd
+internal class CreateStageCmd : IBaseStageCmd
 {
     private readonly PlayProcessor _playProcessor;
     public PlayProcessor PlayProcessor => _playProcessor;

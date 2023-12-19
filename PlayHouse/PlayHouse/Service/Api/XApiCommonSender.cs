@@ -4,7 +4,7 @@ using PlayHouse.Communicator;
 using PlayHouse.Production;
 
 namespace PlayHouse.Service.Api;
-public class XApiCommonSender : XSender, IApiCommonSender
+internal class XApiCommonSender : XSender, IApiCommonSender
 {
     protected XApiCommonSender(ushort serviceId, IClientCommunicator clientCommunicator, RequestCache reqCache)
         : base(serviceId, clientCommunicator, reqCache)

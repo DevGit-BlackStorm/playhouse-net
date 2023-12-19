@@ -1,7 +1,7 @@
 ﻿using PlayHouse.Communicator.Message;
 
 namespace PlayHouse.Service.Play.Base.Command;
-public class DisconnectNoticeCmd : IBaseStageCmd
+internal class DisconnectNoticeCmd : IBaseStageCmd
 {
     private readonly PlayProcessor _playProcessor;
     public PlayProcessor PlayProcessor => _playProcessor;

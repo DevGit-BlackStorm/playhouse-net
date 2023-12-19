@@ -4,7 +4,7 @@ using PlayHouse.Production;
 
 namespace PlayHouse.Service.Session
 {
-    public class XSessionSender : XSender, ISessionSender
+    internal class XSessionSender : XSender, ISessionSender
     {
         private IClientCommunicator _clientCommunicator;
 

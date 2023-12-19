@@ -9,7 +9,7 @@ using PlayHouse.Production.Play;
 
 namespace PlayHouse.Service.Play
 {
-    public class PlayProcessor : IProcessor
+    internal class PlayProcessor : IProcessor
     {
         private readonly LOG<PlayProcessor> _log = new ();
         private readonly AtomicEnum<ServerState> _state = new(ServerState.DISABLE);

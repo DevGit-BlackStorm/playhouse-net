@@ -9,7 +9,7 @@ using PlayHouse.Production.Play;
 using Google.Protobuf;
 
 namespace PlayHouse.Service.Play.Base;
-public class BaseStage
+internal class BaseStage
 {
     private readonly LOG<BaseStage> _log = new ();
     private readonly string _stageId;

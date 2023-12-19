@@ -2,7 +2,7 @@
 
 namespace PlayHouse.Communicator.PlaySocket
 {
-    public interface IPlaySocket
+    internal interface IPlaySocket
     {
         String GetBindEndpoint();
         void Bind();

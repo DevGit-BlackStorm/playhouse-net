@@ -5,7 +5,7 @@ using PlayHouse.Production;
 
 namespace PlayHouse.Service.Api
 {
-    public class AllApiSender : XApiCommonSender, IApiSender, IApiBackendSender
+    internal class AllApiSender : XApiCommonSender, IApiSender, IApiBackendSender
     {
         private readonly ushort _serviceId;
 

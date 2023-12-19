@@ -8,7 +8,7 @@ using PlayHouse.Production.Session;
 
 namespace PlayHouse.Service.Session
 {
-    public class SessionProcessor : IProcessor, ISessionListener
+    internal class SessionProcessor : IProcessor, ISessionListener
     {
         private readonly LOG<SessionProcessor> _log = new ();
         private readonly ushort _serviceId;

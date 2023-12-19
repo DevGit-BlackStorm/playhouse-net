@@ -1,7 +1,7 @@
 ﻿using PlayHouse.Communicator.Message;
 
 namespace PlayHouse.Communicator;
-public interface IClientCommunicator
+internal interface IClientCommunicator
 {
     void Connect(string endpoint);
     void Send(string endpoint, RoutePacket routePacket);

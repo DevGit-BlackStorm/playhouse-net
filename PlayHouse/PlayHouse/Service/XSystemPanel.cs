@@ -3,7 +3,7 @@ using PlayHouse.Production;
 
 namespace PlayHouse.Service
 {
-    public class XSystemPanel : ISystemPanel
+    internal class XSystemPanel : ISystemPanel
     {
         private readonly IServerInfoCenter _serverInfoCenter;
         private readonly IClientCommunicator _clientCommunicator;

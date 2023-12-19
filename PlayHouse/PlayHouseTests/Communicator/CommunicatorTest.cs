@@ -10,7 +10,7 @@ using PlayHouse.Production;
 
 namespace PlayHouseTests.Communicator
 {
-    public class TestListener : ICommunicateListener
+    internal class TestListener : ICommunicateListener
     {
         public List<RoutePacket> Results = new();
         public void OnReceive(RoutePacket routePacket)

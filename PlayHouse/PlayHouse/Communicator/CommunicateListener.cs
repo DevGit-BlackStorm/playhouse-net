@@ -2,8 +2,8 @@
 
 namespace PlayHouse.Communicator
 {
-    public interface ICommunicateListener
+    interface ICommunicateListener
     {
-        void OnReceive(RoutePacket routePacket);
+        public void OnReceive(RoutePacket routePacket);
      }
 }

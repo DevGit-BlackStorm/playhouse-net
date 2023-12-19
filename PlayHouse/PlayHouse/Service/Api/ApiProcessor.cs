@@ -10,7 +10,7 @@ using PlayHouse.Production.Api;
 
 namespace PlayHouse.Service.Api
 {
-    public class ApiProcessor : IProcessor
+    internal class ApiProcessor : IProcessor
     {
         private readonly LOG<ApiProcessor> _log = new ();
         private readonly ushort _serviceId;

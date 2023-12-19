@@ -4,7 +4,7 @@ using PlayHouse.Production;
 
 namespace PlayHouse.Communicator
 {
-    public class XServerInfo : IServerInfo
+    internal class XServerInfo : IServerInfo
     {
         public string BindEndpoint { get; }
         public ServiceType ServiceType { get; }

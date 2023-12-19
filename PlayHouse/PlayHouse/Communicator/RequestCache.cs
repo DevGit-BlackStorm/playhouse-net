@@ -6,7 +6,7 @@ using System.Collections.Specialized;
 using System.Runtime.Caching;
 
 namespace PlayHouse.Communicator;
-public class ReplyObject
+internal class ReplyObject
 {
     private readonly ReplyCallback? _replyCallback = null;
     private readonly TaskCompletionSource<ReplyPacket>? _taskCompletionSource= null;
@@ -32,7 +32,7 @@ public class ReplyObject
         
     }
 }
-public class RequestCache
+internal class RequestCache
 {
     private readonly AtomicShort _sequence = new();
     private readonly CacheItemPolicy _policy;

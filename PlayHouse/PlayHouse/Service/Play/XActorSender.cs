@@ -3,7 +3,7 @@ using PlayHouse.Service.Play.Base;
 
 namespace PlayHouse.Service.Play
 {
-    public class XActorSender : IActorSender
+    internal class XActorSender : IActorSender
     {
         private readonly string _accountId;
         private string _sessionEndpoint;

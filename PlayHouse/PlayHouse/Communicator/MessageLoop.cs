@@ -2,7 +2,7 @@
 using PlayHouse.Utils;
 
 namespace PlayHouse.Communicator;
-public class MessageLoop
+internal class MessageLoop
 {
     private readonly IServerCommunicator _server;
     private readonly IClientCommunicator _client;

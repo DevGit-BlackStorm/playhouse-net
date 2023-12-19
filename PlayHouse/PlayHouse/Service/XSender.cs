@@ -5,7 +5,7 @@ using PlayHouse.Production;
 using PlayHouse.Utils;
 
 namespace PlayHouse.Service;
-public class XSender : ISender
+internal class XSender : ISender
 {
     private readonly LOG<XSender> _log = new ();
     private readonly ushort _serviceId;

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace PlayHouse.Communicator.PlaySocket;
-public abstract class PlaySocketFactory
+internal abstract class PlaySocketFactory
 {
     public static IPlaySocket CreatePlaySocket(SocketConfig config, String id)
     {

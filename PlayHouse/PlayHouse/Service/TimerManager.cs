@@ -5,7 +5,7 @@ using PlayHouse.Production;
     
 namespace PlayHouse.Service;
 
-public class TimerManager
+internal class TimerManager
 {
     private readonly IProcessor _service;
     private readonly ConcurrentDictionary<long, Timer> _timers = new ConcurrentDictionary<long, Timer>();

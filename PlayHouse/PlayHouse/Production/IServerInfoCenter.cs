@@ -2,7 +2,7 @@
 
 namespace PlayHouse.Production
 {
-    public interface IServerInfoCenter
+    internal interface IServerInfoCenter
     {
         IList<XServerInfo> Update(IList<XServerInfo> serverList);
         XServerInfo FindServer(string endpoint);

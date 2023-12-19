@@ -5,7 +5,7 @@ using PlayHouse.Utils;
 using System.Collections.Concurrent;
 
 namespace PlayHouse.Communicator;
-public class XClientCommunicator : IClientCommunicator
+internal class XClientCommunicator : IClientCommunicator
 {
     private readonly IPlaySocket _playSocket;
 

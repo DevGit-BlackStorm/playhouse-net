@@ -9,7 +9,7 @@ using System.Text;
 using PlayHouse.Utils;
 
 namespace PlayHouse.Communicator.PlaySocket;
-public class NetMQPlaySocket : IPlaySocket
+internal class NetMQPlaySocket : IPlaySocket
 {
     private readonly RouterSocket _socket = new();
     private readonly String _bindEndpoint;
