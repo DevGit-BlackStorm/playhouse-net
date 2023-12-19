@@ -1,6 +1,4 @@
-﻿using PlayHouse.Service;
-
-namespace PlayHouse.Production
+﻿namespace PlayHouse.Production
 {
     public delegate Task TimerCallbackTask();
     public interface ISystemPanel

@@ -43,7 +43,7 @@ namespace PlayHouse.Communicator.Message
             return Header.ServiceId;
         }
 
-        public  Packet ToPacket()
+        public Packet ToPacket()
         {
             return new Packet(Header.MsgId, MovePayload());
         }

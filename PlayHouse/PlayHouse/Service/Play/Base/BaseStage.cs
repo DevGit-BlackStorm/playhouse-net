@@ -121,7 +121,7 @@ public class BaseStage
     }
 
 
-    public async Task<(ReplyPacket, int)> Join(string accountId, string sessionEndpoint, int sid, string apiEndpoint, Packet packet)
+    public async Task<(ReplyPacket reply, int stageKey)> Join(string accountId, string sessionEndpoint, int sid, string apiEndpoint, Packet packet)
     {
         BaseActor? baseUser = _playProcessor.FindUser(accountId);
 
@@ -139,7 +139,7 @@ public class BaseStage
         }
 
         var outcome = await _stage!.OnJoinStage(baseUser.Actor, packet.ToXPacket());
-        int stageIndex = 0;
+        int stageKey = 0;
 
         if (!outcome.IsSuccess())
         {
@@ -147,10 +147,10 @@ public class BaseStage
         }
         else
         {
-            stageIndex = await _sessionUpdater.UpdateStageInfo(sessionEndpoint, sid);
+            stageKey = await _sessionUpdater.UpdateStageInfo(sessionEndpoint, sid);
         }
 
-        return new (outcome, stageIndex);
+        return new (outcome, stageKey);
     }
 
 

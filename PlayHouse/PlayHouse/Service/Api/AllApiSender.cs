@@ -61,7 +61,7 @@ namespace PlayHouse.Service.Api
 
             var res = JoinStageRes.Parser.ParseFrom(reply.Data);
 
-            return new JoinStageResult(reply.ErrorCode, res.StageIdx, new Packet(res.PayloadId, res.Payload));
+            return new JoinStageResult(reply.ErrorCode, res.StageIdx, XPacket.Of(res.PayloadId, res.Payload));
         }
 
         public async Task<CreateJoinStageResult> CreateJoinStage(string playEndpoint,
@@ -89,8 +89,8 @@ namespace PlayHouse.Service.Api
                     reply.ErrorCode,
                     res.IsCreated,
                     res.StageIdx,
-                    new Packet(res.CreatePayloadId, res.CreatePayload),
-                    new Packet(res.JoinPayloadId, res.JoinPayload)
+                    XPacket.Of(res.CreatePayloadId, res.CreatePayload),
+                    XPacket.Of(res.JoinPayloadId, res.JoinPayload)
             );
         }
     }

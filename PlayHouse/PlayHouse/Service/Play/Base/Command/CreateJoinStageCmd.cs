@@ -56,12 +56,12 @@ public class CreateJoinStageCmd : IBaseStageCmd
         }
 
         var joinResult = await baseStage.Join(accountId, sessionEndpoint, sid, apiEndpoint, joinStagePacket);
-        var joinReply = joinResult.Item1;
-        var stageIndex = joinResult.Item2;
+        var joinReply = joinResult.reply;
+        var stageKey = joinResult.stageKey;
 
         response.JoinPayloadId = joinReply.MsgId;
         response.JoinPayload = ByteString.CopyFrom(joinReply.Data);
-        response.StageIdx = stageIndex;
+        response.StageIdx = stageKey;
 
 
         baseStage.Reply(new ReplyPacket(joinReply.ErrorCode, response));

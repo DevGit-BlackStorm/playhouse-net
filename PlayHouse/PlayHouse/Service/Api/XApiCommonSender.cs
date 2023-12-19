@@ -26,6 +26,6 @@ public class XApiCommonSender : XSender, IApiCommonSender
 
         var res = CreateStageRes.Parser.ParseFrom(reply.Data);
 
-        return new CreateStageResult(reply.ErrorCode, new Packet(res.PayloadId, res.Payload));
+        return new CreateStageResult(reply.ErrorCode, XPacket.Of(res.PayloadId, res.Payload));
     }
 }

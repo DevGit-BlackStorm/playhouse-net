@@ -22,6 +22,11 @@ public class XPacket : IPacket
         _payload = payload;
     }
 
+    public static XPacket Of(int msgId, ByteString message) 
+    {
+        return new XPacket(msgId, new ByteStringPayload(message));
+    }
+
     public int MsgId => _msgId;
 
     public ReadOnlySpan<byte> Data => _payload.Data;

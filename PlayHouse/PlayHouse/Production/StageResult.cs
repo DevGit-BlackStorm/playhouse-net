@@ -1,7 +1,6 @@
 ﻿using Playhouse.Protocol;
-using PlayHouse.Production;
 
-namespace PlayHouse.Service
+namespace PlayHouse.Production
 {
     public class StageResult
     {
@@ -17,9 +16,9 @@ namespace PlayHouse.Service
 
     public class CreateStageResult : StageResult
     {
-        public Packet CreateStageRes { get; }
+        public IPacket CreateStageRes { get; }
 
-        public CreateStageResult(ushort errorCode, Packet createStageRes) : base(errorCode)
+        public CreateStageResult(ushort errorCode, IPacket createStageRes) : base(errorCode)
         {
             CreateStageRes = createStageRes;
         }
@@ -27,10 +26,10 @@ namespace PlayHouse.Service
 
     public class JoinStageResult : StageResult
     {
-        public Packet JoinStageRes { get; }
+        public IPacket JoinStageRes { get; }
         public int StageIndex { get; }
 
-        public JoinStageResult(ushort errorCode,int stageIndex, Packet joinStageRes) : base(errorCode)
+        public JoinStageResult(ushort errorCode, int stageIndex, IPacket joinStageRes) : base(errorCode)
         {
             JoinStageRes = joinStageRes;
             StageIndex = stageIndex;
@@ -41,10 +40,10 @@ namespace PlayHouse.Service
     {
         public bool IsCreate { get; }
         public int StageIndex { get; }
-        public Packet CreateStageRes { get; }
-        public Packet JoinStageRes { get; }
+        public IPacket CreateStageRes { get; }
+        public IPacket JoinStageRes { get; }
 
-        public CreateJoinStageResult(ushort errorCode, bool isCreate,int stageIndex, Packet createStageRes, Packet joinStageRes) : base(errorCode)
+        public CreateJoinStageResult(ushort errorCode, bool isCreate, int stageIndex, IPacket createStageRes, IPacket joinStageRes) : base(errorCode)
         {
             IsCreate = isCreate;
             CreateStageRes = createStageRes;
