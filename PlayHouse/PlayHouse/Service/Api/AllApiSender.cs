@@ -47,7 +47,7 @@ namespace PlayHouse.Service.Api
 
   
 
-        public async Task<JoinStageResult> JoinStage(string playEndpoint, string stageId, Packet packet)
+        public async Task<JoinStageResult> JoinStage(string playEndpoint, string stageId, IPacket packet)
         {
             var req = new JoinStageReq()
             {
@@ -67,8 +67,8 @@ namespace PlayHouse.Service.Api
         public async Task<CreateJoinStageResult> CreateJoinStage(string playEndpoint,
                                                 string stageType,
                                                 string stageId,
-                                                Packet createPacket,                
-                                                Packet joinPacket)
+                                                IPacket createPacket,                
+                                                IPacket joinPacket)
         {
             var req = new CreateJoinStageReq()
             {

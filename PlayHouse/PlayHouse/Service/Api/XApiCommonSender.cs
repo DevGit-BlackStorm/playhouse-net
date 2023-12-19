@@ -13,7 +13,7 @@ public class XApiCommonSender : XSender, IApiCommonSender
 
     public string AccountId => CurrentHeader?.AccountId ?? string.Empty;
 
-    public async Task<CreateStageResult> CreateStage(string playEndpoint, string stageType, string stageId, Packet packet)
+    public async Task<CreateStageResult> CreateStage(string playEndpoint, string stageType, string stageId, IPacket packet)
     {
         var req = new CreateStageReq()
         {

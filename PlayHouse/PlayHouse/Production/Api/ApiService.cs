@@ -1,8 +1,8 @@
 ﻿
 namespace PlayHouse.Production.Api
 {
-    public delegate Task ApiHandler(Packet packet, IApiSender apiSender);
-    public delegate Task ApiBackendHandler(Packet packet, IApiBackendSender apiSender);
+    public delegate Task ApiHandler(IPacket packet, IApiSender apiSender);
+    public delegate Task ApiBackendHandler(IPacket packet, IApiBackendSender apiSender);
 
     public interface IHandlerRegister
     {
@@ -16,15 +16,8 @@ namespace PlayHouse.Production.Api
 
     public interface IApiController
     {
-        //Task Init(ISystemPanel systemPanel, ISender sender);
         void Handles(IHandlerRegister handlerRegister, IBackendHandlerRegister backendHandlerRegister);
         IApiController Instance();
     }
 
-    //public interface IApiBackendService
-    //{
-    //    Task Init(ISystemPanel systemPanel, ISender sender);
-    //    void Handles(IBackendHandlerRegister register);
-    //    IApiBackendService Instance();
-    //}
 }

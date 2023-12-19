@@ -10,10 +10,10 @@ namespace PlayHouse.Service.Play
         int Sid();
         void LeaveStage();
 
-        void SendToClient(Packet packet);
+        void SendToClient(IPacket packet);
 
-        void SendToApi(Packet packet);
-        Task<ReplyPacket> RequestToApi(Packet packet);
-        Task<ReplyPacket> AsyncToApi(Packet packet);
+        void SendToApi(IPacket packet);
+        Task<ReplyPacket> RequestToApi(IPacket packet);
+        Task<ReplyPacket> AsyncToApi(IPacket packet);
     }
 }

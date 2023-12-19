@@ -8,12 +8,12 @@ namespace PlayHouse.Production.Api.Filter;
 
 public interface IApiFilter
 {
-    void BeforeExecution(Packet packet, IApiSender apiSender);
-    void AfterExecution(Packet packet, IApiSender apiSender);
+    void BeforeExecution(IPacket packet, IApiSender apiSender);
+    void AfterExecution(IPacket packet, IApiSender apiSender);
 }
 
 public interface IApiBackendFilter
 {
-    void BeforeExecution(Packet packet, IApiBackendSender apiSender);
-    void AfterExecution(Packet packet, IApiBackendSender apiSender);
+    void BeforeExecution(IPacket packet, IApiBackendSender apiSender);
+    void AfterExecution(IPacket packet, IApiBackendSender apiSender);
 }

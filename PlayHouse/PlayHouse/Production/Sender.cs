@@ -19,20 +19,20 @@ namespace PlayHouse.Production
     {
         ushort ServiceId { get; }
         void Reply(ReplyPacket reply);
-        void SendToClient(string sessionEndpoint, int sid, Packet packet);
-        void SendToApi(string apiEndpoint, Packet packet);
-        void SendToStage(string playEndpoint, string stageId, string accountId, Packet packet);
+        void SendToClient(string sessionEndpoint, int sid, IPacket packet);
+        void SendToApi(string apiEndpoint, IPacket packet);
+        void SendToStage(string playEndpoint, string stageId, string accountId, IPacket packet);
 
-        void RequestToApi(string apiEndpoint, Packet packet, ReplyCallback replyCallback);
-        void RequestToStage(string playEndpoint, string stageId, string accountId, Packet packet, ReplyCallback replyCallback);
-        Task<ReplyPacket> RequestToApi(string apiEndpoint, Packet packet);
-        Task<ReplyPacket> RequestToStage(string playEndpoint, string stageId, string accountId, Packet packet);
+        void RequestToApi(string apiEndpoint, IPacket packet, ReplyCallback replyCallback);
+        void RequestToStage(string playEndpoint, string stageId, string accountId, IPacket packet, ReplyCallback replyCallback);
+        Task<ReplyPacket> RequestToApi(string apiEndpoint, IPacket packet);
+        Task<ReplyPacket> RequestToStage(string playEndpoint, string stageId, string accountId, IPacket packet);
 
-        TaskCompletionSource<ReplyPacket> AsyncToApi(string apiEndpoint, Packet packet);
-        TaskCompletionSource<ReplyPacket> AsyncToStage(string playEndpoint, string stageId, string accountId, Packet packet);
+        TaskCompletionSource<ReplyPacket> AsyncToApi(string apiEndpoint, IPacket packet);
+        TaskCompletionSource<ReplyPacket> AsyncToStage(string playEndpoint, string stageId, string accountId, IPacket packet);
 
-        void SendToSystem(string endpoint, Packet packet);
-        Task<ReplyPacket> RequestToSystem(string endpoint, Packet packet);
+        void SendToSystem(string endpoint, IPacket packet);
+        Task<ReplyPacket> RequestToSystem(string endpoint, IPacket packet);
 
         void SessionClose(string sessionEndpoint, int sid);
     }
@@ -41,7 +41,7 @@ namespace PlayHouse.Production
     {
 
         string AccountId { get; }
-        Task<CreateStageResult> CreateStage(string playEndpoint, string stageType, string stageId, Packet packet);
+        Task<CreateStageResult> CreateStage(string playEndpoint, string stageType, string stageId, IPacket packet);
 
 
     }
@@ -53,16 +53,16 @@ namespace PlayHouse.Production
 
         Task<JoinStageResult> JoinStage(string playEndpoint,
                     string stageId,
-                    Packet packet
+                    IPacket packet
       );
         Task<CreateJoinStageResult> CreateJoinStage(string playEndpoint,
                             string stageType,
                             string stageId,
-                            Packet createPacket,
-                            Packet joinPacket
+                            IPacket createPacket,
+                            IPacket joinPacket
         );
 
-        void SendToClient(Packet packet)
+        void SendToClient(IPacket packet)
         {
             SendToClient(SessionEndpoint, Sid, packet);
         }

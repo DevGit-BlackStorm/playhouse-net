@@ -1,99 +1,119 @@
-﻿namespace PlayHouse.Production
+﻿namespace PlayHouse.Production;
+
+using Google.Protobuf;
+using Communicator.Message;
+
+public delegate void ReplyCallback(ReplyPacket replyPacket);
+
+public interface IBasePacket : IDisposable
 {
-    using Google.Protobuf;
-    using Communicator.Message;
+    IPayload MovePayload();
+    ReadOnlySpan<byte> Data { get; }
+}
 
+public class XPacket : IPacket
+{
+    private int _msgId;
+    private IPayload _payload;
 
-    public delegate void ReplyCallback(ReplyPacket replyPacket);
-
-    public interface IBasePacket : IDisposable
+    public XPacket(int msgId, IPayload payload)
     {
-        IPayload MovePayload();
+        _msgId = msgId;
+        _payload = payload;
+    }
 
-        ReadOnlySpan<byte> Data { get; }
+    public int MsgId => _msgId;
+
+    public ReadOnlySpan<byte> Data => _payload.Data;
+    public IPayload Payload => _payload;
+}
+
+
+public class Packet : IBasePacket
+{
+    public int MsgId;
+    public IPayload Payload => _payload;
+
+    private IPayload _payload;
+
+    public Packet(int msgId = 0)
+    {
+        MsgId = msgId;
+        _payload = new EmptyPayload();
+    }
+
+    public Packet(int msgId, IPayload payload) : this(msgId)
+    {
+        _payload = payload;
+    }
+
+    public Packet(IMessage message) : this(message.Descriptor.Index, new ProtoPayload(message)) { }
+    public Packet(int msgId, ByteString message) : this(msgId, new ByteStringPayload(message)) { }
+
+    public static Packet Of(IPacket packet)
+    {
+        return new Packet(packet.MsgId, packet.Payload);    
     }
 
 
+    public ReadOnlySpan<byte> Data => _payload!.Data;
 
-    public class Packet : IBasePacket
+    public IPayload MovePayload()
     {
-        public int MsgId;
-        public IPayload Payload => _payload;
 
-        private IPayload _payload;
-
-        public Packet(int msgId = 0)
-        {
-            MsgId = msgId;
-            _payload = new EmptyPayload();
-        }
-
-        public Packet(int msgId, IPayload payload) : this(msgId)
-        {
-            _payload = payload;
-        }
-
-
-        public Packet(IMessage message) : this(message.Descriptor.Index, new ProtoPayload(message)) { }
-        public Packet(int msgId, ByteString message) : this(msgId, new ByteStringPayload(message)) { }
-
-
-
-        public ReadOnlySpan<byte> Data => _payload!.Data;
-
-        public IPayload MovePayload()
-        {
-
-            IPayload temp = _payload;
-            _payload = new EmptyPayload();
-            return temp;
-        }
-
-        public void Dispose()
-        {
-            _payload.Dispose();
-        }
+        IPayload temp = _payload;
+        _payload = new EmptyPayload();
+        return temp;
     }
 
-    public class ReplyPacket : IBasePacket
+    public void Dispose()
     {
-        public ushort ErrorCode { get; private set; }
-        public int MsgId { get; private set; }
-        public IPayload Payload => _payload;
-        private IPayload _payload;
-
-        public ReplyPacket(ushort errorCode, int msgId, IPayload payload)
-        {
-            ErrorCode = errorCode;
-            MsgId = msgId;
-            _payload = payload;
-        }
-
-        public ReplyPacket(ushort errorCode = 0, int msgId = 0) : this(errorCode, msgId, new EmptyPayload()) { }
-
-        public ReplyPacket(ushort errorCode, IMessage message) : this(errorCode, message.Descriptor.Index, new ProtoPayload(message)) { }
-        public ReplyPacket(IMessage message) : this(0, message.Descriptor.Index, new ProtoPayload(message)) { }
-
-
-        public bool IsSuccess()
-        {
-            return ErrorCode == 0;
-        }
-
-
-        public ReadOnlySpan<byte> Data => _payload.Data;
-
-        public IPayload MovePayload()
-        {
-            IPayload temp = _payload;
-            _payload = new EmptyPayload();
-            return temp;
-        }
-
-        public void Dispose()
-        {
-            _payload.Dispose();
-        }
+        _payload.Dispose();
     }
 
+    public  XPacket ToXPacket()
+    {
+        return new XPacket(MsgId, _payload);
+    }
+}
+
+public class ReplyPacket : IBasePacket
+{
+    public ushort ErrorCode { get; private set; }
+    public int MsgId { get; private set; }
+    public IPayload Payload => _payload;
+    private IPayload _payload;
+
+    public ReplyPacket(ushort errorCode, int msgId, IPayload payload)
+    {
+        ErrorCode = errorCode;
+        MsgId = msgId;
+        _payload = payload;
+    }
+
+    public ReplyPacket(ushort errorCode = 0, int msgId = 0) : this(errorCode, msgId, new EmptyPayload()) { }
+
+    public ReplyPacket(ushort errorCode, IMessage message) : this(errorCode, message.Descriptor.Index, new ProtoPayload(message)) { }
+    public ReplyPacket(IMessage message) : this(0, message.Descriptor.Index, new ProtoPayload(message)) { }
+
+
+    public bool IsSuccess()
+    {
+        return ErrorCode == 0;
+    }
+
+
+    public ReadOnlySpan<byte> Data => _payload.Data;
+
+    public IPayload MovePayload()
+    {
+        IPayload temp = _payload;
+        _payload = new EmptyPayload();
+        return temp;
+    }
+
+    public void Dispose()
+    {
+        _payload.Dispose();
+    }
 }

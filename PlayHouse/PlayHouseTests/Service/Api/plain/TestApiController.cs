@@ -23,13 +23,13 @@ namespace PlayHouseTests.Service.Api.plain
             backendHandlerRegister.Add(ApiTestMsg2.Descriptor.Index, Test4);
         }
 
-        private Task TestApiContentsException(Packet packet, IApiSender apiSender)
+        private Task TestApiContentsException(IPacket packet, IApiSender apiSender)
         {
             AsyncContext.ErrorCode = 101;
             throw new Exception("test content TestApiContentsException");
         }
 
-        private Task TestApiDefaultContentsException(Packet packet, IApiSender apiSender)
+        private Task TestApiDefaultContentsException(IPacket packet, IApiSender apiSender)
         {
             throw new Exception("test content TestApiDefaultContentsException");
         }
@@ -41,14 +41,14 @@ namespace PlayHouseTests.Service.Api.plain
 
 
         [TestMethodActionFilter]
-        public async Task Test1(Packet packet, IApiSender apiSender)
+        public async Task Test1(IPacket packet, IApiSender apiSender)
         {
             var message = ApiTestMsg1.Parser.ParseFrom(packet.Data);
             ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Test1"] = message.TestMsg;
             await Task.CompletedTask;
         }
 
-        public async Task Test2(Packet packet, IApiSender apiSender)
+        public async Task Test2(IPacket packet, IApiSender apiSender)
         {
             var message = ApiTestMsg2.Parser.ParseFrom(packet.Data);
             ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Test2"] = message.TestMsg;
@@ -56,14 +56,14 @@ namespace PlayHouseTests.Service.Api.plain
         }
 
         [TestBackendMethodActionFilter]
-        public async Task Test3(Packet packet, IApiBackendSender apiSender)
+        public async Task Test3(IPacket packet, IApiBackendSender apiSender)
         {
             var message = ApiTestMsg1.Parser.ParseFrom(packet.Data);
             ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Test3"] = message.TestMsg;
             await Task.CompletedTask;
         }
 
-        public async Task Test4(Packet packet, IApiBackendSender apiSender)
+        public async Task Test4(IPacket packet, IApiBackendSender apiSender)
         {
             var message = ApiTestMsg2.Parser.ParseFrom(packet.Data);
             ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Test4"] = message.TestMsg;

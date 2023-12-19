@@ -81,11 +81,11 @@ namespace PlayHouseTests.Service.Play
 
     
             Mock.Get(contentStage)
-                .Setup(stage => stage.OnCreate(It.IsAny<Packet>()))
+                .Setup(stage => stage.OnCreate(It.IsAny<IPacket>()))
                 .Returns(Task.FromResult(new ReplyPacket(0, new TestMsg { TestMsg_ = "onCreate" })));
 
             Mock.Get(contentStage)
-                .Setup(stage => stage.OnJoinStage(It.IsAny<IActor>(), It.IsAny<Packet>()))
+                .Setup(stage => stage.OnJoinStage(It.IsAny<IActor>(), It.IsAny<IPacket>()))
                 .Returns(Task.FromResult(new ReplyPacket(0, new TestMsg { TestMsg_ = "onJoinStage" })));
         }
 

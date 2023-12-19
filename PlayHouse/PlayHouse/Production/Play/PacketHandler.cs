@@ -4,7 +4,7 @@ public class PacketHandler<TS, TA> where TA : IActor
 {
     private readonly Dictionary<int, IPacketCmd<TS, TA>> _messageMap = new();
 
-    public async Task Dispatch(TS stage, TA actor, Packet packet)
+    public async Task Dispatch(TS stage, TA actor, IPacket packet)
     {
         if (_messageMap.TryGetValue(packet.MsgId, out var cmd))
         {

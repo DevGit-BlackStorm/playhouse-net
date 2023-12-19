@@ -325,7 +325,7 @@ namespace PlayHouse.Communicator.Message
             routeHeader.Sid = sid;
             routeHeader.IsToClient = true;
 
-            return new RoutePacket(routeHeader, packet.MovePayload());
+            return new RoutePacket(routeHeader, packet.Payload);
         }
 
         public void WriteClientPacketBytes(RingBuffer buffer)

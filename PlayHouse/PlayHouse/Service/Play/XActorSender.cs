@@ -35,12 +35,12 @@ namespace PlayHouse.Service.Play
             _baseStage.LeaveStage(_accountId, _sessionEndpoint, _sid);
         }
 
-        public void SendToClient(Packet packet)
+        public void SendToClient(IPacket packet)
         {
             _baseStage.StageSender.SendToClient(_sessionEndpoint, _sid, packet);
         }
 
-        public void SendToApi(Packet packet)
+        public void SendToApi(IPacket packet)
         {
             var serverInfo = _serverInfoCenter.FindServer(_apiEndpoint);
             if (!serverInfo.IsValid())
@@ -50,7 +50,7 @@ namespace PlayHouse.Service.Play
             _baseStage.StageSender.SendToApi(serverInfo.BindEndpoint, _accountId, packet);
         }
 
-        public async Task<ReplyPacket> RequestToApi(Packet packet)
+        public async Task<ReplyPacket> RequestToApi(IPacket packet)
         {
             var serverInfo = _serverInfoCenter.FindServer(_apiEndpoint);
             if (!serverInfo.IsValid())
@@ -60,7 +60,7 @@ namespace PlayHouse.Service.Play
             return await _baseStage.StageSender.RequestToApi(serverInfo.BindEndpoint, _accountId, packet);
         }
 
-        public async Task<ReplyPacket> AsyncToApi(Packet packet)
+        public async Task<ReplyPacket> AsyncToApi(IPacket packet)
         {
             var serverInfo = _serverInfoCenter.FindServer(_apiEndpoint);
             if (!serverInfo.IsValid())

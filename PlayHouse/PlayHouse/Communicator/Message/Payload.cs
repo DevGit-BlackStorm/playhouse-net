@@ -60,6 +60,7 @@ namespace PlayHouse.Communicator.Message
         private NetMQFrame _frame;
         public ReadOnlySpan<byte> Data => new ReadOnlySpan<byte>(_frame.Buffer,0,_frame.MessageSize);
         public NetMQFrame Frame => _frame;
+
         public FramePayload(NetMQFrame frame)
         {
             _frame = frame;

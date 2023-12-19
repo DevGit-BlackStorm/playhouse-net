@@ -68,7 +68,7 @@ public class BaseStage
                 var baseUser = _playProcessor.FindUser(accountId);
                 if (baseUser != null)
                 {
-                    await _stage!.OnDispatch(baseUser.Actor, new Packet(routePacket.MsgId, routePacket.MovePayload()));
+                    await _stage!.OnDispatch(baseUser.Actor, new XPacket(routePacket.MsgId, routePacket.Payload));
                 }
             }
         }
@@ -115,7 +115,7 @@ public class BaseStage
     {
         _stage = _playProcessor.CreateContentRoom(stageType, _stageSender);
         _stageSender.SetStageType(stageType);
-        var outcome = await _stage.OnCreate(packet);
+        var outcome = await _stage.OnCreate(packet.ToXPacket());
         IsCreated = true;
         return outcome;
     }
@@ -138,7 +138,7 @@ public class BaseStage
             baseUser.ActorSender.Update(sessionEndpoint, sid, apiEndpoint);
         }
 
-        var outcome = await _stage!.OnJoinStage(baseUser.Actor, packet);
+        var outcome = await _stage!.OnJoinStage(baseUser.Actor, packet.ToXPacket());
         int stageIndex = 0;
 
         if (!outcome.IsSuccess())

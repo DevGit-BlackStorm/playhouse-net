@@ -6,7 +6,7 @@ namespace PlayHouse.Service
     {
         
         Task OnStart();
-        Task OnDispatch(Packet packet);
+        Task OnDispatch(IPacket packet);
         Task OnStop();
         Task OnPause();
         Task OnResume();

@@ -58,7 +58,7 @@ public class ApiInstance
         BackendApiFilter = backendApiFilter;
     }
 
-    internal async Task Invoke(ApiMethod targetMethod, Packet packet, IApiSender apiSender)
+    internal async Task Invoke(ApiMethod targetMethod, IPacket packet, IApiSender apiSender)
     {
         var targetInstance = Method.Invoke(Instance, null);
 
@@ -111,7 +111,7 @@ public class ApiInstance
 
     }
 
-    internal async Task Invoke(BackendApiMethod targetMethod, Packet packet, IApiBackendSender apiSender)
+    internal async Task Invoke(BackendApiMethod targetMethod, IPacket packet, IApiBackendSender apiSender)
     {
         var targetInstance = Method.Invoke(Instance, null);
 
@@ -231,15 +231,17 @@ public class ApiReflection
 
     public async Task CallMethod(RouteHeader routeHeader, Packet packet, IApiSender apiSender)
     {
-        int msgId = routeHeader.MsgId;
-        ApiMethod? targetMethod = _methods.TryGetValue(msgId, value: out var method) ? method : null;
-        if (targetMethod == null) throw new ApiException.NotRegisterApiMethod($"not registered message msgId:{msgId}");
+        using(packet)
+        {
+            int msgId = routeHeader.MsgId;
+            ApiMethod? targetMethod = _methods.TryGetValue(msgId, value: out var method) ? method : null;
+            if (targetMethod == null) throw new ApiException.NotRegisterApiMethod($"not registered message msgId:{msgId}");
 
-        if (!_instances.ContainsKey(targetMethod.ClassName)) throw new ApiException.NotRegisterApiInstance(targetMethod.ClassName);
-        ApiInstance classInstance = _instances[targetMethod.ClassName];
+            if (!_instances.ContainsKey(targetMethod.ClassName)) throw new ApiException.NotRegisterApiInstance(targetMethod.ClassName);
+            ApiInstance classInstance = _instances[targetMethod.ClassName];
 
-        await classInstance.Invoke(targetMethod,packet,apiSender);
-        
+            await classInstance.Invoke(targetMethod, packet.ToXPacket(), apiSender);
+        }
 
         //var targetInstance = classInstance.Method.Invoke(classInstance.Instance, null);
         //var task = (Task)targetMethod.Method.Invoke(targetInstance, new object[] { packet, apiSender })!;
@@ -255,7 +257,7 @@ public class ApiReflection
         if (!_instances.ContainsKey(targetMethod.ClassName)) throw new ApiException.NotRegisterApiInstance(targetMethod.ClassName);
         ApiInstance classInstance = _instances[targetMethod.ClassName];
 
-        await classInstance.Invoke(targetMethod, packet, apiBackendSender);
+        await classInstance.Invoke(targetMethod, packet.ToXPacket(), apiBackendSender);
 
         //var targetInstance = classInstance.Method.Invoke(classInstance.Instance, null);
         //var task = (Task)targetMethod.Method.Invoke(targetInstance, new object[] { packet, apiBackendSender})!;

@@ -12,11 +12,11 @@ namespace PlayHouseTests.Service.Api.plain;
 public class TestActionFilterAttribute : ApiActionFilterAttribute
 {
 
-    public override void BeforeExecution(Packet packet, IApiSender apiSender)
+    public override void BeforeExecution(IPacket packet, IApiSender apiSender)
     {
         ReflectionTestResult.ResultMap.Add($"TestApiActionAttributeBefore_{packet.MsgId}", "BeforeExecution");
     }
-    public override void AfterExecution(Packet packet, IApiSender apiSender)
+    public override void AfterExecution(IPacket packet, IApiSender apiSender)
     {
         ReflectionTestResult.ResultMap.Add($"TestApiActionAttributeAfter_{packet.MsgId}", "AfterExecution");
     }
@@ -26,11 +26,11 @@ public class TestActionFilterAttribute : ApiActionFilterAttribute
 public class TestBackendActionFilterAttribute : ApiBackendActionFilterAttribute
 {
 
-    public override void BeforeExecution(Packet packet, IApiBackendSender apiSender)
+    public override void BeforeExecution(IPacket packet, IApiBackendSender apiSender)
     {
         ReflectionTestResult.ResultMap.Add($"TestBackendApiActionAttributeBefore_{packet.MsgId}", "BeforeExecution");
     }
-    public override void AfterExecution(Packet packet, IApiBackendSender apiSender)
+    public override void AfterExecution(IPacket packet, IApiBackendSender apiSender)
     {
         ReflectionTestResult.ResultMap.Add($"TestBackendApiActionAttributeAfter_{packet.MsgId}", "AfterExecution");
     }
@@ -41,11 +41,11 @@ public class TestBackendActionFilterAttribute : ApiBackendActionFilterAttribute
 public class TestMethodActionFilterAttribute : ApiActionFilterAttribute
 {
 
-    public override void BeforeExecution(Packet packet, IApiSender apiSender)
+    public override void BeforeExecution(IPacket packet, IApiSender apiSender)
     {
         ReflectionTestResult.ResultMap.Add($"TestApiMethodActionAttributeBefore_{packet.MsgId}", "BeforeExecution");
     }
-    public override void AfterExecution(Packet packet, IApiSender apiSender)
+    public override void AfterExecution(IPacket packet, IApiSender apiSender)
     {
         ReflectionTestResult.ResultMap.Add($"TestApiMethodActionAttributeAfter_{packet.MsgId}", "AfterExecution");
     }
@@ -55,11 +55,11 @@ public class TestMethodActionFilterAttribute : ApiActionFilterAttribute
 public class TestBackendMethodActionFilterAttribute : ApiBackendActionFilterAttribute
 {
 
-    public override void BeforeExecution(Packet packet, IApiBackendSender apiSender)
+    public override void BeforeExecution(IPacket packet, IApiBackendSender apiSender)
     {
         ReflectionTestResult.ResultMap.Add($"TestBackendApiMethodActionAttributeBefore_{packet.MsgId}", "BeforeExecution");
     }
-    public override void AfterExecution(Packet packet, IApiBackendSender apiSender)
+    public override void AfterExecution(IPacket packet, IApiBackendSender apiSender)
     {
         ReflectionTestResult.ResultMap.Add($"TestBackendApiMethodActionAttributeAfter_{packet.MsgId}", "AfterExecution");
     }
@@ -69,11 +69,11 @@ public class TestBackendMethodActionFilterAttribute : ApiBackendActionFilterAttr
 public class TestApiGlobalActionAttribute : ApiActionFilterAttribute
 {
 
-    public override void BeforeExecution(Packet packet, IApiSender apiSender)
+    public override void BeforeExecution(IPacket packet, IApiSender apiSender)
     {
         ReflectionTestResult.ResultMap.Add($"TestApiGlobalActionAttributeBefore_{packet.MsgId}", "BeforeExecution");
     }
-    public override void AfterExecution(Packet packet, IApiSender apiSender)
+    public override void AfterExecution(IPacket packet, IApiSender apiSender)
     {
         ReflectionTestResult.ResultMap.Add($"TestApiGlobalActionAttributeAfter_{packet.MsgId}", "AfterExecution");
     }
