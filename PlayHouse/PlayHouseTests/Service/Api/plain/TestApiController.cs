@@ -6,6 +6,10 @@ using PlayHouse.Production.Api;
 
 namespace PlayHouseTests.Service.Api.plain
 {
+
+    [TestActionFilter]
+    [TestBackendActionFilter]
+
     internal class TestApiController : IApiController
     {
         public void Handles(IHandlerRegister handlerRegister, IBackendHandlerRegister backendHandlerRegister)
@@ -36,8 +40,7 @@ namespace PlayHouseTests.Service.Api.plain
         }
 
 
-        
-
+        [TestMethodActionFilter]
         public async Task Test1(Packet packet, IApiSender apiSender)
         {
             var message = ApiTestMsg1.Parser.ParseFrom(packet.Data);
@@ -52,6 +55,7 @@ namespace PlayHouseTests.Service.Api.plain
             await Task.CompletedTask;
         }
 
+        [TestBackendMethodActionFilter]
         public async Task Test3(Packet packet, IApiBackendSender apiSender)
         {
             var message = ApiTestMsg1.Parser.ParseFrom(packet.Data);
