@@ -2,7 +2,7 @@
 using PlayHouse.Production;
 using System.Collections.Concurrent;
 
-public class AsyncContext
+public class ApiAsyncContext
 {
     private class ErrorCodeWrapper
     {

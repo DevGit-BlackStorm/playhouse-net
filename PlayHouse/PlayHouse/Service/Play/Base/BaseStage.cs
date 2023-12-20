@@ -7,6 +7,7 @@ using PlayHouse.Service.Play.Base.Command;
 using PlayHouse.Production;
 using PlayHouse.Production.Play;
 using Google.Protobuf;
+using PlayHouse.Service.Api;
 
 namespace PlayHouse.Service.Play.Base;
 internal class BaseStage
@@ -68,7 +69,7 @@ internal class BaseStage
                 var baseUser = _playProcessor.FindUser(accountId);
                 if (baseUser != null)
                 {
-                    await _stage!.OnDispatch(baseUser.Actor, new XPacket(routePacket.MsgId, routePacket.Payload));
+                    await _stage!.OnDispatch(baseUser.Actor, XPacket.Of(routePacket.MsgId, routePacket.Payload));
                 }
             }
         }
@@ -111,7 +112,7 @@ internal class BaseStage
         }
     }
 
-    public async Task<ReplyPacket> Create(string stageType, Packet packet)
+    public async Task<(ushort errorCode, IPacket reply)> Create(string stageType, Packet packet)
     {
         _stage = _playProcessor.CreateContentRoom(stageType, _stageSender);
         _stageSender.SetStageType(stageType);
@@ -141,7 +142,7 @@ internal class BaseStage
         var outcome = await _stage!.OnJoinStage(baseUser.Actor, packet.ToXPacket());
         int stageKey = 0;
 
-        if (!outcome.IsSuccess())
+        if (outcome.errorCode != (ushort)BaseErrorCode.Success)
         {
             _playProcessor.RemoveUser(accountId);
         }
@@ -150,14 +151,14 @@ internal class BaseStage
             stageKey = await _sessionUpdater.UpdateStageInfo(sessionEndpoint, sid);
         }
 
-        return new (outcome, stageKey);
+        return new (new ReplyPacket(outcome.errorCode, outcome.reply.MsgId,outcome.reply.Payload), stageKey);
     }
 
 
 
-    public void Reply(ReplyPacket packet)
+    public void Reply(ushort errorCode,IPacket packet)
     {
-        this._stageSender.Reply(packet);
+        this._stageSender.Reply(errorCode, packet);
     }
 
     public void LeaveStage(string accountId, string sessionEndpoint, int sid)

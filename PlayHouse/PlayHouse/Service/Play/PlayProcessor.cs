@@ -6,6 +6,7 @@ using Playhouse.Protocol;
 using PlayHouse.Utils;
 using PlayHouse.Production;
 using PlayHouse.Production.Play;
+using PlayHouse.Service.Api;
 
 namespace PlayHouse.Service.Play
 {
@@ -89,7 +90,11 @@ namespace PlayHouse.Service.Play
                         }
                         if (isBase)
                         {
-                            Task.Run(async () => await DoBaseRoomPacket(msgId, roomPacket, stageId));
+                            Task.Run(async () => {
+                                AsyncContext.Init();
+                                await DoBaseRoomPacket(msgId, roomPacket, stageId);
+                                AsyncContext.Clear();
+                            });
                         }
                         else
                         {
@@ -98,7 +103,11 @@ namespace PlayHouse.Service.Play
                                 _baseRooms.TryGetValue(stageId,out var baseStage);
                                 if (baseStage != null)
                                 {
-                                   await  baseStage.Send(roomPacket);
+                                    AsyncContext.Init();
+
+                                    await baseStage.Send(roomPacket);
+                                    AsyncContext.Clear();
+
                                 }
                                 else
                                 {

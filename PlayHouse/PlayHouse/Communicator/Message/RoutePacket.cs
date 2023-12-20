@@ -293,9 +293,9 @@ namespace PlayHouse.Communicator.Message
         //    routePacket.RouteHeader.Header.ErrorCode = reply.ErrorCode;
         //    return routePacket;
         //}
-        public static RoutePacket ReplyOf(ushort serviceId, RouteHeader sourceHeader, ReplyPacket reply)
+        public static RoutePacket ReplyOf(ushort serviceId, RouteHeader sourceHeader,ushort errorCode,IPacket? reply)
         {
-            Header header = new(msgId: reply.MsgId)
+            Header header = new(msgId: reply !=null ? reply.MsgId : 0)
             {
                 ServiceId = serviceId,
                 MsgSeq = sourceHeader.Header.MsgSeq
@@ -309,8 +309,8 @@ namespace PlayHouse.Communicator.Message
             routeHeader.IsBase = sourceHeader.IsBase;
             routeHeader.AccountId = sourceHeader.AccountId;
 
-            var routePacket = new RoutePacket(routeHeader, reply.MovePayload());
-            routePacket.RouteHeader.Header.ErrorCode = reply.ErrorCode;
+            var routePacket = reply !=null ? new RoutePacket(routeHeader, reply.Payload) : new RoutePacket(routeHeader,new EmptyPayload());
+            routePacket.RouteHeader.Header.ErrorCode = errorCode;
             return routePacket;
         }
 

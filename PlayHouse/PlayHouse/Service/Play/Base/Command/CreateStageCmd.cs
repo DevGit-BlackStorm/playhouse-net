@@ -29,21 +29,21 @@ internal class CreateStageCmd : IBaseStageCmd
         var outcome = await baseStage.Create(stageType, packet);
         var stageId = baseStage.StageId;
 
-        if (!outcome.IsSuccess())
+        if (outcome.errorCode != (ushort)BaseErrorCode.Success)
         {
             this._playProcessor.RemoveRoom(stageId);
         }
 
         var res = new CreateStageRes()
         {
-            Payload = ByteString.CopyFrom(outcome.Data),
-            PayloadId = outcome.MsgId
+            Payload = ByteString.CopyFrom(outcome.reply.Data),
+            PayloadId = outcome.reply.MsgId
         };
 
         
-        baseStage.Reply(new ReplyPacket(outcome.ErrorCode, res));
+        baseStage.Reply(outcome.errorCode,XPacket.Of(res));
 
-        if (outcome.IsSuccess())
+        if (outcome.errorCode == (ushort)BaseErrorCode.Success)
         {
             await baseStage.OnPostCreate();
         }

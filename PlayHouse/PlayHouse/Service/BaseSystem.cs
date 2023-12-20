@@ -84,7 +84,7 @@ namespace PlayHouse.Service
                                 else
                                 {
                                     _baseSender.SetCurrentPacketHeader(routePacket.RouteHeader);
-                                    _serverSystem.OnDispatch(new XPacket(routePacket.MsgId, routePacket.Payload));
+                                    _serverSystem.OnDispatch(XPacket.Of(routePacket.MsgId, routePacket.Payload));
                                 }
                             }
                             catch (Exception e)

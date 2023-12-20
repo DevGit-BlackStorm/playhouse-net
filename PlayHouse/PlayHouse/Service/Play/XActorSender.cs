@@ -50,7 +50,7 @@ namespace PlayHouse.Service.Play
             _baseStage.StageSender.SendToApi(serverInfo.BindEndpoint, _accountId, packet);
         }
 
-        public async Task<ReplyPacket> RequestToApi(IPacket packet)
+        public async Task<(ushort errorCode,IPacket reply)> RequestToApi(IPacket packet)
         {
             var serverInfo = _serverInfoCenter.FindServer(_apiEndpoint);
             if (!serverInfo.IsValid())
@@ -60,7 +60,7 @@ namespace PlayHouse.Service.Play
             return await _baseStage.StageSender.RequestToApi(serverInfo.BindEndpoint, _accountId, packet);
         }
 
-        public async Task<ReplyPacket> AsyncToApi(IPacket packet)
+        public async Task<(ushort errorCode, IPacket reply)> AsyncToApi(IPacket packet)
         {
             var serverInfo = _serverInfoCenter.FindServer(_apiEndpoint);
             if (!serverInfo.IsValid())

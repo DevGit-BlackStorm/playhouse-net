@@ -79,14 +79,14 @@ namespace PlayHouseTests.Service.Play
             );
 
 
-    
+
             Mock.Get(contentStage)
                 .Setup(stage => stage.OnCreate(It.IsAny<IPacket>()))
-                .Returns(Task.FromResult(new ReplyPacket(0, new TestMsg { TestMsg_ = "onCreate" })));
+                .Returns(Task.FromResult(((ushort)0, (IPacket)XPacket.Of(new TestMsg { TestMsg_ = "onCreate" })))); 
 
             Mock.Get(contentStage)
                 .Setup(stage => stage.OnJoinStage(It.IsAny<IActor>(), It.IsAny<IPacket>()))
-                .Returns(Task.FromResult(new ReplyPacket(0, new TestMsg { TestMsg_ = "onJoinStage" })));
+                .Returns(Task.FromResult(((ushort)0, (IPacket)XPacket.Of(new TestMsg { TestMsg_ = "onJoinStage" })))); 
         }
 
         [Fact]

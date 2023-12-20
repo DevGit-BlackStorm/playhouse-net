@@ -13,7 +13,7 @@ namespace PlayHouse.Service.Play
         void SendToClient(IPacket packet);
 
         void SendToApi(IPacket packet);
-        Task<ReplyPacket> RequestToApi(IPacket packet);
-        Task<ReplyPacket> AsyncToApi(IPacket packet);
+        Task<(ushort errorCode, IPacket reply)> RequestToApi(IPacket packet);
+        Task<(ushort errorCode, IPacket reply)> AsyncToApi(IPacket packet);
     }
 }

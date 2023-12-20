@@ -3,6 +3,8 @@ using PlayHouse.Communicator;
 using Playhouse.Protocol;
 using PlayHouse.Production;
 using PlayHouse.Utils;
+using PlayHouse.Service.Api;
+using System.Threading.Tasks;
 
 namespace PlayHouse.Service;
 internal class XSender : ISender
@@ -33,23 +35,20 @@ internal class XSender : ISender
         CurrentHeader = null;
     }
 
+    public void Reply(IPacket reply)
+    {
+        Reply((ushort)BaseErrorCode.Success,reply);
+    }
 
-    public void Reply(ReplyPacket reply)
+    public void Reply(ushort errorCode,IPacket? reply = null)
     {
         if (CurrentHeader != null)
         {
             ushort msgSeq = CurrentHeader.Header.MsgSeq;
             if (msgSeq != 0)
             {
-                //int sid = CurrentHeader.Sid;
                 string from = CurrentHeader.From;
-                //RoutePacket routePacket = RoutePacket.ReplyOf(_serviceId, msgSeq, sid, !CurrentHeader.IsBackend, reply);
-                RoutePacket routePacket = RoutePacket.ReplyOf(_serviceId, CurrentHeader,  reply);
-                //routePacket.RouteHeader.Sid = sid;
-                //routePacket.RouteHeader.IsBase = CurrentHeader.IsBase;
-                //routePacket.RouteHeader.IsBackend = CurrentHeader.IsBackend;
-                
-                //for test
+                RoutePacket routePacket =RoutePacket.ReplyOf(_serviceId, CurrentHeader, errorCode,reply);
                 routePacket.RouteHeader.AccountId = CurrentHeader.AccountId;
                 //_log.Trace(() => $"Before Send - [packetInfo:${routePacket.RouteHeader}]");
                 
@@ -57,12 +56,26 @@ internal class XSender : ISender
             }
             else
             {
-                _log.Error(()=>$"Not exist request packet - reply msgId:{reply.MsgId}, current msgId:{CurrentHeader.Header.MsgId}");
+                if(reply != null)
+                {
+                    _log.Error(() => $"Not exist request packet - reply msgId:{reply.MsgId}, request msgId:{CurrentHeader.Header.MsgId}");
+                }
+                else
+                {
+                    _log.Error(() => $"Not exist request packet - reply errorCode:{errorCode}, request msgId:{CurrentHeader.Header.MsgId}");
+                }
             }
         }
         else
         {
-            _log.Error(()=>$"Not exist request packet {reply.MsgId}");
+            if(reply != null)
+            {
+                _log.Error(() => $"Not exist request packet - [reply msgId:{reply.MsgId}]");
+            }
+            else
+            {
+                _log.Error(() => $"Not exist request packet - [reply errorCode:{errorCode}]");
+            }
         }
     }
 
@@ -100,7 +113,6 @@ internal class XSender : ISender
         routePacket.RouteHeader.AccountId = accountId;
         _clientCommunicator.Send(apiEndpoint, routePacket);
     }
-
 
 
     public void SendToApi(string apiEndpoint, IPacket packet)
@@ -146,15 +158,19 @@ internal class XSender : ISender
         _clientCommunicator.Send(apiEndpoint, routePacket);
     }
 
-    public async Task<ReplyPacket> RequestToApi(string apiEndpoint, IPacket packet)
+    public async Task<(ushort errorCode,IPacket reply)> RequestToApi(string apiEndpoint, IPacket packet)
     {
-        return await AsyncToApi(apiEndpoint,  packet).Task;
+        var replyPacket = await AsyncToApi(apiEndpoint, packet).Task;
+        AsyncContext.AddReply(replyPacket);
+
+
+        return (replyPacket.ErrorCode,replyPacket.ToXPacket());
     }
-    public async Task<ReplyPacket> RequestToApi(string apiEndpoint, string accountId, IPacket packet)
+    public async Task<(ushort errorCode, IPacket reply)> RequestToApi(string apiEndpoint, string accountId, IPacket packet)
     {
         return await AsyncToApi(apiEndpoint, accountId, packet);
     }
-    public async Task<ReplyPacket> AsyncToApi(string apiEndpoint, string accountId, IPacket packet)
+    public async Task<(ushort errorCode, IPacket reply)> AsyncToApi(string apiEndpoint, string accountId, IPacket packet)
     {
         ushort seq = GetSequence();
         var taskCompletionSource = new TaskCompletionSource<ReplyPacket>();
@@ -163,10 +179,14 @@ internal class XSender : ISender
         routePacket.SetMsgSeq(seq);
         routePacket.RouteHeader.AccountId = accountId;
         _clientCommunicator.Send(apiEndpoint, routePacket);
-        return await taskCompletionSource.Task;
+
+        ReplyPacket replyPacket = await (taskCompletionSource.Task);
+        AsyncContext.AddReply(replyPacket);
+
+        return (replyPacket.ErrorCode,replyPacket.ToXPacket());
     }
 
-    public TaskCompletionSource<ReplyPacket> AsyncToApi(string apiEndpoint, IPacket packet)
+    private TaskCompletionSource<ReplyPacket> AsyncToApi(string apiEndpoint, IPacket packet)
     {
         ushort seq = GetSequence();
         var deferred = new TaskCompletionSource<ReplyPacket>();
@@ -186,19 +206,19 @@ internal class XSender : ISender
         _clientCommunicator.Send(playEndpoint, routePacket);
     }
 
-    public ReplyPacket CallToBaseRoom(string playEndpoint, string stageId, string accountId, Packet packet)
-    {
-        ushort seq = GetSequence();
-        var future = new TaskCompletionSource<ReplyPacket>();
-        _reqCache.Put(seq, new ReplyObject(null, future));
-        RoutePacket routePacket = RoutePacket.StageOf(stageId, accountId, packet, true, true);
-        routePacket.SetMsgSeq(seq);
-        _clientCommunicator.Send(playEndpoint, routePacket);
+    //public ReplyPacket CallToBaseRoom(string playEndpoint, string stageId, string accountId, Packet packet)
+    //{
+    //    ushort seq = GetSequence();
+    //    var future = new TaskCompletionSource<ReplyPacket>();
+    //    _reqCache.Put(seq, new ReplyObject(null, future));
+    //    RoutePacket routePacket = RoutePacket.StageOf(stageId, accountId, packet, true, true);
+    //    routePacket.SetMsgSeq(seq);
+    //    _clientCommunicator.Send(playEndpoint, routePacket);
 
-        return future.Task.Result;
-    }
+    //    return future.Task.Result;
+    //}
 
-    public TaskCompletionSource<ReplyPacket> AsyncToStage(string playEndpoint, string stageId, string accountId, IPacket packet)
+    private TaskCompletionSource<ReplyPacket> AsyncToStage(string playEndpoint, string stageId, string accountId, IPacket packet)
     {
         ushort seq = GetSequence();
         var deferred = new TaskCompletionSource<ReplyPacket>();
@@ -209,9 +229,12 @@ internal class XSender : ISender
         return deferred;
     }
 
-    public async Task<ReplyPacket> RequestToStage(string playEndpoint, string stageId, string accountId, IPacket packet)
+    public async Task<(ushort errorCode,IPacket reply)> RequestToStage(string playEndpoint, string stageId, string accountId, IPacket packet)
     {
-        return await AsyncToStage(playEndpoint, stageId, accountId, packet).Task;
+        ReplyPacket replyPacket =  await AsyncToStage(playEndpoint, stageId, accountId, packet).Task;
+        AsyncContext.AddReply(replyPacket);
+
+        return (replyPacket.ErrorCode,replyPacket.ToXPacket());
     }
 
     public async Task<ReplyPacket> RequestToBaseStage(string playEndpoint, string stageId, string accountId, Packet packet)
@@ -222,7 +245,9 @@ internal class XSender : ISender
         RoutePacket routePacket = RoutePacket.StageOf(stageId, accountId, packet, true, true);
         routePacket.SetMsgSeq(seq);
         _clientCommunicator.Send(playEndpoint, routePacket);
-        return await deferred.Task;
+        var replyPacket =  await deferred.Task;
+        AsyncContext.AddReply(replyPacket);
+        return replyPacket;
     }
 
     public void SendToSystem(string endpoint, IPacket packet)
@@ -230,7 +255,7 @@ internal class XSender : ISender
         _clientCommunicator.Send(endpoint, RoutePacket.SystemOf(Packet.Of(packet), false));
     }
 
-    public async Task<ReplyPacket> RequestToSystem(string endpoint, IPacket packet)
+    public async Task<(ushort errorCode, IPacket reply)> RequestToSystem(string endpoint, IPacket packet)
     {
         ushort msgSeq = GetSequence();
         RoutePacket routePacket = RoutePacket.SystemOf(Packet.Of(packet), false);
@@ -238,7 +263,9 @@ internal class XSender : ISender
         var deferred = new TaskCompletionSource<ReplyPacket>();
         _reqCache.Put(msgSeq, new ReplyObject(null, deferred));
         _clientCommunicator.Send(endpoint, routePacket);
-        return await deferred.Task;
+        var replyPacket = await deferred.Task;
+        AsyncContext.AddReply(replyPacket);
+        return (replyPacket.ErrorCode, replyPacket.ToXPacket());
     }
 
     public void ErrorReply(RouteHeader routeHeader, ushort errorCode)
@@ -250,7 +277,7 @@ internal class XSender : ISender
         if (msgSeq > 0)
         {
             //RoutePacket reply = RoutePacket.ReplyOf(_serviceId, msgSeq,sid,!routeHeader.IsBackend, new ReplyPacket(errorCode));
-            RoutePacket reply = RoutePacket.ReplyOf(_serviceId, routeHeader,  new ReplyPacket(errorCode));
+            RoutePacket reply = RoutePacket.ReplyOf(_serviceId, routeHeader, errorCode,  XPacket.OfEmpty());
             _clientCommunicator.Send(from, reply);
         }
     }

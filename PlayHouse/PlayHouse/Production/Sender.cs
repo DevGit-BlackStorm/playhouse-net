@@ -1,4 +1,6 @@
-﻿namespace PlayHouse.Production
+﻿using PlayHouse.Service;
+
+namespace PlayHouse.Production
 {
     public delegate Task TimerCallbackTask();
     public interface ISystemPanel
@@ -16,21 +18,23 @@
     public interface ISender
     {
         ushort ServiceId { get; }
-        void Reply(ReplyPacket reply);
+        void Reply(ushort errorCode,IPacket? reply = null);
+        void Reply(IPacket reply);
+
         void SendToClient(string sessionEndpoint, int sid, IPacket packet);
         void SendToApi(string apiEndpoint, IPacket packet);
         void SendToStage(string playEndpoint, string stageId, string accountId, IPacket packet);
 
         void RequestToApi(string apiEndpoint, IPacket packet, ReplyCallback replyCallback);
         void RequestToStage(string playEndpoint, string stageId, string accountId, IPacket packet, ReplyCallback replyCallback);
-        Task<ReplyPacket> RequestToApi(string apiEndpoint, IPacket packet);
-        Task<ReplyPacket> RequestToStage(string playEndpoint, string stageId, string accountId, IPacket packet);
+        Task<(ushort errorCode,IPacket reply)> RequestToApi(string apiEndpoint, IPacket packet);
+        Task<(ushort errorCode, IPacket reply)> RequestToStage(string playEndpoint, string stageId, string accountId, IPacket packet);
 
-        TaskCompletionSource<ReplyPacket> AsyncToApi(string apiEndpoint, IPacket packet);
-        TaskCompletionSource<ReplyPacket> AsyncToStage(string playEndpoint, string stageId, string accountId, IPacket packet);
+        //TaskCompletionSource<(ushort errorCode, IPacket reply)> AsyncToApi(string apiEndpoint, IPacket packet);
+        //TaskCompletionSource<(ushort errorCode, IPacket reply)> AsyncToStage(string playEndpoint, string stageId, string accountId, IPacket packet);
 
         void SendToSystem(string endpoint, IPacket packet);
-        Task<ReplyPacket> RequestToSystem(string endpoint, IPacket packet);
+        Task<(ushort errorCode, IPacket reply)> RequestToSystem(string endpoint, IPacket packet);
 
         void SessionClose(string sessionEndpoint, int sid);
     }

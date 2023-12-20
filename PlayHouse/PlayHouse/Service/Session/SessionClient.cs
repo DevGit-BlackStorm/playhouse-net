@@ -276,12 +276,12 @@ internal class SessionClient
                 string playEndpoint = joinStageMsg.PlayEndpoint;
                 string stageId = joinStageMsg.StageId;
                 var stageIndex = UpdateStageInfo(playEndpoint, stageId);
-                _sessionSender.Reply(
-                    new ReplyPacket(new JoinStageInfoUpdateRes()
+                _sessionSender.Reply((ushort)BaseErrorCode.Success, 
+                    XPacket.Of(new JoinStageInfoUpdateRes()
                     {
                         StageIdx = stageIndex,
-                    })
-                );
+                    }
+                ));
                 _log.Debug(()=>$"stageInfo updated - [accountId:{_accountId},playEndpoint:{playEndpoint},stageId:{stageId},stageIndex:{stageIndex}");
             }
             else if (msgId == LeaveStageMsg.Descriptor.Index)

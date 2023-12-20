@@ -2,8 +2,9 @@
 
 using Google.Protobuf;
 using Communicator.Message;
+using System.Net.NetworkInformation;
 
-public delegate void ReplyCallback(ReplyPacket replyPacket);
+public delegate void ReplyCallback(ushort errorCode,IPacket reply);
 
 public interface IBasePacket : IDisposable
 {
@@ -16,21 +17,37 @@ public class XPacket : IPacket
     private int _msgId;
     private IPayload _payload;
 
-    public XPacket(int msgId, IPayload payload)
+    private XPacket(int msgId, IPayload payload)
     {
         _msgId = msgId;
         _payload = payload;
     }
 
-    public static XPacket Of(int msgId, ByteString message) 
-    {
-        return new XPacket(msgId, new ByteStringPayload(message));
-    }
+   
 
     public int MsgId => _msgId;
 
     public ReadOnlySpan<byte> Data => _payload.Data;
     public IPayload Payload => _payload;
+
+
+    public static XPacket OfEmpty()
+    {
+        return new XPacket(0, new EmptyPayload());
+    }
+
+    public static XPacket Of(int msgId, ByteString message)
+    {
+        return new XPacket(msgId, new ByteStringPayload(message));
+    }
+    public static XPacket Of(IMessage message)
+    {
+        return new XPacket(message.Descriptor.Index, new ProtoPayload(message));
+    }
+    public static XPacket Of(int msgId, IPayload payload)
+    {
+        return new XPacket(msgId, payload);
+    }
 }
 
 
@@ -78,11 +95,11 @@ public class Packet : IBasePacket
 
     public  XPacket ToXPacket()
     {
-        return new XPacket(MsgId, _payload);
+        return  XPacket.Of(MsgId, _payload);
     }
 }
 
-public class ReplyPacket : IBasePacket
+internal class ReplyPacket : IBasePacket
 {
     public ushort ErrorCode { get; private set; }
     public int MsgId { get; private set; }
@@ -120,5 +137,10 @@ public class ReplyPacket : IBasePacket
     public void Dispose()
     {
         _payload.Dispose();
+    }
+
+    public XPacket ToXPacket()
+    {
+        return XPacket.Of(MsgId, _payload);
     }
 }

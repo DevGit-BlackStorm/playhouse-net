@@ -19,15 +19,21 @@ internal class ReplyObject
 
     public void OnReceive(RoutePacket routePacket)
     {
-        using (routePacket) { 
-            _replyCallback?.Invoke(routePacket.ToReplyPacket());
-            _taskCompletionSource?.SetResult(routePacket.ToReplyPacket());
+        if(_replyCallback != null)
+        {
+            using (routePacket)
+            {
+                var replyPacket = routePacket.ToReplyPacket();
+                _replyCallback?.Invoke(replyPacket.ErrorCode,replyPacket.ToXPacket());
+            }
         }
+        
+        _taskCompletionSource?.SetResult(routePacket.ToReplyPacket());
     }
 
     public void Throw(ushort errorCode)
     {
-        _replyCallback?.Invoke(new ReplyPacket(errorCode));
+        _replyCallback?.Invoke(errorCode,XPacket.OfEmpty());
         _taskCompletionSource?.SetResult(new ReplyPacket(errorCode));
         
     }

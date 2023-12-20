@@ -17,6 +17,7 @@
     <PackageReference Include="NetCoreServer" Version="7.0.0" />
     <PackageReference Include="NetMQ" Version="4.0.1.11" />
     <PackageReference Include="StackExchange.Redis" Version="2.6.104" />
+    <PackageReference Include="System.Collections.Concurrent" Version="4.3.0" />
     <PackageReference Include="System.Runtime.Caching" Version="7.0.0" />
   </ItemGroup>
 

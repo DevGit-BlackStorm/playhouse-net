@@ -105,8 +105,9 @@ namespace PlayHouse.Service.Api
                                 var apiSender = new AllApiSender(_serviceId, _clientCommunicator, _requestCache);
                                 apiSender.SetCurrentPacketHeader(routeHeader);
 
-                                AsyncContext.ApiSender = apiSender;
-                                AsyncContext.InitErrorCode();
+                                AsyncContext.Init();
+                                ApiAsyncContext.ApiSender = apiSender;
+                                ApiAsyncContext.InitErrorCode();
 
                                 try
                                 {
@@ -147,7 +148,7 @@ namespace PlayHouse.Service.Api
                                     // Use the default content error code if it's not set in the content.
                                     if(routeHeader.Header.MsgSeq > 0)
                                     {
-                                        var errorCode = AsyncContext.ErrorCode;
+                                        var errorCode = ApiAsyncContext.ErrorCode;
                                         if (errorCode == (ushort)BaseErrorCode.Success)
                                         {
                                             errorCode = (ushort)BaseErrorCode.UncheckedContentsError;
@@ -168,6 +169,7 @@ namespace PlayHouse.Service.Api
                                 }
 
                                 AsyncContext.Clear();
+                                ApiAsyncContext.Clear();
                             });
                         }
                     }

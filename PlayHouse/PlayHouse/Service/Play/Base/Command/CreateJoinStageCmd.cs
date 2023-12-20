@@ -27,7 +27,6 @@ internal class CreateJoinStageCmd : IBaseStageCmd
         var sid = request.Sid;
         var apiEndpoint = routePacket.RouteHeader.From;
 
-        ReplyPacket createReply;
         CreateJoinStageRes response = new CreateJoinStageRes();
 
         if (!_playProcessor.IsValidType(stageType))
@@ -38,14 +37,14 @@ internal class CreateJoinStageCmd : IBaseStageCmd
 
         if (!baseStage.IsCreated)
         {
-            createReply = await baseStage.Create(stageType, createStagePacket);
-            response.CreatePayloadId = createReply.MsgId;
-            response.CreatePayload = ByteString.CopyFrom(createReply.Data);
+            var createReply = await baseStage.Create(stageType, createStagePacket);
+            response.CreatePayloadId = createReply.reply.MsgId;
+            response.CreatePayload = ByteString.CopyFrom(createReply.reply.Data);
 
-            if (!createReply.IsSuccess())
+            if (createReply.errorCode != (ushort)BaseErrorCode.Success)
             {
                 _playProcessor.RemoveRoom(stageId);                    
-                baseStage.Reply(new ReplyPacket(createReply.ErrorCode, response));
+                baseStage.Reply(createReply.errorCode, XPacket.Of(response));
                 return;
             }
             else
@@ -63,8 +62,7 @@ internal class CreateJoinStageCmd : IBaseStageCmd
         response.JoinPayload = ByteString.CopyFrom(joinReply.Data);
         response.StageIdx = stageKey;
 
-
-        baseStage.Reply(new ReplyPacket(joinReply.ErrorCode, response));
+        baseStage.Reply(joinReply.ErrorCode, XPacket.Of(response));
 
         if (joinReply.IsSuccess())
         {

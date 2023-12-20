@@ -34,7 +34,7 @@ internal class JoinStageCmd : IBaseStageCmd
             StageIdx = stageIndex,
         };
 
-        baseStage.Reply(new ReplyPacket(outcome.ErrorCode, response));
+        baseStage.Reply(outcome.ErrorCode, XPacket.Of(response));
 
         if (outcome.IsSuccess())
         {
