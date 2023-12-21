@@ -1,6 +1,4 @@
-﻿using PlayHouse.Service;
-
-namespace PlayHouse.Communicator.Message
+﻿namespace PlayHouse.Communicator.Message
 {
     internal class ClientPacket : IBasePacket
     {

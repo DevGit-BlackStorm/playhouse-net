@@ -1,4 +1,6 @@
-﻿using PlayHouse.Utils;
+﻿using PlayHouse.Communicator.Message;
+using PlayHouse.Production;
+using PlayHouse.Utils;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -6,12 +8,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PlayHouse.Service.Api
+namespace PlayHouse.Service
 {
-    internal class AsyncContext
+
+    internal class ServiceAsyncContext
     {
-        private static readonly AsyncLocal<ConcurrentQueue<ReplyPacket>> ReplyQueue =  new();
-        public static LOG<AsyncContext> _log = new  ();
+        private static readonly AsyncLocal<ConcurrentQueue<ReplyPacket>> ReplyQueue = new();
+        public static LOG<AsyncContext> _log = new();
 
         public static void Init()
         {
@@ -25,7 +28,8 @@ namespace PlayHouse.Service.Api
                 try
                 {
                     replyPacket.Dispose();
-                }catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
                     _log.Error(() => "AsyncContext Error in Clear");
                     _log.Error(() => $"{ex.Message}");
@@ -36,7 +40,7 @@ namespace PlayHouse.Service.Api
 
         public static void AddReply(ReplyPacket replyPacket)
         {
-            ReplyQueue.Value!.Append( replyPacket );
+            ReplyQueue.Value!.Append(replyPacket);
         }
     }
 }

@@ -91,11 +91,11 @@ namespace PlayHouse.Service.Play
                         if (isBase)
                         {
                             Task.Run(async () => {
-                                AsyncContext.Init();
-                                SenderAsyncContext.Init();
+                                AsyncContext.AsyncCore.Init();
+                                ServiceAsyncContext.Init();
                                 await DoBaseRoomPacket(msgId, roomPacket, stageId);
-                                AsyncContext.Clear();
-                                SenderAsyncContext.Clear();
+                                AsyncContext.AsyncCore.Clear();
+                                ServiceAsyncContext.Clear();
                             });
                         }
                         else
@@ -105,11 +105,11 @@ namespace PlayHouse.Service.Play
                                 _baseRooms.TryGetValue(stageId,out var baseStage);
                                 if (baseStage != null)
                                 {
-                                    AsyncContext.Init();
-                                    SenderAsyncContext.Init();
+                                    AsyncContext.AsyncCore.Init();
+                                    ServiceAsyncContext.Init();
                                     await baseStage.Send(roomPacket);
-                                    AsyncContext.Clear();
-                                    SenderAsyncContext.Clear();
+                                    AsyncContext.AsyncCore.Clear();
+                                    ServiceAsyncContext.Clear();
 
                                 }
                                 else

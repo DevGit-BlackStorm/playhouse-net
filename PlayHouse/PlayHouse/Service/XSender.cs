@@ -44,7 +44,7 @@ internal class XSender : ISender
     {
         if(reply!=null)
         {
-            SenderAsyncContext.Add(SendTarget.Reply,reply);
+            AsyncContext.AsyncCore.Add(SendTarget.Reply,reply);
         }
         
         if (CurrentHeader != null)
@@ -86,7 +86,7 @@ internal class XSender : ISender
 
     public void SendToClient(string sessionEndpoint, int sid, IPacket packet)
     {
-        SenderAsyncContext.Add(SendTarget.Client, packet);
+        AsyncContext.AsyncCore.Add(SendTarget.Client, packet);
 
         RoutePacket routePacket = RoutePacket.ClientOf(_serviceId, sid, packet);
         _clientCommunicator.Send(sessionEndpoint, routePacket);
@@ -116,7 +116,7 @@ internal class XSender : ISender
     }
     public void SendToApi(string apiEndpoint, string accountId, IPacket packet)
     {
-        SenderAsyncContext.Add(SendTarget.Api, packet);
+        AsyncContext.AsyncCore.Add(SendTarget.Api, packet);
 
         var routePacket = RoutePacket.ApiOf(RoutePacket.Of(packet), isBase: false, isBackend: true);
         routePacket.RouteHeader.AccountId = accountId;
@@ -126,7 +126,7 @@ internal class XSender : ISender
 
     public void SendToApi(string apiEndpoint, IPacket packet)
     {
-        SenderAsyncContext.Add(SendTarget.Api, packet);
+        AsyncContext.AsyncCore.Add(SendTarget.Api, packet);
 
         RoutePacket routePacket = RoutePacket.ApiOf(RoutePacket.Of(packet), false, true);
         _clientCommunicator.Send(apiEndpoint, routePacket);
@@ -172,7 +172,7 @@ internal class XSender : ISender
     public async Task<(ushort errorCode,IPacket reply)> RequestToApi(string apiEndpoint, IPacket packet)
     {
         ReplyPacket replyPacket = await AsyncToApi(apiEndpoint, packet).Task;
-        AsyncContext.AddReply(replyPacket);
+        ServiceAsyncContext.AddReply(replyPacket);
 
         return (replyPacket.ErrorCode, CPacket.Of(replyPacket));
     }
@@ -182,7 +182,7 @@ internal class XSender : ISender
     }
     public async Task<(ushort errorCode, IPacket reply)> AsyncToApi(string apiEndpoint, string accountId, IPacket packet)
     {
-        SenderAsyncContext.Add(SendTarget.Api, packet);
+        AsyncContext.AsyncCore.Add(SendTarget.Api, packet);
 
         ushort seq = GetSequence();
         var taskCompletionSource = new TaskCompletionSource<ReplyPacket>();
@@ -193,14 +193,14 @@ internal class XSender : ISender
         _clientCommunicator.Send(apiEndpoint, routePacket);
 
         ReplyPacket replyPacket = await (taskCompletionSource.Task);
-        AsyncContext.AddReply(replyPacket);
+        ServiceAsyncContext.AddReply(replyPacket);
 
         return (replyPacket.ErrorCode,CPacket.Of(replyPacket));
     }
 
     private TaskCompletionSource<ReplyPacket> AsyncToApi(string apiEndpoint, IPacket packet)
     {
-        SenderAsyncContext.Add(SendTarget.Api, packet);
+        AsyncContext.AsyncCore.Add(SendTarget.Api, packet);
 
         ushort seq = GetSequence();
         var deferred = new TaskCompletionSource<ReplyPacket>();
@@ -213,7 +213,7 @@ internal class XSender : ISender
 
     public void RequestToStage(string playEndpoint, string stageId, string accountId, IPacket packet, ReplyCallback replyCallback)
     {
-        SenderAsyncContext.Add(SendTarget.Play, packet);
+        AsyncContext.AsyncCore.Add(SendTarget.Play, packet);
 
         ushort seq = GetSequence();
         _reqCache.Put(seq, new ReplyObject(replyCallback));
@@ -236,7 +236,7 @@ internal class XSender : ISender
 
     private TaskCompletionSource<ReplyPacket> AsyncToStage(string playEndpoint, string stageId, string accountId, IPacket packet)
     {
-        SenderAsyncContext.Add(SendTarget.Play, packet);
+        AsyncContext.AsyncCore.Add(SendTarget.Play, packet);
 
         ushort seq = GetSequence();
         var deferred = new TaskCompletionSource<ReplyPacket>();
@@ -250,7 +250,7 @@ internal class XSender : ISender
     public async Task<(ushort errorCode,IPacket reply)> RequestToStage(string playEndpoint, string stageId, string accountId, IPacket packet)
     {
         ReplyPacket replyPacket =  await AsyncToStage(playEndpoint, stageId, accountId, packet).Task;
-        AsyncContext.AddReply(replyPacket);
+        ServiceAsyncContext.AddReply(replyPacket);
 
         return (replyPacket.ErrorCode,CPacket.Of(replyPacket));
     }
@@ -264,20 +264,20 @@ internal class XSender : ISender
         routePacket.SetMsgSeq(seq);
         _clientCommunicator.Send(playEndpoint, routePacket);
         var replyPacket =  await deferred.Task;
-        AsyncContext.AddReply(replyPacket);
+        ServiceAsyncContext.AddReply(replyPacket);
         return replyPacket;
     }
 
     public void SendToSystem(string endpoint, IPacket packet)
     {
-        SenderAsyncContext.Add(SendTarget.System, packet);
+        AsyncContext.AsyncCore.Add(SendTarget.System, packet);
 
         _clientCommunicator.Send(endpoint, RoutePacket.SystemOf(RoutePacket.Of(packet), false));
     }
 
     public async Task<(ushort errorCode, IPacket reply)> RequestToSystem(string endpoint, IPacket packet)
     {
-        SenderAsyncContext.Add(SendTarget.System, packet);
+        AsyncContext.AsyncCore.Add(SendTarget.System, packet);
 
         ushort msgSeq = GetSequence();
         RoutePacket routePacket = RoutePacket.SystemOf(RoutePacket.Of(packet), false);
@@ -286,13 +286,13 @@ internal class XSender : ISender
         _reqCache.Put(msgSeq, new ReplyObject(null, deferred));
         _clientCommunicator.Send(endpoint, routePacket);
         var replyPacket = await deferred.Task;
-        AsyncContext.AddReply(replyPacket);
+        ServiceAsyncContext.AddReply(replyPacket);
         return (replyPacket.ErrorCode, CPacket.Of(replyPacket));
     }
 
     public void ErrorReply(RouteHeader routeHeader, ushort errorCode)
     {
-        SenderAsyncContext.Add(SendTarget.ErrorReply, CPacket.OfEmpty());
+        AsyncContext.AsyncCore.Add(SendTarget.ErrorReply, CPacket.OfEmpty());
 
         ushort msgSeq = routeHeader.Header.MsgSeq;
         string from = routeHeader.From;
