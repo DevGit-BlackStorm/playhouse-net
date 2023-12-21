@@ -1,10 +1,11 @@
-﻿namespace PlayHouse.Production;
+﻿namespace PlayHouse.Service;
 
 using Google.Protobuf;
 using Communicator.Message;
 using System.Net.NetworkInformation;
+using PlayHouse.Production;
 
-public delegate void ReplyCallback(ushort errorCode,IPacket reply);
+public delegate void ReplyCallback(ushort errorCode, IPacket reply);
 
 public interface IBasePacket : IDisposable
 {
@@ -12,7 +13,7 @@ public interface IBasePacket : IDisposable
     ReadOnlySpan<byte> Data { get; }
 }
 
-public class XPacket : IPacket
+internal class XPacket : IPacket
 {
     private int _msgId;
     private IPayload _payload;
@@ -23,7 +24,6 @@ public class XPacket : IPacket
         _payload = payload;
     }
 
-   
 
     public int MsgId => _msgId;
 
@@ -48,10 +48,25 @@ public class XPacket : IPacket
     {
         return new XPacket(msgId, payload);
     }
+
+    public T Parse<T>()
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IPacket Of(IPacket packet)
+    {
+        return new XPacket(packet.MsgId, packet.Payload);
+    }
+
+    public IPacket Copy()
+    {
+        throw new NotImplementedException();
+    }
 }
 
 
-public class Packet : IBasePacket
+internal class Packet : IBasePacket
 {
     public int MsgId;
     public IPayload Payload => _payload;
@@ -74,7 +89,7 @@ public class Packet : IBasePacket
 
     public static Packet Of(IPacket packet)
     {
-        return new Packet(packet.MsgId, packet.Payload);    
+        return new Packet(packet.MsgId, packet.Payload);
     }
 
 
@@ -93,9 +108,9 @@ public class Packet : IBasePacket
         _payload.Dispose();
     }
 
-    public  XPacket ToXPacket()
+    public IPacket ToContentsPacket()
     {
-        return  XPacket.Of(MsgId, _payload);
+        return PacketProducer.Create!.Invoke(XPacket.Of(MsgId, _payload));
     }
 }
 

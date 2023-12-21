@@ -4,7 +4,7 @@ using PlayHouse.Service.Session.Network.websocket;
 
 namespace PlayHouse.Service.Session.Network;
 
-public class SessionNetwork 
+internal class SessionNetwork 
 {
     private readonly ISessionNetwork _sessionNetwork;
 

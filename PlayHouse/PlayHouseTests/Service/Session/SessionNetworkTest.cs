@@ -11,7 +11,7 @@ using NetMQ;
 
 namespace PlayHouse.Service.Session.Network
 {
-    public class SessionServerListener : ISessionListener
+    internal class SessionServerListener : ISessionListener
     {
         public bool UseWebSocket { get; set; }
         public RingBuffer Buffer { get; } = new RingBuffer(ConstOption.MaxPacketSize);

@@ -5,7 +5,7 @@ using PlayHouse.Utils;
 
 namespace PlayHouse.Service.Session.Network
 {
-    public sealed class PacketParser
+    internal sealed class PacketParser
     {
         
         private readonly LOG<PacketParser> _log = new ();

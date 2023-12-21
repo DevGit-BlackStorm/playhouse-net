@@ -43,14 +43,14 @@ namespace PlayHouseTests.Service.Api.plain
         [TestMethodActionFilter]
         public async Task Test1(IPacket packet, IApiSender apiSender)
         {
-            var message = ApiTestMsg1.Parser.ParseFrom(packet.Data);
+            var message = ApiTestMsg1.Parser.ParseFrom(packet.Payload.Data);
             ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Test1"] = message.TestMsg;
             await Task.CompletedTask;
         }
 
         public async Task Test2(IPacket packet, IApiSender apiSender)
         {
-            var message = ApiTestMsg2.Parser.ParseFrom(packet.Data);
+            var message = ApiTestMsg2.Parser.ParseFrom(packet.Payload.Data);
             ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Test2"] = message.TestMsg;
             await Task.CompletedTask;
         }
@@ -58,14 +58,14 @@ namespace PlayHouseTests.Service.Api.plain
         [TestBackendMethodActionFilter]
         public async Task Test3(IPacket packet, IApiBackendSender apiSender)
         {
-            var message = ApiTestMsg1.Parser.ParseFrom(packet.Data);
+            var message = ApiTestMsg1.Parser.ParseFrom(packet.Payload.Data);
             ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Test3"] = message.TestMsg;
             await Task.CompletedTask;
         }
 
         public async Task Test4(IPacket packet, IApiBackendSender apiSender)
         {
-            var message = ApiTestMsg2.Parser.ParseFrom(packet.Data);
+            var message = ApiTestMsg2.Parser.ParseFrom(packet.Payload.Data);
             ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Test4"] = message.TestMsg;
             await Task.CompletedTask;
         }

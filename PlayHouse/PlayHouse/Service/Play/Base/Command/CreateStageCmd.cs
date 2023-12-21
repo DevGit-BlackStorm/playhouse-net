@@ -1,7 +1,6 @@
 ﻿using Google.Protobuf;
 using PlayHouse.Communicator.Message;
 using Playhouse.Protocol;
-using PlayHouse.Production;
 
 namespace PlayHouse.Service.Play.Base.Command;
 internal class CreateStageCmd : IBaseStageCmd
@@ -36,7 +35,7 @@ internal class CreateStageCmd : IBaseStageCmd
 
         var res = new CreateStageRes()
         {
-            Payload = ByteString.CopyFrom(outcome.reply.Data),
+            Payload = ByteString.CopyFrom(outcome.reply.Payload.Data),
             PayloadId = outcome.reply.MsgId
         };
 

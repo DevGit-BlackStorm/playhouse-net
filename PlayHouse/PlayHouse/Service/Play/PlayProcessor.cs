@@ -92,8 +92,10 @@ namespace PlayHouse.Service.Play
                         {
                             Task.Run(async () => {
                                 AsyncContext.Init();
+                                SenderAsyncContext.Init();
                                 await DoBaseRoomPacket(msgId, roomPacket, stageId);
                                 AsyncContext.Clear();
+                                SenderAsyncContext.Clear();
                             });
                         }
                         else
@@ -104,9 +106,10 @@ namespace PlayHouse.Service.Play
                                 if (baseStage != null)
                                 {
                                     AsyncContext.Init();
-
+                                    SenderAsyncContext.Init();
                                     await baseStage.Send(roomPacket);
                                     AsyncContext.Clear();
+                                    SenderAsyncContext.Clear();
 
                                 }
                                 else

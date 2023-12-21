@@ -6,6 +6,7 @@ using PlayHouse.Communicator;
 using PlayHouse.Communicator.Message;
 using PlayHouse.Production;
 using PlayHouse.Production.Api.Filter;
+using PlayHouse.Service;
 using PlayHouse.Service.Api;
 using Xunit;
 
@@ -23,12 +24,14 @@ namespace PlayHouseTests.Service.Api.plain
         public async Task Test_CALL_Method()
         {
 
+            PacketProducer.Create = (IPacket packet) => XPacket.Of(packet);
             GlobalApiActionManager.AddFilter(new TestApiGlobalActionAttribute());
 
             var apiReflections = new ApiReflection();
             var apiSender = new Mock<IApiSender>().Object; 
             bool isBackend = false;
 
+            
             var routePacket = RoutePacket.ApiOf(new Packet(new ApiTestMsg1() { TestMsg = "ApiServiceCall_Test1" }), false, isBackend);
 
             await apiReflections.CallMethod(routePacket.RouteHeader, routePacket.ToPacket(), apiSender);
@@ -58,6 +61,7 @@ namespace PlayHouseTests.Service.Api.plain
         [Fact]
         public async Task Test_CALL_Backend_Method()
         {
+            PacketProducer.Create = (IPacket packet) =>  XPacket.Of(packet);
             var apiReflections = new ApiReflection();
             var apiSender = new Mock<IApiBackendSender>().Object;
             bool isBackend = false;

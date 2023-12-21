@@ -13,8 +13,9 @@ public class ApiAsyncContext
     private static readonly AsyncLocal<ErrorCodeWrapper?> _errorCode = new()  ;
     private static readonly ConcurrentDictionary<string, AsyncLocal<object?>> _storage = new();
 
-    public static void InitErrorCode()
+    public static void Init(IApiSender? apiSender = null)
     {
+        _apiSenderContext.Value = apiSender;
         _errorCode.Value = new ErrorCodeWrapper();
     }
 

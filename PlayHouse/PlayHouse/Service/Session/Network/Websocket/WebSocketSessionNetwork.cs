@@ -98,7 +98,7 @@ class XWsSession : WsSession, ISession
         }
     }
 }
-public class WsSessionServer : WsServer
+internal class WsSessionServer : WsServer
 {
     private ISessionListener _sessionListener;
     public WsSessionServer(string address, int port, ISessionListener sessionListener) : base(address, port)

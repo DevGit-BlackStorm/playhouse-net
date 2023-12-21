@@ -2,6 +2,7 @@
 using Google.Protobuf;
 using Playhouse.Protocol;
 using PlayHouse.Production;
+using PlayHouse.Service;
 using System.Runtime.InteropServices;
 
 namespace PlayHouse.Communicator.Message

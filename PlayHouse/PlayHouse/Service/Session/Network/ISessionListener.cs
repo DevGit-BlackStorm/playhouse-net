@@ -3,7 +3,7 @@
 
 namespace PlayHouse.Service.Session.Network
 {
-    public interface ISessionListener
+    internal interface ISessionListener
     {
         void OnConnect(int sid, ISession session);
         void OnReceive(int sid, ClientPacket clientPacket);

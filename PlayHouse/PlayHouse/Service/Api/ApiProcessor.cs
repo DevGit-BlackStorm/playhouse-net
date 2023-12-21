@@ -19,7 +19,6 @@ namespace PlayHouse.Service.Api
         private readonly IClientCommunicator _clientCommunicator;
         private readonly ISender _sender;
         private readonly XSystemPanel _systemPanel;
-
         private readonly AtomicEnum<ServerState> _state = new(ServerState.DISABLE);
         private readonly ApiReflection _apiReflection;
         private readonly ConcurrentQueue<RoutePacket> _msgQueue = new();
@@ -36,7 +35,8 @@ namespace PlayHouse.Service.Api
             RequestCache requestCache,
             IClientCommunicator clientCommunicator,
             ISender sender,
-            XSystemPanel systemPanel)
+            XSystemPanel systemPanel
+        )
         {
             _serviceId = serviceId;
             _apiOption = apiOption;
@@ -44,7 +44,6 @@ namespace PlayHouse.Service.Api
             _clientCommunicator = clientCommunicator;
             _sender = sender;
             _systemPanel = systemPanel;
-
             _apiReflection = new ApiReflection();
 
             _policy = new CacheItemPolicy { SlidingExpiration =TimeSpan.FromMinutes(5) };
@@ -81,12 +80,15 @@ namespace PlayHouse.Service.Api
                             var accountApiProcessor =(AccountApiProcessor?) _cache.Get($"{ routeHeader.AccountId}");
                             if (accountApiProcessor == null)
                             {
-                                accountApiProcessor = new AccountApiProcessor(
+                                accountApiProcessor = new AccountApiProcessor
+                                (
                                     _serviceId,
                                     _requestCache,
                                     _clientCommunicator,
                                     _apiReflection,
-                                    _apiOption.ApiCallBackHandler!);
+                                    _apiOption.ApiCallBackHandler!
+
+                                );
 
                                 _cache.Add(new CacheItem(routeHeader.AccountId.ToString(), accountApiProcessor),_policy);
                             }
@@ -106,8 +108,8 @@ namespace PlayHouse.Service.Api
                                 apiSender.SetCurrentPacketHeader(routeHeader);
 
                                 AsyncContext.Init();
-                                ApiAsyncContext.ApiSender = apiSender;
-                                ApiAsyncContext.InitErrorCode();
+                                ApiAsyncContext.Init(apiSender);
+                                SenderAsyncContext.Init();
 
                                 try
                                 {
@@ -170,6 +172,7 @@ namespace PlayHouse.Service.Api
 
                                 AsyncContext.Clear();
                                 ApiAsyncContext.Clear();
+                                SenderAsyncContext.Clear();
                             });
                         }
                     }

@@ -10,8 +10,12 @@ namespace PlayHouse.Production
     public interface IPacket
     {
         public int MsgId { get; }
-        public ReadOnlySpan<byte> Data { get; }
+//        public ReadOnlySpan<byte> Data { get; }
+        public IPayload Payload { get; }
 
-        public IPayload Payload { get; }    
+        public IPacket Copy();
+        public T Parse<T>() ;
+
     }
+
 }

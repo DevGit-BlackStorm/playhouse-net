@@ -63,7 +63,7 @@ public class ApiInstance
         var targetInstance = Method.Invoke(Instance, null);
 
         //global before filter
-        foreach(ApiActionFilterAttribute filter in GlobalApiActionManager.GetFilters())
+        foreach(ApiActionFilterAttribute filter in GlobalApiActionManager.Filters)
         {
             if (filter == null) continue;
             filter.BeforeExecution(packet, apiSender);
@@ -103,7 +103,7 @@ public class ApiInstance
         }
 
         //global after filter
-        foreach (ApiActionFilterAttribute filter in GlobalApiActionManager.GetFilters().Reverse())
+        foreach (ApiActionFilterAttribute filter in GlobalApiActionManager.Filters.Reverse())
         {
             if (filter == null) continue;
             filter.AfterExecution(packet, apiSender);
@@ -116,7 +116,7 @@ public class ApiInstance
         var targetInstance = Method.Invoke(Instance, null);
 
         //global before filter
-        foreach (IApiBackendFilter filter in GlobalBackendApiActionManager.GetFilters())
+        foreach (IApiBackendFilter filter in GlobalApiActionManager.BackendFilters)
         {
             if (filter == null) continue;
             filter.BeforeExecution(packet, apiSender);
@@ -156,7 +156,7 @@ public class ApiInstance
         }
 
         //global IBackendFilter filter
-        foreach (IApiBackendFilter filter in GlobalBackendApiActionManager.GetFilters().Reverse())
+        foreach (IApiBackendFilter filter in GlobalApiActionManager.BackendFilters.Reverse())
         {
             if (filter == null) continue;
             filter.AfterExecution(packet, apiSender);
@@ -213,7 +213,7 @@ class Reflections
     }
 }
 
-public class ApiReflection
+internal class ApiReflection
 {
     private readonly Dictionary<string, ApiInstance> _instances = new ();
     private readonly Dictionary<int, ApiMethod> _methods = new ();
@@ -226,6 +226,7 @@ public class ApiReflection
         var reflections = new Reflections(typeof(IApiController));
         ExtractInstance(reflections);
         ExtractHandlerMethod(reflections);
+
     }
 
 
@@ -240,7 +241,7 @@ public class ApiReflection
             if (!_instances.ContainsKey(targetMethod.ClassName)) throw new ApiException.NotRegisterApiInstance(targetMethod.ClassName);
             ApiInstance classInstance = _instances[targetMethod.ClassName];
 
-            await classInstance.Invoke(targetMethod, packet.ToXPacket(), apiSender);
+            await classInstance.Invoke(targetMethod, packet.ToContentsPacket(), apiSender);
         }
 
         //var targetInstance = classInstance.Method.Invoke(classInstance.Instance, null);
@@ -257,7 +258,7 @@ public class ApiReflection
         if (!_instances.ContainsKey(targetMethod.ClassName)) throw new ApiException.NotRegisterApiInstance(targetMethod.ClassName);
         ApiInstance classInstance = _instances[targetMethod.ClassName];
 
-        await classInstance.Invoke(targetMethod, packet.ToXPacket(), apiBackendSender);
+        await classInstance.Invoke(targetMethod, packet.ToContentsPacket(), apiBackendSender);
 
         //var targetInstance = classInstance.Method.Invoke(classInstance.Instance, null);
         //var task = (Task)targetMethod.Method.Invoke(targetInstance, new object[] { packet, apiBackendSender})!;

@@ -19,7 +19,7 @@ internal class XApiCommonSender : XSender, IApiCommonSender
         {
             StageType = stageType,
             PayloadId = packet.MsgId,
-            Payload = ByteString.CopyFrom(packet.Data)
+            Payload = ByteString.CopyFrom(packet.Payload.Data)
         };
 
         var reply = await RequestToBaseStage(playEndpoint, stageId, string.Empty, new Packet(req));

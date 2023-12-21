@@ -97,7 +97,7 @@ internal class XTcpSession : TcpSession, ISession
         }
     }
 }
-public class TcpSessionServer : TcpServer
+internal class TcpSessionServer : TcpServer
 {
     private readonly LOG<TcpSessionServer> _log = new ();
     

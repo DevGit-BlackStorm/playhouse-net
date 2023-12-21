@@ -19,6 +19,7 @@ namespace PlayHouse.Service.Api
         private readonly ConcurrentQueue<RoutePacket> _msgQueue = new();
         private readonly AtomicBoolean _isUsing = new(false);
         private readonly LOG<AccountApiProcessor> _log = new ();
+        private Func<IPacket, IPacket>? packetProducer;
 
         public AccountApiProcessor(
             ushort serviceId,
@@ -32,6 +33,11 @@ namespace PlayHouse.Service.Api
             _clientCommunicator = clientCommunicator;
             _apiReflection = apiReflection;
             _apiCallBack = apiCallBack;
+        }
+
+        public AccountApiProcessor(ushort serviceId, RequestCache requestCache, IClientCommunicator clientCommunicator, ApiReflection apiReflection, IApiCallBack apiCallBack, Func<IPacket, IPacket>? packetProducer) : this(serviceId, requestCache, clientCommunicator, apiReflection, apiCallBack)
+        {
+            this.packetProducer = packetProducer;
         }
 
         public async Task Dispatch(RoutePacket routePacket)
@@ -48,8 +54,8 @@ namespace PlayHouse.Service.Api
                     apiSender.SetCurrentPacketHeader(routeHeader);
 
                     AsyncContext.Init();
-                    ApiAsyncContext.ApiSender = apiSender;
-                    ApiAsyncContext.InitErrorCode();
+                    ApiAsyncContext.Init(apiSender);
+                    SenderAsyncContext.Init();
 
                     if (routeHeader.IsBase)
                     {
@@ -129,6 +135,7 @@ namespace PlayHouse.Service.Api
 
                     ApiAsyncContext.Clear();
                     AsyncContext.Clear();
+                    SenderAsyncContext.Clear();
                 }
                 _isUsing.Set(false);
             }

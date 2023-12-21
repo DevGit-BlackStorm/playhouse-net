@@ -1,7 +1,6 @@
 ﻿using Google.Protobuf;
 using PlayHouse.Communicator.Message;
 using Playhouse.Protocol;
-using PlayHouse.Production;
 
 namespace PlayHouse.Service.Play.Base.Command;
 
@@ -23,14 +22,14 @@ internal class JoinStageCmd : IBaseStageCmd
         var packet = new Packet(request.PayloadId, request.Payload);
         var apiEndpoint = routePacket.RouteHeader.From;
 
-        var joinResult = await baseStage.Join(accountId, sessionEndpoint, sid, apiEndpoint, packet);
+        (ReplyPacket reply, int stageKey) joinResult = await baseStage.Join(accountId, sessionEndpoint, sid, apiEndpoint, packet);
 
-        var outcome = joinResult.Item1;
-        var stageIndex = joinResult.Item2;
+        var outcome = joinResult.reply;
+        var stageIndex = joinResult.stageKey;
         var response = new JoinStageRes()
         {
             Payload = ByteString.CopyFrom(outcome.Data),
-            PayloadId = request.PayloadId, 
+            PayloadId = outcome.MsgId,
             StageIdx = stageIndex,
         };
 

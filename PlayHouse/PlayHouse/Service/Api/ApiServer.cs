@@ -32,6 +32,7 @@ public class ApiServer : IServer
         var bindEndpoint = communicatorOption.BindEndpoint;
         var serviceId = _commonOption.ServiceId;
 
+        
         PooledBuffer.Init(_commonOption.MaxBufferPoolSize);
 
         var requestCache = new RequestCache(_commonOption.RequestTimeoutSec);
@@ -51,6 +52,8 @@ public class ApiServer : IServer
 
         ControlContext.BaseSender = sender;
         ControlContext.SystemPanel = systemPanel;
+        PacketProducer.Create = _commonOption.PacketProducer!;
+        
 
 
         var service = new ApiProcessor(serviceId, _apiOption, requestCache, communicateClient, sender, systemPanel);

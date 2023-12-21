@@ -69,7 +69,7 @@ internal class BaseStage
                 var baseUser = _playProcessor.FindUser(accountId);
                 if (baseUser != null)
                 {
-                    await _stage!.OnDispatch(baseUser.Actor, XPacket.Of(routePacket.MsgId, routePacket.Payload));
+                    await _stage!.OnDispatch(baseUser.Actor,PacketProducer.Create!(XPacket.Of(routePacket.MsgId, routePacket.Payload)));
                 }
             }
         }
@@ -116,7 +116,7 @@ internal class BaseStage
     {
         _stage = _playProcessor.CreateContentRoom(stageType, _stageSender);
         _stageSender.SetStageType(stageType);
-        var outcome = await _stage.OnCreate(packet.ToXPacket());
+        var outcome = await _stage.OnCreate(packet.ToContentsPacket());
         IsCreated = true;
         return outcome;
     }
@@ -139,7 +139,7 @@ internal class BaseStage
             baseUser.ActorSender.Update(sessionEndpoint, sid, apiEndpoint);
         }
 
-        var outcome = await _stage!.OnJoinStage(baseUser.Actor, packet.ToXPacket());
+        var outcome = await _stage!.OnJoinStage(baseUser.Actor, packet.ToContentsPacket());
         int stageKey = 0;
 
         if (outcome.errorCode != (ushort)BaseErrorCode.Success)

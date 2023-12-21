@@ -2,7 +2,7 @@
 
 namespace PlayHouse.Service.Session.Network
 {
-    public interface ISession
+    internal interface ISession
     {
         void ClientDisconnect();
         void Send(ClientPacket packet);

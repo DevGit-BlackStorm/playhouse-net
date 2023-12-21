@@ -14,14 +14,15 @@ namespace PlayHouse.Production
         public int Port { get; set; }
         public string RedisIp { get; } = "localhost";
         public int RedisPort { get; set; } = 6379;
-
         public ushort ServiceId { get; set; } = ConstOption.DefaultServiceId;
         public ServerSystemFactory? ServerSystem { get; set; }
         public int RequestTimeoutSec { get; set; } = 5;
         public bool ShowQps { get; set; }
         public int NodeId { get; set; } // 0~ 4096
-
         public int MaxBufferPoolSize = 1024 * 1024 * 100;
 
+        public Func<IPacket,IPacket>? PacketProducer { get; set; }
+
     }
+
 }

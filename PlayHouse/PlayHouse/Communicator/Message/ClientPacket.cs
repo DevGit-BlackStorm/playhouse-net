@@ -1,8 +1,8 @@
-﻿using PlayHouse.Production;
+﻿using PlayHouse.Service;
 
 namespace PlayHouse.Communicator.Message
 {
-    public class ClientPacket : IBasePacket
+    internal class ClientPacket : IBasePacket
     {
         public Header Header { get; set; }
         public IPayload Payload;

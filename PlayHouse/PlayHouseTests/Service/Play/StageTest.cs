@@ -19,6 +19,7 @@ using System.Runtime.CompilerServices;
 using System.Reflection;
 using PlayHouse.Production;
 using PlayHouse.Production.Play;
+using PlayHouse.Service;
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 namespace PlayHouseTests.Service.Play
@@ -93,6 +94,9 @@ namespace PlayHouseTests.Service.Play
         public async Task CreateRoom_ShouldSucceed()
         {
             // given
+            SenderAsyncContext.Init();
+            PacketProducer.Create = (packet) => XPacket.Of(packet);
+
             List<RoutePacket> result = new List<RoutePacket>();
             clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
             .Callback<string,RoutePacket>((sid,packet) => result.Add(packet));
@@ -115,6 +119,8 @@ namespace PlayHouseTests.Service.Play
         public async Task CreateRoom_WithInvalidType_ShouldReturnInvalidError()
         {
             // given
+            SenderAsyncContext.Init();
+
             List<RoutePacket> result = new List<RoutePacket>();
             clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
             .Callback<string, RoutePacket>((sid, packet) => result.Add(packet));
@@ -129,6 +135,9 @@ namespace PlayHouseTests.Service.Play
         [Fact]
         public async Task CreateJoinRoomInCreateState_ShouldBeSuccess()
         {
+            SenderAsyncContext.Init();
+            PacketProducer.Create  = (packet) => XPacket.Of(packet);
+
             List<RoutePacket> result = new List<RoutePacket>();
             clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
             .Callback<string, RoutePacket>((sid, packet) => result.Add(packet));
@@ -151,8 +160,12 @@ namespace PlayHouseTests.Service.Play
         [Fact]
         public async Task TestCreateJoinRoomInJoinState()
         {
-            await CreateRoomWithSuccess();
             // Arrange
+            SenderAsyncContext.Init();
+            PacketProducer.Create = (packet) => XPacket.Of(packet);
+
+            await CreateRoomWithSuccess();
+
             List<RoutePacket> result = new List<RoutePacket>();
             clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
             .Callback<string, RoutePacket>((sid, packet) => result.Add(packet));

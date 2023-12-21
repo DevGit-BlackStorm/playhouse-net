@@ -1,7 +1,6 @@
 ﻿using Google.Protobuf;
 using PlayHouse.Communicator.Message;
 using Playhouse.Protocol;
-using PlayHouse.Production;
 
 namespace PlayHouse.Service.Play.Base.Command;
 internal class CreateJoinStageCmd : IBaseStageCmd
@@ -39,7 +38,7 @@ internal class CreateJoinStageCmd : IBaseStageCmd
         {
             var createReply = await baseStage.Create(stageType, createStagePacket);
             response.CreatePayloadId = createReply.reply.MsgId;
-            response.CreatePayload = ByteString.CopyFrom(createReply.reply.Data);
+            response.CreatePayload = ByteString.CopyFrom(createReply.reply.Payload.Data);
 
             if (createReply.errorCode != (ushort)BaseErrorCode.Success)
             {

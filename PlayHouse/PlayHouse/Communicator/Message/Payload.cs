@@ -9,6 +9,20 @@ namespace PlayHouse.Communicator.Message
         ReadOnlySpan<byte> Data { get; }
     }
 
+    public class CopyPayload : IPayload
+    {
+        private byte[] _data;
+        public CopyPayload(IPayload payload)
+        {
+            _data = payload.Data.ToArray();
+        }
+        public ReadOnlySpan<byte> Data => _data;
+
+        public void Dispose()
+        {
+        }
+    }
+
     public class ProtoPayload : IPayload
     {
         private readonly IMessage _proto;
