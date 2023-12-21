@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf;
 using Playhouse.Protocol;
 using PlayHouse.Communicator;
+using PlayHouse.Communicator.Message;
 using PlayHouse.Production;
 
 namespace PlayHouse.Service.Api
@@ -37,7 +38,7 @@ namespace PlayHouse.Service.Api
 
             if (CurrentHeader != null)
             {
-                SendToBaseSession(CurrentHeader.From, CurrentHeader.Sid, new Packet(message));
+                SendToBaseSession(CurrentHeader.From, CurrentHeader.Sid, RoutePacket.Of(message));
             }
             else
             {
@@ -57,11 +58,11 @@ namespace PlayHouse.Service.Api
                 Payload = ByteString.CopyFrom(packet.Payload.Data),
             };
 
-            ReplyPacket reply = await RequestToBaseStage(playEndpoint, stageId, this.AccountId, new Packet(req));
+            ReplyPacket reply = await RequestToBaseStage(playEndpoint, stageId, this.AccountId, RoutePacket.Of(req));
 
             JoinStageRes res = JoinStageRes.Parser.ParseFrom(reply.Data);
 
-            return new JoinStageResult(reply.ErrorCode, res.StageIdx, PacketProducer.Create!(XPacket.Of(res.PayloadId, res.Payload)));
+            return new JoinStageResult(reply.ErrorCode, res.StageIdx, CPacket.Of(res.PayloadId, res.Payload));
         }
 
         public async Task<CreateJoinStageResult> CreateJoinStage(string playEndpoint,
@@ -81,7 +82,7 @@ namespace PlayHouse.Service.Api
                 JoinPayload = ByteString.CopyFrom(joinPacket.Payload.Data),
             };
 
-            var reply = await RequestToBaseStage(playEndpoint, stageId, this.AccountId, new Packet(req));
+            var reply = await RequestToBaseStage(playEndpoint, stageId, this.AccountId, RoutePacket.Of(req));
 
             var res = CreateJoinStageRes.Parser.ParseFrom(reply.Data);
 
@@ -89,8 +90,8 @@ namespace PlayHouse.Service.Api
                     reply.ErrorCode,
                     res.IsCreated,
                     res.StageIdx,
-                    PacketProducer.Create!(XPacket.Of(res.CreatePayloadId, res.CreatePayload)),
-                    PacketProducer.Create!(XPacket.Of(res.JoinPayloadId, res.JoinPayload))
+                    CPacket.Of(res.CreatePayloadId, res.CreatePayload),
+                    CPacket.Of(res.JoinPayloadId, res.JoinPayload)
             );
         }
     }

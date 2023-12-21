@@ -4,7 +4,6 @@ using PlayHouse.Communicator;
 using Xunit;
 using FluentAssertions;
 using PlayHouseConnector;
-using Packet = PlayHouseConnector.Packet;
 using CommonLib;
 using PlayHouse.Production.Session;
 using NetMQ;
@@ -104,12 +103,12 @@ namespace PlayHouse.Service.Session.Network
                 await Task.Delay(100);
                 serverListener.ResultValue.Should().Be("onConnect");
 
-                connector.Send(API, new Packet(new TestMsg { TestMsg_ = "test" }));
+                connector.Send(API, new PlayHouseConnector.Packet(new TestMsg { TestMsg_ = "test" }));
 
                 await Task.Delay(100);
 
 
-                var replyPacket = await connector.RequestAsync(SESSION, new Packet(new TestMsg { TestMsg_ = "request" }));
+                var replyPacket = await connector.RequestAsync(SESSION, new PlayHouseConnector.Packet(new TestMsg { TestMsg_ = "request" }));
 
                 using (replyPacket)
                 {
@@ -117,7 +116,7 @@ namespace PlayHouse.Service.Session.Network
                 }
 
 
-                replyPacket = await connector.RequestAsync(SESSION, new Packet(new TestMsg { TestMsg_ = "request" }));
+                replyPacket = await connector.RequestAsync(SESSION, new PlayHouseConnector.Packet(new TestMsg { TestMsg_ = "request" }));
 
                 using (replyPacket)
                 {

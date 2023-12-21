@@ -40,16 +40,16 @@ namespace PlayHouse.Service.Api
             this.packetProducer = packetProducer;
         }
 
-        public async Task Dispatch(RoutePacket routePacket)
+        public async Task Dispatch(RoutePacket packet)
         {
-            _msgQueue.Enqueue(routePacket);
+            _msgQueue.Enqueue(packet);
 
             if (_isUsing.CompareAndSet(false, true))
             {
              
-                while (_msgQueue.TryDequeue(out var item))
+                while (_msgQueue.TryDequeue(out var routePacket))
                 {
-                    var routeHeader = item.RouteHeader;
+                    var routeHeader = routePacket.RouteHeader;
                     var apiSender = new AllApiSender(_serviceId, _clientCommunicator, _requestCache);
                     apiSender.SetCurrentPacketHeader(routeHeader);
 
@@ -79,11 +79,11 @@ namespace PlayHouse.Service.Api
 
                             if (routeHeader.IsBackend)
                             {
-                                await _apiReflection.BackendCallMethod(routeHeader, item.ToPacket(), apiSender);
+                                await _apiReflection.BackendCallMethod(routeHeader, routePacket, apiSender);
                             }
                             else
                             {
-                                await _apiReflection.CallMethod(routeHeader, item.ToPacket(), apiSender);
+                                await _apiReflection.CallMethod(routeHeader, routePacket, apiSender);
                             }
                         }
                         catch (ApiException.NotRegisterApiMethod e)
@@ -117,7 +117,7 @@ namespace PlayHouse.Service.Api
                                     errorCode = (ushort)BaseErrorCode.UncheckedContentsError;
                                 }
 
-                                apiSender.ErrorReply(routePacket.RouteHeader, errorCode);
+                                apiSender.ErrorReply(packet.RouteHeader, errorCode);
                             }
 
                             _log.Error(() => $"Packet processing failed due to an unexpected error. - [msgId:{routeHeader.MsgId}]");

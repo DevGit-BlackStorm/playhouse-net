@@ -230,7 +230,7 @@ internal class ApiReflection
     }
 
 
-    public async Task CallMethod(RouteHeader routeHeader, Packet packet, IApiSender apiSender)
+    public async Task CallMethod(RouteHeader routeHeader, RoutePacket packet, IApiSender apiSender)
     {
         using(packet)
         {
@@ -249,7 +249,7 @@ internal class ApiReflection
         //await task;
     }
 
-    public async Task BackendCallMethod(RouteHeader routeHeader, Packet packet,IApiBackendSender apiBackendSender)
+    public async Task BackendCallMethod(RouteHeader routeHeader, RoutePacket packet,IApiBackendSender apiBackendSender)
     {
         int msgId = routeHeader.MsgId;
         BackendApiMethod? targetMethod = _backendMethods.TryGetValue(msgId, out var method) ? method : null;

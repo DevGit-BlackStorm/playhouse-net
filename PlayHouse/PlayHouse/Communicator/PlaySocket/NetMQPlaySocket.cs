@@ -76,11 +76,11 @@ internal class NetMQPlaySocket : IPlaySocket
             }
 
             String target = Encoding.UTF8.GetString(message[0].Buffer);
-            var header = RouteHeaderMsg.Parser.ParseFrom(message[1].Buffer);
+            RouteHeaderMsg header = RouteHeaderMsg.Parser.ParseFrom(message[1].Buffer);
             //PooledBufferPayload payload = new(new (message[2].Buffer));
             FramePayload payload = new FramePayload(message[2]); 
 
-            var routePacket = RoutePacket.Of(new (header),payload);
+            var routePacket = RoutePacket.Of(new RouteHeader(header),payload);
             routePacket.RouteHeader.From = target;
             return routePacket;
         }

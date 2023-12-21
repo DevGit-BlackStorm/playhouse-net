@@ -19,7 +19,7 @@ internal class JoinStageCmd : IBaseStageCmd
         var accountId = routePacket.AccountId;
         var sessionEndpoint = request.SessionEndpoint;
         var sid = request.Sid;
-        var packet = new Packet(request.PayloadId, request.Payload);
+        var packet = CPacket.Of(request.PayloadId, request.Payload);
         var apiEndpoint = routePacket.RouteHeader.From;
 
         (ReplyPacket reply, int stageKey) joinResult = await baseStage.Join(accountId, sessionEndpoint, sid, apiEndpoint, packet);
@@ -33,7 +33,7 @@ internal class JoinStageCmd : IBaseStageCmd
             StageIdx = stageIndex,
         };
 
-        baseStage.Reply(outcome.ErrorCode, XPacket.Of(response));
+        baseStage.Reply(outcome.ErrorCode, CPacket.Of(response));
 
         if (outcome.IsSuccess())
         {

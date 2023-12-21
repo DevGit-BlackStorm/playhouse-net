@@ -69,7 +69,7 @@ internal class BaseStage
                 var baseUser = _playProcessor.FindUser(accountId);
                 if (baseUser != null)
                 {
-                    await _stage!.OnDispatch(baseUser.Actor,PacketProducer.Create!(XPacket.Of(routePacket.MsgId, routePacket.Payload)));
+                    await _stage!.OnDispatch(baseUser.Actor,CPacket.Of(routePacket.MsgId, routePacket.Payload));
                 }
             }
         }
@@ -112,17 +112,17 @@ internal class BaseStage
         }
     }
 
-    public async Task<(ushort errorCode, IPacket reply)> Create(string stageType, Packet packet)
+    public async Task<(ushort errorCode, IPacket reply)> Create(string stageType, IPacket packet)
     {
         _stage = _playProcessor.CreateContentRoom(stageType, _stageSender);
         _stageSender.SetStageType(stageType);
-        var outcome = await _stage.OnCreate(packet.ToContentsPacket());
+        var outcome = await _stage.OnCreate(packet);
         IsCreated = true;
         return outcome;
     }
 
 
-    public async Task<(ReplyPacket reply, int stageKey)> Join(string accountId, string sessionEndpoint, int sid, string apiEndpoint, Packet packet)
+    public async Task<(ReplyPacket reply, int stageKey)> Join(string accountId, string sessionEndpoint, int sid, string apiEndpoint, IPacket packet)
     {
         BaseActor? baseUser = _playProcessor.FindUser(accountId);
 
@@ -139,7 +139,7 @@ internal class BaseStage
             baseUser.ActorSender.Update(sessionEndpoint, sid, apiEndpoint);
         }
 
-        var outcome = await _stage!.OnJoinStage(baseUser.Actor, packet.ToContentsPacket());
+        var outcome = await _stage!.OnJoinStage(baseUser.Actor, packet);
         int stageKey = 0;
 
         if (outcome.errorCode != (ushort)BaseErrorCode.Success)
@@ -166,7 +166,7 @@ internal class BaseStage
         this._playProcessor.RemoveUser(accountId);
         var request = new LeaveStageMsg();
         request.StageId = _stageId;
-        this._stageSender.SendToBaseSession(sessionEndpoint, sid,new Packet(request));
+        this._stageSender.SendToBaseSession(sessionEndpoint, sid,RoutePacket.Of(request));
     }
 
     public string StageId => _stageSender.StageId;

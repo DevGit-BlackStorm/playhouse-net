@@ -16,7 +16,7 @@ internal class CreateStageCmd : IBaseStageCmd
     public  async Task Execute(BaseStage baseStage, RoutePacket routePacket)
     {
         var createStageReq = CreateStageReq.Parser.ParseFrom(routePacket.Data);
-        var packet = new Packet(createStageReq.PayloadId, createStageReq.Payload);
+        var packet = CPacket.Of(createStageReq.PayloadId, createStageReq.Payload);
         var stageType = createStageReq.StageType;
 
         if (!_playProcessor.IsValidType(stageType))
@@ -40,7 +40,7 @@ internal class CreateStageCmd : IBaseStageCmd
         };
 
         
-        baseStage.Reply(outcome.errorCode,XPacket.Of(res));
+        baseStage.Reply(outcome.errorCode,CPacket.Of(res));
 
         if (outcome.errorCode == (ushort)BaseErrorCode.Success)
         {

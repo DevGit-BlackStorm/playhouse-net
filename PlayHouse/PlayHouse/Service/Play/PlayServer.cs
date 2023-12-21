@@ -48,7 +48,7 @@ namespace PlayHouse.Service.Play
             var systemPanelImpl = new XSystemPanel(serverInfoCenter, communicateClient, nodeId);
             ControlContext.BaseSender = xSender;
             ControlContext.SystemPanel = systemPanelImpl;
-            PacketProducer.Create = _commonOption.PacketProducer;
+            PacketProducer.Init(_commonOption.PacketProducer!);
 
             var playService = new PlayProcessor(serviceId, bindEndpoint, _playOption, communicateClient, requestCache, serverInfoCenter);
 

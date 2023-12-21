@@ -24,7 +24,7 @@ internal class ReplyObject
             using (routePacket)
             {
                 var replyPacket = routePacket.ToReplyPacket();
-                _replyCallback?.Invoke(replyPacket.ErrorCode,replyPacket.ToXPacket());
+                _replyCallback?.Invoke(replyPacket.ErrorCode,CPacket.Of(replyPacket));
             }
         }
         
@@ -33,7 +33,7 @@ internal class ReplyObject
 
     public void Throw(ushort errorCode)
     {
-        _replyCallback?.Invoke(errorCode,XPacket.OfEmpty());
+        _replyCallback?.Invoke(errorCode,CPacket.OfEmpty());
         _taskCompletionSource?.SetResult(new ReplyPacket(errorCode));
         
     }

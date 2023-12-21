@@ -1,5 +1,6 @@
 ﻿using CommonLib;
 using Google.Protobuf;
+using NetMQ;
 using Playhouse.Protocol;
 using PlayHouse.Production;
 using PlayHouse.Service;
@@ -137,6 +138,7 @@ namespace PlayHouse.Communicator.Message
             this._payload = payload;
         }
 
+
         public int MsgId => RouteHeader.MsgId;
         public ushort ServiceId() { return RouteHeader.Header.ServiceId; }
         public bool IsBackend() { return RouteHeader.IsBackend; }
@@ -149,10 +151,10 @@ namespace PlayHouse.Communicator.Message
             return  new ClientPacket(RouteHeader.Header, MovePayload());
         }
 
-        public Packet ToPacket()
-        {
-            return new Packet(MsgId, MovePayload());
-        }
+        //public Packet ToPacket()
+        //{
+        //    return new Packet(MsgId, MovePayload());
+        //}
 
         public bool IsBase()
         {
@@ -202,7 +204,22 @@ namespace PlayHouse.Communicator.Message
             return new RoutePacket(routeHeader, payload);
         }
 
-        public static RoutePacket SystemOf(Packet packet, bool isBase)
+        internal static RoutePacket Of(int msgId, IPayload payload)
+        {
+            return new RoutePacket(new RouteHeader(new Header() { MsgId = msgId }), payload);
+        }
+
+        internal static RoutePacket Of(IMessage message)
+        {
+            return new RoutePacket(new RouteHeader(new Header() { MsgId = message.Descriptor.Index }), new ProtoPayload(message));
+        }
+
+        internal static RoutePacket Of(IPacket packet)
+        {
+            return new RoutePacket(new RouteHeader(new Header() { MsgId = packet.MsgId}),packet.Payload);
+        }
+
+        public static RoutePacket SystemOf(RoutePacket packet, bool isBase)
         {
             Header header = new Header(msgId: packet.MsgId);
             RouteHeader routeHeader = RouteHeader.Of(header);
@@ -211,7 +228,7 @@ namespace PlayHouse.Communicator.Message
             return new RoutePacket(routeHeader, packet.MovePayload());
         }
 
-        public static RoutePacket ApiOf(Packet packet, bool isBase, bool isBackend)
+        public static RoutePacket ApiOf(RoutePacket packet, bool isBase, bool isBackend)
         {
             Header header = new Header(msgId:packet.MsgId);
             RouteHeader routeHeader = RouteHeader.Of(header);
@@ -220,7 +237,7 @@ namespace PlayHouse.Communicator.Message
             return new RoutePacket(routeHeader, packet.MovePayload());
         }
 
-        public static RoutePacket SessionOf(int sid, Packet packet, bool isBase, bool isBackend)
+        public static RoutePacket SessionOf(int sid, RoutePacket packet, bool isBase, bool isBackend)
         {
             Header header = new Header(msgId:packet.MsgId);
             RouteHeader routeHeader = RouteHeader.Of(header);
@@ -266,7 +283,7 @@ namespace PlayHouse.Communicator.Message
             };
         }
 
-        public static RoutePacket StageOf(string stageId, string accountId, Packet packet, bool isBase, bool isBackend)
+        public static RoutePacket StageOf(string stageId, string accountId, RoutePacket packet, bool isBase, bool isBackend)
         {
             Header header = new Header(msgId: packet.MsgId);
             RouteHeader routeHeader = RouteHeader.Of(header);
@@ -315,7 +332,7 @@ namespace PlayHouse.Communicator.Message
             return routePacket;
         }
 
-        public static RoutePacket ClientOf(ushort serviceId, int sid, Packet packet)
+        public static RoutePacket ClientOf(ushort serviceId, int sid, IPacket packet)
         {
             Header header = new(msgId:packet.MsgId)
             {
@@ -379,6 +396,13 @@ namespace PlayHouse.Communicator.Message
         {
             return new  ReplyPacket(RouteHeader.Header.ErrorCode,RouteHeader.MsgId,MovePayload()); 
         }
+
+        internal IPacket ToContentsPacket()
+        {
+            return PacketProducer.CreatePacket(MsgId, _payload);
+        }
+
+        
     }
 
     internal class AsyncBlockPacket : RoutePacket

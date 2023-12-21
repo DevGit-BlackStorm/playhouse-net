@@ -32,7 +32,8 @@ namespace PlayHouse.Service
 
         public void Start()
         {
-            _msgQueue.Enqueue(RoutePacket.SystemOf(new Packet(START), isBase: true));
+
+            _msgQueue.Enqueue(RoutePacket.SystemOf(RoutePacket.Of(START,new EmptyPayload()), isBase: true));
             _thread.Start();
         }
 
@@ -43,7 +44,7 @@ namespace PlayHouse.Service
 
         public void Stop()
         {
-            _msgQueue.Enqueue(RoutePacket.SystemOf(new Packet(STOP), isBase: true));
+            _msgQueue.Enqueue(RoutePacket.SystemOf(RoutePacket.Of(STOP, new EmptyPayload()), isBase: true));
             _running = false;
         }
 
@@ -83,7 +84,7 @@ namespace PlayHouse.Service
                                 else
                                 {
                                     _baseSender.SetCurrentPacketHeader(routePacket.RouteHeader);
-                                    _serverSystem.OnDispatch(XPacket.Of(routePacket.MsgId, routePacket.Payload));
+                                    _serverSystem.OnDispatch(routePacket.ToContentsPacket());
                                 }
                             }
                             catch (Exception e)
@@ -105,12 +106,12 @@ namespace PlayHouse.Service
 
         public void Pause()
         {
-            _msgQueue.Enqueue(RoutePacket.SystemOf(new Packet(PAUSE), isBase: true));
+            _msgQueue.Enqueue(RoutePacket.SystemOf(RoutePacket.Of(PAUSE, new EmptyPayload()), isBase: true));
         }
 
         public void Resume()
         {
-            _msgQueue.Enqueue(RoutePacket.SystemOf(new Packet(RESUME), isBase: true));
+            _msgQueue.Enqueue(RoutePacket.SystemOf(RoutePacket.Of(RESUME, new EmptyPayload()), isBase: true));
         }
     }
 }

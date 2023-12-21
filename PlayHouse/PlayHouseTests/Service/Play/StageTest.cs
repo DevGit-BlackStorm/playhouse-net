@@ -83,11 +83,11 @@ namespace PlayHouseTests.Service.Play
 
             Mock.Get(contentStage)
                 .Setup(stage => stage.OnCreate(It.IsAny<IPacket>()))
-                .Returns(Task.FromResult(((ushort)0, (IPacket)XPacket.Of(new TestMsg { TestMsg_ = "onCreate" })))); 
+                .Returns(Task.FromResult(((ushort)0, (IPacket)CPacket.Of(new TestMsg { TestMsg_ = "onCreate" })))); 
 
             Mock.Get(contentStage)
                 .Setup(stage => stage.OnJoinStage(It.IsAny<IActor>(), It.IsAny<IPacket>()))
-                .Returns(Task.FromResult(((ushort)0, (IPacket)XPacket.Of(new TestMsg { TestMsg_ = "onJoinStage" })))); 
+                .Returns(Task.FromResult(((ushort)0, (IPacket)CPacket.Of(new TestMsg { TestMsg_ = "onJoinStage" })))); 
         }
 
         [Fact]
@@ -95,7 +95,7 @@ namespace PlayHouseTests.Service.Play
         {
             // given
             SenderAsyncContext.Init();
-            PacketProducer.Create = (packet) => XPacket.Of(packet);
+            PacketProducer.Init((int msgId, IPayload payload) => new TestPacket(msgId, payload));
 
             List<RoutePacket> result = new List<RoutePacket>();
             clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
@@ -136,7 +136,7 @@ namespace PlayHouseTests.Service.Play
         public async Task CreateJoinRoomInCreateState_ShouldBeSuccess()
         {
             SenderAsyncContext.Init();
-            PacketProducer.Create  = (packet) => XPacket.Of(packet);
+            PacketProducer.Init((int msgId, IPayload payload) => new TestPacket(msgId, payload));
 
             List<RoutePacket> result = new List<RoutePacket>();
             clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
@@ -162,7 +162,7 @@ namespace PlayHouseTests.Service.Play
         {
             // Arrange
             SenderAsyncContext.Init();
-            PacketProducer.Create = (packet) => XPacket.Of(packet);
+            PacketProducer.Init((int msgId, IPayload payload) => new TestPacket(msgId, payload));
 
             await CreateRoomWithSuccess();
 
@@ -193,7 +193,7 @@ namespace PlayHouseTests.Service.Play
 
         private RoutePacket CreateRoomPacket(string stageType)
         {
-            var packet = new Packet(new CreateStageReq
+            var packet = RoutePacket.Of(new CreateStageReq
             {
                 StageType = stageType
             });
@@ -205,7 +205,7 @@ namespace PlayHouseTests.Service.Play
 
         private RoutePacket JoinRoomPacket(string stageId, string accountId)
         {
-            var packet = new Packet(new JoinStageReq
+            var packet = RoutePacket.Of(new JoinStageReq
             {
                 SessionEndpoint = sessionEndpoint,
                 Sid = 1,
@@ -229,7 +229,7 @@ namespace PlayHouseTests.Service.Play
                 JoinPayloadId = 2,
                 JoinPayload = ByteString.Empty
             };
-            var packet = new Packet(req);
+            var packet = RoutePacket.Of(req);
             var result = RoutePacket.StageOf(stageId, accountId, packet, true, true);
             result.SetMsgSeq(3);
             return result;

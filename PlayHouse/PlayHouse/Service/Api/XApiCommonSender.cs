@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf;
 using Playhouse.Protocol;
 using PlayHouse.Communicator;
+using PlayHouse.Communicator.Message;
 using PlayHouse.Production;
 
 namespace PlayHouse.Service.Api;
@@ -22,10 +23,10 @@ internal class XApiCommonSender : XSender, IApiCommonSender
             Payload = ByteString.CopyFrom(packet.Payload.Data)
         };
 
-        var reply = await RequestToBaseStage(playEndpoint, stageId, string.Empty, new Packet(req));
+        var reply = await RequestToBaseStage(playEndpoint, stageId, string.Empty, RoutePacket.Of(req));
 
         var res = CreateStageRes.Parser.ParseFrom(reply.Data);
 
-        return new CreateStageResult(reply.ErrorCode, XPacket.Of(res.PayloadId, res.Payload));
+        return new CreateStageResult(reply.ErrorCode,  PacketProducer.CreatePacket(res.PayloadId, new ByteStringPayload(res.Payload)));
     }
 }

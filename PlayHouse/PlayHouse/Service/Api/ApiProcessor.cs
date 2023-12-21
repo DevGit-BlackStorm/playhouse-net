@@ -117,14 +117,14 @@ namespace PlayHouse.Service.Api
                                     {
                                         await _apiReflection.BackendCallMethod(
                                         routeHeader,
-                                        packet.ToPacket(),
+                                        packet,
                                         apiSender).ConfigureAwait(false);
                                     }
                                     else
                                     {
                                         await _apiReflection.CallMethod(
                                         routeHeader,
-                                        packet.ToPacket(),
+                                        packet,
                                         apiSender).ConfigureAwait(false);
                                     }
                                 }

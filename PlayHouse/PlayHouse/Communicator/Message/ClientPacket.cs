@@ -43,11 +43,16 @@ namespace PlayHouse.Communicator.Message
             return Header.ServiceId;
         }
 
-        public Packet ToPacket()
+        internal RoutePacket ToRoutePacket()
         {
-            return new Packet(Header.MsgId, MovePayload());
+            return RoutePacket.Of(Header.MsgId,MovePayload());
         }
-        
+
+        //public Packet ToPacket()
+        //{
+        //    return new Packet(Header.MsgId, MovePayload());
+        //}
+
     }
 
 

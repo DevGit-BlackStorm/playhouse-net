@@ -15,7 +15,7 @@ namespace PlayHouse.Service.Session
 
         public void RelayToStage(string playEndpoint, string stageId, int sid, string accountId, ClientPacket packet)
         {
-            var routePacket = RoutePacket.ApiOf(packet.ToPacket(), false, false);
+            var routePacket = RoutePacket.ApiOf(packet.ToRoutePacket(), false, false);
             routePacket.RouteHeader.StageId = stageId;
             routePacket.RouteHeader.AccountId = accountId;
             routePacket.RouteHeader.Header.MsgSeq = packet.GetMsgSeq();
@@ -26,7 +26,7 @@ namespace PlayHouse.Service.Session
 
         public void RelayToApi(string apiEndpoint, int sid, string accountId, ClientPacket packet)
         {
-            var routePacket = RoutePacket.ApiOf( packet.ToPacket(), false, false);
+            var routePacket = RoutePacket.ApiOf( packet.ToRoutePacket(), false, false);
             routePacket.RouteHeader.Sid = sid;
             routePacket.RouteHeader.Header.MsgSeq = packet.GetMsgSeq();
             routePacket.RouteHeader.IsToClient = false;

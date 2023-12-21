@@ -24,7 +24,7 @@ namespace PlayHouseTests.Service.Api.plain
         public async Task Test_CALL_Method()
         {
 
-            PacketProducer.Create = (IPacket packet) => XPacket.Of(packet);
+            PacketProducer.Init((int msgId, IPayload payload) => new TestPacket(msgId, payload));
             GlobalApiActionManager.AddFilter(new TestApiGlobalActionAttribute());
 
             var apiReflections = new ApiReflection();
@@ -32,9 +32,9 @@ namespace PlayHouseTests.Service.Api.plain
             bool isBackend = false;
 
             
-            var routePacket = RoutePacket.ApiOf(new Packet(new ApiTestMsg1() { TestMsg = "ApiServiceCall_Test1" }), false, isBackend);
+            var routePacket = RoutePacket.ApiOf(RoutePacket.Of(new ApiTestMsg1() { TestMsg = "ApiServiceCall_Test1" }), false, isBackend);
 
-            await apiReflections.CallMethod(routePacket.RouteHeader, routePacket.ToPacket(), apiSender);
+            await apiReflections.CallMethod(routePacket.RouteHeader, routePacket, apiSender);
 
             ReflectionTestResult.ResultMap["TestApiController_Test1"].Should().Be("ApiServiceCall_Test1");
             ReflectionTestResult.ResultMap[$"TestApiActionAttributeBefore_{ApiTestMsg1.Descriptor.Index}"].Should().Be("BeforeExecution");
@@ -45,8 +45,8 @@ namespace PlayHouseTests.Service.Api.plain
             ReflectionTestResult.ResultMap[$"TestApiGlobalActionAttributeAfter_{ApiTestMsg1.Descriptor.Index}"].Should().Be("AfterExecution");
             
 
-            routePacket = RoutePacket.ApiOf(new Packet(new ApiTestMsg2() { TestMsg = "ApiServiceCall_Test2" }), false, isBackend);
-            await apiReflections.CallMethod(routePacket.RouteHeader, routePacket.ToPacket(), apiSender);
+            routePacket = RoutePacket.ApiOf(RoutePacket.Of(new ApiTestMsg2() { TestMsg = "ApiServiceCall_Test2" }), false, isBackend);
+            await apiReflections.CallMethod(routePacket.RouteHeader, routePacket, apiSender);
 
             ReflectionTestResult.ResultMap["TestApiController_Test2"].Should().Be("ApiServiceCall_Test2");
             ReflectionTestResult.ResultMap[$"TestApiActionAttributeBefore_{ApiTestMsg2.Descriptor.Index}"].Should().Be("BeforeExecution");
@@ -61,14 +61,14 @@ namespace PlayHouseTests.Service.Api.plain
         [Fact]
         public async Task Test_CALL_Backend_Method()
         {
-            PacketProducer.Create = (IPacket packet) =>  XPacket.Of(packet);
+            PacketProducer.Init((int msgId,IPayload payload) =>  new TestPacket(msgId, payload));
             var apiReflections = new ApiReflection();
             var apiSender = new Mock<IApiBackendSender>().Object;
             bool isBackend = false;
 
-            var routePacket = RoutePacket.ApiOf(new Packet(new ApiTestMsg1() { TestMsg = "ApiBackendServiceCall_Test1" }), false, isBackend);
+            var routePacket = RoutePacket.ApiOf(RoutePacket.Of(new ApiTestMsg1() { TestMsg = "ApiBackendServiceCall_Test1" }), false, isBackend);
 
-            await apiReflections.BackendCallMethod(routePacket.RouteHeader, routePacket.ToPacket(), apiSender);
+            await apiReflections.BackendCallMethod(routePacket.RouteHeader, routePacket, apiSender);
 
             ReflectionTestResult.ResultMap["TestApiController_Test3"].Should().Be("ApiBackendServiceCall_Test1");
             ReflectionTestResult.ResultMap[$"TestBackendApiActionAttributeBefore_{ApiTestMsg1.Descriptor.Index}"].Should().Be("BeforeExecution");
@@ -78,9 +78,9 @@ namespace PlayHouseTests.Service.Api.plain
 
 
 
-            routePacket = RoutePacket.ApiOf(new Packet(new ApiTestMsg2() { TestMsg = "ApiBackendServiceCall_Test2" }), false, isBackend);
+            routePacket = RoutePacket.ApiOf(RoutePacket.Of(new ApiTestMsg2() { TestMsg = "ApiBackendServiceCall_Test2" }), false, isBackend);
 
-            await apiReflections.BackendCallMethod(routePacket.RouteHeader, routePacket.ToPacket(), apiSender);
+            await apiReflections.BackendCallMethod(routePacket.RouteHeader, routePacket, apiSender);
 
             ReflectionTestResult.ResultMap["TestApiController_Test4"].Should().Be("ApiBackendServiceCall_Test2");
             ReflectionTestResult.ResultMap[$"TestBackendApiActionAttributeBefore_{ApiTestMsg2.Descriptor.Index}"].Should().Be("BeforeExecution");

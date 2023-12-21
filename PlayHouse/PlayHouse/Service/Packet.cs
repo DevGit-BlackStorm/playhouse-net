@@ -4,6 +4,7 @@ using Google.Protobuf;
 using Communicator.Message;
 using System.Net.NetworkInformation;
 using PlayHouse.Production;
+using NetMQ;
 
 public delegate void ReplyCallback(ushort errorCode, IPacket reply);
 
@@ -13,104 +14,128 @@ public interface IBasePacket : IDisposable
     ReadOnlySpan<byte> Data { get; }
 }
 
+internal class CPacket
+{
+
+    public static IPacket Of(int msgId, ByteString message)
+    {
+        return PacketProducer.CreatePacket(msgId, new ByteStringPayload(message));
+    }
+    public static IPacket Of(IMessage message)
+    {
+        return PacketProducer.CreatePacket(message.Descriptor.Index, new ProtoPayload(message));
+    }
+    public static IPacket Of(int msgId, IPayload payload)
+    {
+        return PacketProducer.CreatePacket(msgId, payload);
+    }
+
+    public static IPacket Of(ReplyPacket replyPacket)
+    {
+        return PacketProducer.CreatePacket(replyPacket.MsgId, replyPacket.Payload);
+    }
+
+    public static IPacket OfEmpty()
+    {
+        return new EmptyPacket();
+    }
+}
+
+
+//internal class Packet 
+//{
+//    public int MsgId;
+//    public IPayload Payload => _payload;
+
+//    private IPayload _payload;
+
+//    public Packet(int msgId = 0)
+//    {
+//        MsgId = msgId;
+//        _payload = new EmptyPayload();
+//    }
+
+//    public Packet(int msgId, IPayload payload) : this(msgId)
+//    {
+//        _payload = payload;
+//    }
+
+//    public Packet(IMessage message) : this(message.Descriptor.Index, new ProtoPayload(message)) { }
+//    public Packet(int msgId, ByteString message) : this(msgId, new ByteStringPayload(message)) { }
+
+//    public static Packet Of(IPacket packet)
+//    {
+//        return new Packet(packet.MsgId, packet.Payload);
+//    }
+
+
+//    public ReadOnlySpan<byte> Data => _payload!.Data;
+
+//    //public IPayload MovePayload()
+//    //{
+
+//    //    IPayload temp = _payload;
+//    //    _payload = new EmptyPayload();
+//    //    return temp;
+//    //}
+
+//    //public void Dispose()
+//    //{
+//    //    _payload.Dispose();
+//    //}
+
+//    public IPacket ToContentsPacket()
+//    {
+//        return PacketProducer.CreatePacket(MsgId, _payload);
+//    }
+//}
+
 internal class XPacket : IPacket
 {
     private int _msgId;
     private IPayload _payload;
 
-    private XPacket(int msgId, IPayload payload)
+    private XPacket(int msgId,IPayload paylaod)
     {
         _msgId = msgId;
-        _payload = payload;
+        _payload = paylaod;
     }
-
-
     public int MsgId => _msgId;
 
-    public ReadOnlySpan<byte> Data => _payload.Data;
     public IPayload Payload => _payload;
 
 
-    public static XPacket OfEmpty()
-    {
-        return new XPacket(0, new EmptyPayload());
-    }
-
-    public static XPacket Of(int msgId, ByteString message)
-    {
-        return new XPacket(msgId, new ByteStringPayload(message));
-    }
     public static XPacket Of(IMessage message)
     {
-        return new XPacket(message.Descriptor.Index, new ProtoPayload(message));
-    }
-    public static XPacket Of(int msgId, IPayload payload)
-    {
-        return new XPacket(msgId, payload);
-    }
-
-    public T Parse<T>()
-    {
-        throw new NotImplementedException();
-    }
-
-    internal static IPacket Of(IPacket packet)
-    {
-        return new XPacket(packet.MsgId, packet.Payload);
+        return new XPacket(message.Descriptor.Index,new ProtoPayload(message));
     }
 
     public IPacket Copy()
     {
         throw new NotImplementedException();
     }
+
+    public T Parse<T>()
+    {
+        throw new NotImplementedException();
+    }
 }
 
-
-internal class Packet : IBasePacket
+internal class EmptyPacket : IPacket
 {
-    public int MsgId;
+    private IPayload _payload = new EmptyPayload();
+    public int MsgId => 0;
+
     public IPayload Payload => _payload;
 
-    private IPayload _payload;
-
-    public Packet(int msgId = 0)
+    public IPacket Copy()
     {
-        MsgId = msgId;
-        _payload = new EmptyPayload();
+        throw new NotImplementedException();
     }
 
-    public Packet(int msgId, IPayload payload) : this(msgId)
+    public T Parse<T>()
     {
-        _payload = payload;
-    }
-
-    public Packet(IMessage message) : this(message.Descriptor.Index, new ProtoPayload(message)) { }
-    public Packet(int msgId, ByteString message) : this(msgId, new ByteStringPayload(message)) { }
-
-    public static Packet Of(IPacket packet)
-    {
-        return new Packet(packet.MsgId, packet.Payload);
-    }
-
-
-    public ReadOnlySpan<byte> Data => _payload!.Data;
-
-    public IPayload MovePayload()
-    {
-
-        IPayload temp = _payload;
-        _payload = new EmptyPayload();
-        return temp;
-    }
-
-    public void Dispose()
-    {
-        _payload.Dispose();
-    }
-
-    public IPacket ToContentsPacket()
-    {
-        return PacketProducer.Create!.Invoke(XPacket.Of(MsgId, _payload));
+        throw new NotImplementedException();
     }
 }
 
@@ -154,8 +179,4 @@ internal class ReplyPacket : IBasePacket
         _payload.Dispose();
     }
 
-    public XPacket ToXPacket()
-    {
-        return XPacket.Of(MsgId, _payload);
-    }
 }

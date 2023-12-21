@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf;
 using Playhouse.Protocol;
+using PlayHouse.Communicator.Message;
 using PlayHouse.Production;
 
 namespace PlayHouse.Service.Play.Base
@@ -27,7 +28,7 @@ namespace PlayHouse.Service.Play.Base
                 PlayEndpoint = _playEndpoint,
             };
 
-            var res = await _stageSender.RequestToBaseSession(sessionEndpoint, sid, new Packet(joinStageInfoUpdateReq));
+            var res = await _stageSender.RequestToBaseSession(sessionEndpoint, sid, RoutePacket.Of(joinStageInfoUpdateReq));
             var result = JoinStageInfoUpdateRes.Parser.ParseFrom(res.Data);
             return result.StageIdx;
         }

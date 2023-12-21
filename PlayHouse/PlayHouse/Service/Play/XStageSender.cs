@@ -90,7 +90,7 @@ namespace PlayHouse.Service.Play
             }
             _timerIds.Clear();
 
-            var packet2 = RoutePacket.StageOf(_stageId, string.Empty,new Packet(DestroyStage.Descriptor.Index), true, false);
+            var packet2 = RoutePacket.StageOf(_stageId, string.Empty, RoutePacket.Of(DestroyStage.Descriptor.Index,new EmptyPayload()), true, false);
             _playProcessor.OnReceive(packet2);
         }
 

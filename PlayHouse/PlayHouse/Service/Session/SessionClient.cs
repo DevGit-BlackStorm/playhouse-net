@@ -122,7 +122,7 @@ internal class SessionClient
         if (IsAuthenticated)
         {
             IServerInfo serverInfo = FindSuitableServer(_authenticateServiceId, _authServerEndpoint);
-            Packet disconnectPacket = new Packet(new DisconnectNoticeMsg());
+            RoutePacket disconnectPacket = RoutePacket.Of(new DisconnectNoticeMsg());
             _sessionSender.SendToBaseApi(serverInfo.BindEndpoint(),_accountId, disconnectPacket);
             foreach (var targetId in _playEndpoints.Values)
             {

@@ -52,7 +52,7 @@ public class ApiServer : IServer
 
         ControlContext.BaseSender = sender;
         ControlContext.SystemPanel = systemPanel;
-        PacketProducer.Create = _commonOption.PacketProducer!;
+        PacketProducer.Init(_commonOption.PacketProducer!);
         
 
 

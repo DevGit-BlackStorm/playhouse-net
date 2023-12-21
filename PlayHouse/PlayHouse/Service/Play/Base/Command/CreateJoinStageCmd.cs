@@ -17,9 +17,9 @@ internal class CreateJoinStageCmd : IBaseStageCmd
     public async Task Execute(BaseStage baseStage, RoutePacket routePacket)
     {
         var request = CreateJoinStageReq.Parser.ParseFrom(routePacket.Data);
-        var createStagePacket = new Packet(request.CreatePayloadId, request.CreatePayload);
+        var createStagePacket = CPacket.Of(request.CreatePayloadId, request.CreatePayload);
         var stageType = request.StageType;
-        var joinStagePacket = new Packet(request.JoinPayloadId, request.JoinPayload);
+        var joinStagePacket = CPacket.Of(request.JoinPayloadId, request.JoinPayload);
         var accountId = routePacket.AccountId;
         var stageId = routePacket.StageId;
         var sessionEndpoint = request.SessionEndpoint;
@@ -43,7 +43,7 @@ internal class CreateJoinStageCmd : IBaseStageCmd
             if (createReply.errorCode != (ushort)BaseErrorCode.Success)
             {
                 _playProcessor.RemoveRoom(stageId);                    
-                baseStage.Reply(createReply.errorCode, XPacket.Of(response));
+                baseStage.Reply(createReply.errorCode, CPacket.Of(response));
                 return;
             }
             else
@@ -61,7 +61,7 @@ internal class CreateJoinStageCmd : IBaseStageCmd
         response.JoinPayload = ByteString.CopyFrom(joinReply.Data);
         response.StageIdx = stageKey;
 
-        baseStage.Reply(joinReply.ErrorCode, XPacket.Of(response));
+        baseStage.Reply(joinReply.ErrorCode, CPacket.Of(response));
 
         if (joinReply.IsSuccess())
         {

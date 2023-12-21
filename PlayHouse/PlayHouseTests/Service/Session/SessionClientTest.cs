@@ -75,7 +75,7 @@ namespace PlayHouseTests.Service.Session
                 ServiceId = _idApi,
                 AccountId = accountId,
             };
-            var routePacket = RoutePacket.SessionOf(_sid, new Packet(message), true, true);
+            var routePacket = RoutePacket.SessionOf(_sid, RoutePacket.Of(message), true, true);
 
             var sessionClient = new SessionClient(_idSession, _sid, _serviceCenter, _session, _clientCommunicator, _urls, _reqCache);
             sessionClient.Dispatch(routePacket);
