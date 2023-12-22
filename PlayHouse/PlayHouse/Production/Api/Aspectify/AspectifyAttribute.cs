@@ -1,11 +1,10 @@
-﻿using PlayHouse.Production.Api.Aspectify;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PlayHouse.Production.Api.Filter;
+namespace PlayHouse.Production.Api.Aspectify;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public abstract class AspectifyAttribute : Attribute, IInterceptor
