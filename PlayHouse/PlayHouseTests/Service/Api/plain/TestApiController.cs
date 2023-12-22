@@ -25,7 +25,6 @@ namespace PlayHouseTests.Service.Api.plain
 
         private Task TestApiContentsException(IPacket packet, IApiSender apiSender)
         {
-            AsyncContext.ErrorCode = 101;
             throw new Exception("test content TestApiContentsException");
         }
 

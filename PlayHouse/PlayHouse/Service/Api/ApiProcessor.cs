@@ -107,7 +107,7 @@ namespace PlayHouse.Service.Api
                                 var apiSender = new AllApiSender(_serviceId, _clientCommunicator, _requestCache);
                                 apiSender.SetCurrentPacketHeader(routeHeader);
 
-                                AsyncContext.AsyncCore.Init(apiSender);
+                                AsyncStorage.AsyncCore.Init(apiSender);
                                 ServiceAsyncContext.Init();
 
 
@@ -150,13 +150,7 @@ namespace PlayHouse.Service.Api
                                     // Use the default content error code if it's not set in the content.
                                     if(routeHeader.Header.MsgSeq > 0)
                                     {
-                                        var errorCode = AsyncContext.ErrorCode;
-                                        if (errorCode == (ushort)BaseErrorCode.Success)
-                                        {
-                                            errorCode = (ushort)BaseErrorCode.UncheckedContentsError;
-                                        }
-
-                                        apiSender.ErrorReply(packet.RouteHeader, errorCode);
+                                        apiSender.ErrorReply(packet.RouteHeader, (ushort)BaseErrorCode.UncheckedContentsError);
                                     }
 
                                     _log.Error(() => $"Packet processing failed due to an unexpected error. - [msgId:{routeHeader.MsgId}]");
@@ -170,7 +164,7 @@ namespace PlayHouse.Service.Api
                                     }
                                 }
 
-                                AsyncContext.AsyncCore.Clear();
+                                AsyncStorage.AsyncCore.Clear();
                                 ServiceAsyncContext.Clear();
                             });
                         }

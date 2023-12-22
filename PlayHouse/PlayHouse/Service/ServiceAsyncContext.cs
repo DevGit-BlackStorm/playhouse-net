@@ -14,7 +14,7 @@ namespace PlayHouse.Service
     internal class ServiceAsyncContext
     {
         private static readonly AsyncLocal<ConcurrentQueue<ReplyPacket>> ReplyQueue = new();
-        public static LOG<AsyncContext> _log = new();
+        public static LOG<AsyncStorage> _log = new();
 
         public static void Init()
         {
@@ -31,7 +31,7 @@ namespace PlayHouse.Service
                 }
                 catch (Exception ex)
                 {
-                    _log.Error(() => "AsyncContext Error in Clear");
+                    _log.Error(() => "AsyncStorage Error in Clear");
                     _log.Error(() => $"{ex.Message}");
                     _log.Error(() => $"{ex.StackTrace}");
                 }

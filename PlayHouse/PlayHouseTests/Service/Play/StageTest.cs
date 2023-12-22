@@ -94,7 +94,7 @@ namespace PlayHouseTests.Service.Play
         public async Task CreateRoom_ShouldSucceed()
         {
             // given
-            AsyncContext.AsyncCore.Init();
+            AsyncStorage.AsyncCore.Init();
             PacketProducer.Init((int msgId, IPayload payload) => new TestPacket(msgId, payload));
 
             List<RoutePacket> result = new List<RoutePacket>();
@@ -119,7 +119,7 @@ namespace PlayHouseTests.Service.Play
         public async Task CreateRoom_WithInvalidType_ShouldReturnInvalidError()
         {
             // given
-            AsyncContext.AsyncCore.Init();
+            AsyncStorage.AsyncCore.Init();
 
             List<RoutePacket> result = new List<RoutePacket>();
             clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
@@ -135,7 +135,7 @@ namespace PlayHouseTests.Service.Play
         [Fact]
         public async Task CreateJoinRoomInCreateState_ShouldBeSuccess()
         {
-            AsyncContext.AsyncCore.Init();
+            AsyncStorage.AsyncCore.Init();
             PacketProducer.Init((int msgId, IPayload payload) => new TestPacket(msgId, payload));
 
             List<RoutePacket> result = new List<RoutePacket>();
@@ -161,7 +161,7 @@ namespace PlayHouseTests.Service.Play
         public async Task TestCreateJoinRoomInJoinState()
         {
             // Arrange
-            AsyncContext.AsyncCore.Init();
+            AsyncStorage.AsyncCore.Init();
             PacketProducer.Init((int msgId, IPayload payload) => new TestPacket(msgId, payload));
 
             await CreateRoomWithSuccess();

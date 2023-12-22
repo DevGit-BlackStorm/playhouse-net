@@ -161,7 +161,7 @@ internal class NullApiSender : IApiSender
     }
 }
 
-public class AsyncContext
+public class AsyncStorage
 {
     private IAsyncCore _core = new AsyncCore();
     public static IAsyncCore AsyncCore
@@ -169,18 +169,18 @@ public class AsyncContext
         get { return Instance._core; }
         set { Instance._core = value; }
     }
-    public static AsyncContext Instance { get; private set; } = new();
+    public static AsyncStorage Instance { get; private set; } = new();
 
-    public static IApiSender ApiSender
-    {
-        get { return AsyncCore.GetApiSender(); }
-        set { AsyncCore.SetApiSender(value); }
-    }
-    public static ushort ErrorCode
-    {
-        get { return AsyncCore.GetErrorCode(); }
-        set { AsyncCore.SetErrorCode(value); }
-    }
+    //internal static IApiSender ApiSender
+    //{
+    //    get { return AsyncCore.GetApiSender(); }
+    //    set { AsyncCore.SetApiSender(value); }
+    //}
+    //internal static ushort ErrorCode
+    //{
+    //    get { return AsyncCore.GetErrorCode(); }
+    //    set { AsyncCore.SetErrorCode(value); }
+    //}
 
     public static List<(SendTarget target, IPacket packet)> SendPackets => AsyncCore.GetSendPackets();
 
