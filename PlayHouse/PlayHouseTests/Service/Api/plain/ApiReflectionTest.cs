@@ -1,11 +1,8 @@
 ﻿using FluentAssertions;
 using Moq;
 using Org.Ulalax.Playhouse.Protocol;
-using Playhouse.Protocol;
-using PlayHouse.Communicator;
 using PlayHouse.Communicator.Message;
 using PlayHouse.Production;
-using PlayHouse.Production.Api.Filter;
 using PlayHouse.Service;
 using PlayHouse.Service.Api;
 using Xunit;
@@ -25,7 +22,6 @@ namespace PlayHouseTests.Service.Api.plain
         {
 
             PacketProducer.Init((int msgId, IPayload payload) => new TestPacket(msgId, payload));
-            GlobalApiActionManager.AddFilter(new TestApiGlobalActionAttribute());
 
             var apiReflections = new ApiReflection();
             var apiSender = new Mock<IApiSender>().Object; 
@@ -41,8 +37,6 @@ namespace PlayHouseTests.Service.Api.plain
             ReflectionTestResult.ResultMap[$"TestApiActionAttributeAfter_{ApiTestMsg1.Descriptor.Index}"].Should().Be("AfterExecution");
             ReflectionTestResult.ResultMap[$"TestApiMethodActionAttributeBefore_{ApiTestMsg1.Descriptor.Index}"].Should().Be("BeforeExecution");
             ReflectionTestResult.ResultMap[$"TestApiMethodActionAttributeAfter_{ApiTestMsg1.Descriptor.Index}"].Should().Be("AfterExecution");
-            ReflectionTestResult.ResultMap[$"TestApiGlobalActionAttributeBefore_{ApiTestMsg1.Descriptor.Index}"].Should().Be("BeforeExecution");
-            ReflectionTestResult.ResultMap[$"TestApiGlobalActionAttributeAfter_{ApiTestMsg1.Descriptor.Index}"].Should().Be("AfterExecution");
             
 
             routePacket = RoutePacket.ApiOf(RoutePacket.Of(new ApiTestMsg2() { TestMsg = "ApiServiceCall_Test2" }), false, isBackend);
@@ -53,8 +47,6 @@ namespace PlayHouseTests.Service.Api.plain
             ReflectionTestResult.ResultMap[$"TestApiActionAttributeAfter_{ApiTestMsg2.Descriptor.Index}"].Should().Be("AfterExecution");
             ReflectionTestResult.ResultMap.ContainsKey($"TestApiMethodActionAttributeBefore_{ApiTestMsg2.Descriptor.Index}").Should().BeFalse();
             ReflectionTestResult.ResultMap.ContainsKey($"TestApiMethodActionAttributeAfter_{ApiTestMsg2.Descriptor.Index}").Should().BeFalse();
-            ReflectionTestResult.ResultMap[$"TestApiGlobalActionAttributeBefore_{ApiTestMsg2.Descriptor.Index}"].Should().Be("BeforeExecution");
-            ReflectionTestResult.ResultMap[$"TestApiGlobalActionAttributeAfter_{ApiTestMsg2.Descriptor.Index}"].Should().Be("AfterExecution");
 
         }
 

@@ -1,6 +1,7 @@
 ﻿using PlayHouse.Communicator.Message;
 using PlayHouse.Production;
 using PlayHouse.Production.Api;
+using PlayHouse.Production.Api.Aspectify;
 using PlayHouse.Production.Api.Filter;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -12,155 +13,64 @@ public class ApiMethod
     public string ClassName { get; set; }
     public MethodInfo Method { get; set; }
 
-    public IEnumerable<ApiActionFilterAttribute> Filters { get; set; }
-    public ApiMethod(int msgId, string className, MethodInfo method)
+    public List<AspectifyAttribute> Filters { get; set; } = new();
+    public ApiMethod(int msgId, string className, MethodInfo method, IEnumerable<AspectifyAttribute> classFilters)
     {
         MsgId = msgId;
         ClassName = className;
         Method = method;
-        Filters = method.GetCustomAttributes(typeof(ApiActionFilterAttribute), true)
-            .Select(e => (ApiActionFilterAttribute)e);
-            
-        
+        Filters.AddRange(classFilters);
+        Filters.AddRange(method.GetCustomAttributes(typeof(AspectifyAttribute), true)
+            .Select(e => (AspectifyAttribute)e));
     }
 }
 
-public class BackendApiMethod
-{
-    public int MsgId { get; set; }
-    public string ClassName { get; set; }
-    public MethodInfo Method { get; set; }
+//public class BackendApiMethod
+//{
+//    public int MsgId { get; set; }
+//    public string ClassName { get; set; }
+//    public MethodInfo Method { get; set; }
 
-    public IEnumerable<ApiBackendActionFilterAttribute> Filters { get; set; }
-    public BackendApiMethod(int msgId, string className, MethodInfo method)
-    {
-        MsgId = msgId;
-        ClassName = className;
-        Method = method;
-        Filters = method.GetCustomAttributes(typeof(ApiBackendActionFilterAttribute), true)
-            .Select(e => (ApiBackendActionFilterAttribute)e);
-    }
-}
+//    public IEnumerable<ApiBackendActionFilterAttribute> Filters { get; set; }
+//    public BackendApiMethod(int msgId, string className, MethodInfo method)
+//    {
+//        MsgId = msgId;
+//        ClassName = className;
+//        Method = method;
+//        Filters = method.GetCustomAttributes(typeof(ApiBackendActionFilterAttribute), true)
+//            .Select(e => (ApiBackendActionFilterAttribute)e);
+//    }
+//}
 
 public class ApiInstance
 {
     public object Instance { get; set; }
     public MethodInfo Method { get; set; }
 
-    public IEnumerable<ApiActionFilterAttribute> ApiFilters { get; set; }
-    public IEnumerable<ApiBackendActionFilterAttribute> BackendApiFilter { get; set; }
+    public IEnumerable<AspectifyAttribute> ApiFilters { get; set; }
+    ///public IEnumerable<ApiBackendActionFilterAttribute> BackendApiFilter { get; set; }
 
-    public ApiInstance(object instance, MethodInfo methodInfo, IEnumerable<ApiActionFilterAttribute> apiFilters, IEnumerable<ApiBackendActionFilterAttribute> backendApiFilter)
+    public ApiInstance(object instance, MethodInfo methodInfo, IEnumerable<AspectifyAttribute> apiFilters)
     {
         Instance = instance;
         Method = methodInfo;
         ApiFilters = apiFilters;
-        BackendApiFilter = backendApiFilter;
     }
 
     internal async Task Invoke(ApiMethod targetMethod, IPacket packet, IApiSender apiSender)
     {
-        var targetInstance = Method.Invoke(Instance, null);
+        var targetInstance = (Method.Invoke(Instance, null))!;
 
-        //global before filter
-        foreach(ApiActionFilterAttribute filter in GlobalApiActionManager.Filters)
-        {
-            if (filter == null) continue;
-            filter.BeforeExecution(packet, apiSender);
-        }
-
-        //class before filter
-        foreach (ApiActionFilterAttribute filter in ApiFilters)
-        {
-            if (filter == null) continue;
-            filter.BeforeExecution(packet, apiSender);
-        }
-
-
-        //method before filter
-        foreach (ApiActionFilterAttribute filter in targetMethod.Filters)
-        {
-            if (filter == null) continue;
-            filter.BeforeExecution(packet, apiSender);
-        }
-
-
-        var task = (Task)targetMethod.Method.Invoke(targetInstance, new object[] { packet, apiSender })!;
-        await task;
-
-        //method after filter
-        foreach (ApiActionFilterAttribute filter in targetMethod.Filters.Reverse())
-        {
-            if (filter == null) continue;
-            filter.AfterExecution(packet, apiSender);
-        }
-
-        //class after filter
-        foreach (ApiActionFilterAttribute filter in ApiFilters.Reverse())
-        {
-            if (filter == null) continue;
-            filter.AfterExecution(packet, apiSender);
-        }
-
-        //global after filter
-        foreach (ApiActionFilterAttribute filter in GlobalApiActionManager.Filters.Reverse())
-        {
-            if (filter == null) continue;
-            filter.AfterExecution(packet, apiSender);
-        }
-
+        Invocation invocation = new Invocation(targetInstance, targetMethod.Method, new object[] { packet, apiSender }, targetMethod.Filters) ;
+        await invocation.Proceed();
     }
 
-    internal async Task Invoke(BackendApiMethod targetMethod, IPacket packet, IApiBackendSender apiSender)
+    internal async Task Invoke(ApiMethod targetMethod, IPacket packet, IApiBackendSender apiSender)
     {
-        var targetInstance = Method.Invoke(Instance, null);
+        var targetInstance = (Method.Invoke(Instance, null))!;
 
-        //global before filter
-        foreach (IApiBackendFilter filter in GlobalApiActionManager.BackendFilters)
-        {
-            if (filter == null) continue;
-            filter.BeforeExecution(packet, apiSender);
-        }
-
-        //class before filter
-        foreach (IApiBackendFilter filter in BackendApiFilter)
-        {
-            if (filter == null) continue;
-            filter.BeforeExecution(packet, apiSender);
-        }
-
-
-        //method before filter
-        foreach (IApiBackendFilter filter in targetMethod.Filters)
-        {
-            if (filter == null) continue;
-            filter.BeforeExecution(packet, apiSender);
-        }
-
-
-        var task = (Task)targetMethod.Method.Invoke(targetInstance, new object[] { packet, apiSender })!;
-        await task;
-
-        //method after filter
-        foreach (IApiBackendFilter filter in targetMethod.Filters.Reverse())
-        {
-            if (filter == null) continue;
-            filter.AfterExecution(packet, apiSender);
-        }
-
-        //class after filter
-        foreach (IApiBackendFilter filter in BackendApiFilter.Reverse())
-        {
-            if (filter == null) continue;
-            filter.AfterExecution(packet, apiSender);
-        }
-
-        //global IBackendFilter filter
-        foreach (IApiBackendFilter filter in GlobalApiActionManager.BackendFilters.Reverse())
-        {
-            if (filter == null) continue;
-            filter.AfterExecution(packet, apiSender);
-        }
+        Invocation invocation = new Invocation(targetInstance, targetMethod.Method, new object[] { packet, apiSender }, targetMethod.Filters);
+        await invocation.Proceed();
 
     }
 
@@ -202,12 +112,8 @@ class Reflections
             .Select(m =>
             {
                 var instance = FormatterServices.GetUninitializedObject(m.DeclaringType!);
-                IEnumerable<ApiActionFilterAttribute> apiFilters = m.DeclaringType!.GetCustomAttributes(typeof(ApiActionFilterAttribute), true).Select(e => (ApiActionFilterAttribute)e);
-                IEnumerable<ApiBackendActionFilterAttribute> backendApiFilters = m.DeclaringType!.GetCustomAttributes(typeof(ApiBackendActionFilterAttribute), true).Select(e=>(ApiBackendActionFilterAttribute)e);
-                //var instance = Activator.CreateInstance(m.DeclaringType!);
-                //var result = m.Invoke(instance, arguments);
-                //return (m.DeclaringType!.FullName!, instance!,m,apiFilters,backendApiFilters);
-                return (m.DeclaringType!.FullName!,new ApiInstance(instance!, m, apiFilters,backendApiFilters));
+                IEnumerable<AspectifyAttribute> apiFilters = m.DeclaringType!.GetCustomAttributes(typeof(AspectifyAttribute), true).Select(e => (AspectifyAttribute)e);
+                return (m.DeclaringType!.FullName!,new ApiInstance(instance!, m, apiFilters));
             })
             .ToList();
     }
@@ -217,7 +123,7 @@ internal class ApiReflection
 {
     private readonly Dictionary<string, ApiInstance> _instances = new ();
     private readonly Dictionary<int, ApiMethod> _methods = new ();
-    private readonly Dictionary<int, BackendApiMethod> _backendMethods = new ();
+    private readonly Dictionary<int, ApiMethod> _backendMethods = new ();
     private readonly Dictionary<int, string> _messageIndexChecker = new ();
     private readonly Dictionary<int, string> _messageIndexBackendChecker = new ();
 
@@ -244,26 +150,20 @@ internal class ApiReflection
             await classInstance.Invoke(targetMethod, packet.ToContentsPacket(), apiSender);
         }
 
-        //var targetInstance = classInstance.Method.Invoke(classInstance.Instance, null);
-        //var task = (Task)targetMethod.Method.Invoke(targetInstance, new object[] { packet, apiSender })!;
-        //await task;
     }
 
-    public async Task BackendCallMethod(RouteHeader routeHeader, RoutePacket packet,IApiBackendSender apiBackendSender)
+    public async Task BackendCallMethod(RouteHeader routeHeader, RoutePacket packet, IApiBackendSender apiBackendSender)
     {
         int msgId = routeHeader.MsgId;
-        BackendApiMethod? targetMethod = _backendMethods.TryGetValue(msgId, out var method) ? method : null;
+        ApiMethod? targetMethod = _backendMethods.TryGetValue(msgId, out var method) ? method : null;
         if (targetMethod == null) throw new ApiException.NotRegisterApiMethod($"not registered message msgId:{msgId}");
 
         if (!_instances.ContainsKey(targetMethod.ClassName)) throw new ApiException.NotRegisterApiInstance(targetMethod.ClassName);
         ApiInstance classInstance = _instances[targetMethod.ClassName];
 
         await classInstance.Invoke(targetMethod, packet.ToContentsPacket(), apiBackendSender);
-
-        //var targetInstance = classInstance.Method.Invoke(classInstance.Instance, null);
-        //var task = (Task)targetMethod.Method.Invoke(targetInstance, new object[] { packet, apiBackendSender})!;
-        //await task;
     }
+
 
     private void ExtractInstance(Reflections reflections)
     {
@@ -273,22 +173,12 @@ internal class ApiReflection
 
     private void ExtractHandlerMethod(Reflections reflections)
     {
-        //RegisterInitMethod(reflections);
         RegisterHandlerMethod(reflections);
     }
 
-    //private void RegisterInitMethod(Reflections reflections)
-    //{
-    //    //var apiServiceReflections = new Reflections(typeof(IApiService));
-    //    reflections.GetMethodsBySignature("Init", typeof(Task), typeof(ISystemPanel), typeof(ISender)).ForEach(el => {
-    //        _initMethods.Add(new ApiMethod(0, el.DeclaringType!.FullName!, el));
-    //    });
-
-    //}
 
     private void RegisterHandlerMethod(Reflections reflections)
     {
-        //var reflections = new Reflections(typeof(IApiService));
         reflections.GetMethodsBySignature("Handles", typeof(void), typeof(IHandlerRegister), typeof(IBackendHandlerRegister)).ForEach(methodInfo =>
         {
             var className = methodInfo.DeclaringType!.FullName!;
@@ -304,7 +194,7 @@ internal class ApiReflection
                 {
                     throw new ApiException($"registered msgId is duplicated - msgId:{key}, methods: {_messageIndexChecker[key]}, {value.GetMethodInfo().Name}");
                 }
-                _methods[key] = new ApiMethod(key, className, value.Method);
+                _methods[key] = new ApiMethod(key, className, value.Method, apiInstance.ApiFilters);
                 _messageIndexChecker[key] = value.GetMethodInfo().Name;
             }
 
@@ -314,7 +204,7 @@ internal class ApiReflection
                 {
                     throw new ApiException($"registered msgId is duplicated - msgId:{key}, methods: {_messageIndexChecker[key]}, {value.GetMethodInfo().Name}");
                 }
-                _backendMethods[key] = new BackendApiMethod(key, className, value.Method);
+                _backendMethods[key] = new ApiMethod(key, className, value.Method, apiInstance.ApiFilters);
                 _messageIndexBackendChecker[key] = value.GetMethodInfo().Name;
             }
 
