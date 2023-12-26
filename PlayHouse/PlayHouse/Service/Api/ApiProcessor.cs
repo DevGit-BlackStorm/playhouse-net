@@ -107,7 +107,7 @@ namespace PlayHouse.Service.Api
                                 var apiSender = new AllApiSender(_serviceId, _clientCommunicator, _requestCache);
                                 apiSender.SetCurrentPacketHeader(routeHeader);
 
-                                AsyncStorage.AsyncCore.Init(apiSender);
+                                PacketContext.AsyncCore.Init(packet.IsRequest());
                                 ServiceAsyncContext.Init();
 
 
@@ -164,7 +164,7 @@ namespace PlayHouse.Service.Api
                                     }
                                 }
 
-                                AsyncStorage.AsyncCore.Clear();
+                                PacketContext.AsyncCore.Clear();
                                 ServiceAsyncContext.Clear();
                             });
                         }

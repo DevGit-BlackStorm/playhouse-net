@@ -48,7 +48,6 @@ internal class XPacket : IPacket
 
     public IPayload Payload => _payload;
 
-
     public static XPacket Of(IMessage message)
     {
         return new XPacket(message.Descriptor.Index, new ProtoPayload(message));

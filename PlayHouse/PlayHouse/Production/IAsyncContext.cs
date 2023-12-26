@@ -19,15 +19,12 @@ public enum SendTarget
 
 public interface IAsyncCore
 {
-    public void Init(IApiSender? apiSender = null);
-    public ushort GetErrorCode();
-    public IApiSender GetApiSender();
+    public void Init(bool isRequest);
     public List<(SendTarget target, IPacket packet)> GetSendPackets();
-
-    public void SetErrorCode(ushort errorCode);
-    public void SetApiSender(IApiSender apiSender);
-    public void Add(SendTarget target,IPacket packet);
-
+    public bool IsRequest();
     public void Clear();
+
+    public void Add(SendTarget target, IPacket packet);
+    public void SetRequest();
 
 }
