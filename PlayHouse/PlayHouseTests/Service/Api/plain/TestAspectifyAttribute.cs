@@ -1,28 +1,23 @@
 ﻿using PlayHouse.Production;
 using PlayHouse.Production.Api.Aspectify;
 
-
 namespace PlayHouseTests.Service.Api.plain;
 
 [AttributeUsage(AttributeTargets.Class)]
-public class TestActionFilterAttribute : AspectifyAttribute
+public class TestAspectifyAttribute : AspectifyAttribute
 {
-
     public override async Task Intercept(Invocation invocation)
     {
         IPacket packet = (IPacket)invocation.Arguments[0];
         ReflectionTestResult.ResultMap[$"TestApiActionAttributeBefore_{packet.MsgId}"] = "BeforeExecution";
-
         await invocation.Proceed();
-
         ReflectionTestResult.ResultMap[$"TestApiActionAttributeAfter_{packet.MsgId}"] =  "AfterExecution";
     }
 }
 
 [AttributeUsage(AttributeTargets.Class)]
-public class TestBackendActionFilterAttribute : AspectifyAttribute
+public class TestBackendAspectifyAttribute : AspectifyAttribute
 {
-
     public override async Task Intercept(Invocation invocation)
     {
         IPacket packet = (IPacket)invocation.Arguments[0];
@@ -34,7 +29,7 @@ public class TestBackendActionFilterAttribute : AspectifyAttribute
 
 
 [AttributeUsage(AttributeTargets.Method)]
-public class TestMethodActionFilterAttribute : AspectifyAttribute
+public class TestMethodAspectifyAttribute : AspectifyAttribute
 {
     public override async Task Intercept(Invocation invocation)
     {
@@ -46,7 +41,7 @@ public class TestMethodActionFilterAttribute : AspectifyAttribute
 }
 
 [AttributeUsage(AttributeTargets.Method)]
-public class TestBackendMethodActionFilterAttribute : AspectifyAttribute
+public class TestBackendMethodAspectifyAttribute : AspectifyAttribute
 {
     public override async Task Intercept(Invocation invocation)
     {
@@ -57,3 +52,15 @@ public class TestBackendMethodActionFilterAttribute : AspectifyAttribute
     }
 }
 
+[AttributeUsage(AttributeTargets.Class)]
+public class TestGlobalAspectifyAttribute : AspectifyAttribute
+{
+    public override async Task Intercept(Invocation invocation)
+    {
+        IPacket packet = (IPacket)invocation.Arguments[0];
+        ReflectionTestResult.ResultMap[$"TestApiGlobalActionAttributeBefore_{packet.MsgId}"] =  "BeforeExecution";
+        await invocation.Proceed();
+        ReflectionTestResult.ResultMap[$"TestApiGlobalActionAttributeAfter_{packet.MsgId}"] =  "AfterExecution";
+    }
+
+}

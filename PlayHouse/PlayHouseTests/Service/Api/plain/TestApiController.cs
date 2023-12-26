@@ -7,8 +7,8 @@ using PlayHouse.Production.Api;
 namespace PlayHouseTests.Service.Api.plain
 {
 
-    [TestActionFilter]
-    [TestBackendActionFilter]
+    [TestAspectify]
+    [TestBackendAspectify]
 
     internal class TestApiController : IApiController
     {
@@ -39,7 +39,7 @@ namespace PlayHouseTests.Service.Api.plain
         }
 
 
-        [TestMethodActionFilter]
+        [TestMethodAspectify]
         public async Task Test1(IPacket packet, IApiSender apiSender)
         {
             var message = ApiTestMsg1.Parser.ParseFrom(packet.Payload.Data);
@@ -54,7 +54,7 @@ namespace PlayHouseTests.Service.Api.plain
             await Task.CompletedTask;
         }
 
-        [TestBackendMethodActionFilter]
+        [TestBackendMethodAspectify]
         public async Task Test3(IPacket packet, IApiBackendSender apiSender)
         {
             var message = ApiTestMsg1.Parser.ParseFrom(packet.Payload.Data);

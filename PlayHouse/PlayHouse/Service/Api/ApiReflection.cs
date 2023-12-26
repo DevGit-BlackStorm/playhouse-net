@@ -2,6 +2,7 @@
 using PlayHouse.Production;
 using PlayHouse.Production.Api;
 using PlayHouse.Production.Api.Aspectify;
+using PlayHouse.Production.Api.Filter;
 using System.Reflection;
 using System.Runtime.Serialization;
 
@@ -18,6 +19,7 @@ public class ApiMethod
         MsgId = msgId;
         ClassName = className;
         Method = method;
+        Filters.AddRange(GlobalAspectifyManager.Get());
         Filters.AddRange(classFilters);
         Filters.AddRange(method.GetCustomAttributes(typeof(AspectifyAttribute), true)
             .Select(e => (AspectifyAttribute)e));

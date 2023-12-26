@@ -3,6 +3,7 @@ using Moq;
 using Org.Ulalax.Playhouse.Protocol;
 using PlayHouse.Communicator.Message;
 using PlayHouse.Production;
+using PlayHouse.Production.Api.Filter;
 using PlayHouse.Service;
 using PlayHouse.Service.Api;
 using Xunit;
@@ -23,6 +24,8 @@ namespace PlayHouseTests.Service.Api.plain
 
             PacketProducer.Init((int msgId, IPayload payload) => new TestPacket(msgId, payload));
 
+            GlobalAspectifyManager.Add(new TestGlobalAspectifyAttribute());
+
             var apiReflections = new ApiReflection();
             var apiSender = new Mock<IApiSender>().Object; 
             bool isBackend = false;
@@ -33,6 +36,10 @@ namespace PlayHouseTests.Service.Api.plain
             await apiReflections.CallMethod(routePacket.RouteHeader, routePacket, apiSender);
 
             ReflectionTestResult.ResultMap["TestApiController_Test1"].Should().Be("ApiServiceCall_Test1");
+
+            ReflectionTestResult.ResultMap[$"TestApiGlobalActionAttributeBefore_{ApiTestMsg1.Descriptor.Index}"].Should().Be("BeforeExecution");
+            ReflectionTestResult.ResultMap[$"TestApiGlobalActionAttributeAfter_{ApiTestMsg1.Descriptor.Index}"].Should().Be("AfterExecution");
+
             ReflectionTestResult.ResultMap[$"TestApiActionAttributeBefore_{ApiTestMsg1.Descriptor.Index}"].Should().Be("BeforeExecution");
             ReflectionTestResult.ResultMap[$"TestApiActionAttributeAfter_{ApiTestMsg1.Descriptor.Index}"].Should().Be("AfterExecution");
             ReflectionTestResult.ResultMap[$"TestApiMethodActionAttributeBefore_{ApiTestMsg1.Descriptor.Index}"].Should().Be("BeforeExecution");
@@ -41,6 +48,9 @@ namespace PlayHouseTests.Service.Api.plain
 
             routePacket = RoutePacket.ApiOf(RoutePacket.Of(new ApiTestMsg2() { TestMsg = "ApiServiceCall_Test2" }), false, isBackend);
             await apiReflections.CallMethod(routePacket.RouteHeader, routePacket, apiSender);
+
+            ReflectionTestResult.ResultMap[$"TestApiGlobalActionAttributeBefore_{ApiTestMsg2.Descriptor.Index}"].Should().Be("BeforeExecution");
+            ReflectionTestResult.ResultMap[$"TestApiGlobalActionAttributeAfter_{ApiTestMsg2.Descriptor.Index}"].Should().Be("AfterExecution");
 
             ReflectionTestResult.ResultMap["TestApiController_Test2"].Should().Be("ApiServiceCall_Test2");
             ReflectionTestResult.ResultMap[$"TestApiActionAttributeBefore_{ApiTestMsg2.Descriptor.Index}"].Should().Be("BeforeExecution");
@@ -63,6 +73,8 @@ namespace PlayHouseTests.Service.Api.plain
             await apiReflections.BackendCallMethod(routePacket.RouteHeader, routePacket, apiSender);
 
             ReflectionTestResult.ResultMap["TestApiController_Test3"].Should().Be("ApiBackendServiceCall_Test1");
+
+
             ReflectionTestResult.ResultMap[$"TestBackendApiActionAttributeBefore_{ApiTestMsg1.Descriptor.Index}"].Should().Be("BeforeExecution");
             ReflectionTestResult.ResultMap[$"TestBackendApiActionAttributeAfter_{ApiTestMsg1.Descriptor.Index}"].Should().Be("AfterExecution");
             ReflectionTestResult.ResultMap[$"TestBackendApiMethodActionAttributeBefore_{ApiTestMsg1.Descriptor.Index}"].Should().Be("BeforeExecution");
@@ -75,6 +87,8 @@ namespace PlayHouseTests.Service.Api.plain
             await apiReflections.BackendCallMethod(routePacket.RouteHeader, routePacket, apiSender);
 
             ReflectionTestResult.ResultMap["TestApiController_Test4"].Should().Be("ApiBackendServiceCall_Test2");
+
+
             ReflectionTestResult.ResultMap[$"TestBackendApiActionAttributeBefore_{ApiTestMsg2.Descriptor.Index}"].Should().Be("BeforeExecution");
             ReflectionTestResult.ResultMap[$"TestBackendApiActionAttributeAfter_{ApiTestMsg2.Descriptor.Index}"].Should().Be("AfterExecution");
             ReflectionTestResult.ResultMap.ContainsKey($"TestBackendApiMethodActionAttributeBefore_{ApiTestMsg2.Descriptor.Index}").Should().BeFalse();
