@@ -1,6 +1,4 @@
-﻿using PlayHouse.Production.Api.Aspectify;
-
-namespace PlayHouse.Production.Api.Filter;
+﻿namespace PlayHouse.Production.Api.Aspectify;
 
 public static class GlobalAspectifyManager
 {

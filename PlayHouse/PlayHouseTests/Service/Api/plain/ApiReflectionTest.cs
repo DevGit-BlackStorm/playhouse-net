@@ -3,7 +3,7 @@ using Moq;
 using Org.Ulalax.Playhouse.Protocol;
 using PlayHouse.Communicator.Message;
 using PlayHouse.Production;
-using PlayHouse.Production.Api.Filter;
+using PlayHouse.Production.Api.Aspectify;
 using PlayHouse.Service;
 using PlayHouse.Service.Api;
 using Xunit;
