@@ -75,7 +75,7 @@ internal class BaseStage
         }
         catch (Exception e)
         {
-            _stageSender.ErrorReply(routePacket.RouteHeader,(ushort) BaseErrorCode.SystemError);
+            _stageSender.Reply((ushort)BaseErrorCode.SystemError);
             _log.Error(()=>e.ToString());
         }
         finally
@@ -102,7 +102,7 @@ internal class BaseStage
                     }
                     catch (Exception e)
                     {
-                        _stageSender.ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.UncheckedContentsError);
+                        _stageSender.Reply((ushort)BaseErrorCode.UncheckedContentsError);
                         _log.Error(()=>e.ToString());
                     }
                 }
@@ -151,12 +151,12 @@ internal class BaseStage
             stageKey = await _sessionUpdater.UpdateStageInfo(sessionEndpoint, sid);
         }
 
-        return new (new ReplyPacket(outcome.errorCode, outcome.reply.MsgId,outcome.reply.Payload), stageKey);
+        return  (new ReplyPacket(outcome.errorCode, outcome.reply.MsgId,outcome.reply.Payload,outcome.reply.MsgSeq), stageKey);
     }
 
 
 
-    public void Reply(ushort errorCode,IPacket packet)
+    public void Reply(ushort errorCode,IPacket? packet = null)
     {
         this._stageSender.Reply(errorCode, packet);
     }

@@ -90,7 +90,7 @@ namespace PlayHouse.Service
                             catch (Exception e)
                             {
                                 _log.Error(()=>e.ToString());
-                                _baseSender.ErrorReply(routePacket.RouteHeader, (int)BaseErrorCode.SystemError);
+                                _baseSender.Reply((int)BaseErrorCode.SystemError);
                             }
                             finally
                             {

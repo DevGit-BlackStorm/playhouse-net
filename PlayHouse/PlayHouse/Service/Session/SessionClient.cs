@@ -242,7 +242,7 @@ internal class SessionClient
                     }
                     catch (Exception e)
                     {
-                        _sessionSender.ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.SystemError);
+                        _sessionSender.Reply((ushort)BaseErrorCode.SystemError);
                         _log.Error(()=>e.ToString());
                     }
                 }

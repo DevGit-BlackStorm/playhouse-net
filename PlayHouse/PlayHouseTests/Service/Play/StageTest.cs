@@ -94,8 +94,8 @@ namespace PlayHouseTests.Service.Play
         public async Task CreateRoom_ShouldSucceed()
         {
             // given
-            PacketContext.AsyncCore.Init(true);
-            PacketProducer.Init((int msgId, IPayload payload) => new TestPacket(msgId, payload));
+            PacketContext.AsyncCore.Init();
+            PacketProducer.Init((int msgId, IPayload payload,int msgSeq) => new TestPacket(msgId, payload,msgSeq));
 
             List<RoutePacket> result = new List<RoutePacket>();
             clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
@@ -119,7 +119,7 @@ namespace PlayHouseTests.Service.Play
         public async Task CreateRoom_WithInvalidType_ShouldReturnInvalidError()
         {
             // given
-            PacketContext.AsyncCore.Init(true);
+            PacketContext.AsyncCore.Init();
 
             List<RoutePacket> result = new List<RoutePacket>();
             clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
@@ -135,8 +135,8 @@ namespace PlayHouseTests.Service.Play
         [Fact]
         public async Task CreateJoinRoomInCreateState_ShouldBeSuccess()
         {
-            PacketContext.AsyncCore.Init(true);
-            PacketProducer.Init((int msgId, IPayload payload) => new TestPacket(msgId, payload));
+            PacketContext.AsyncCore.Init();
+            PacketProducer.Init((int msgId, IPayload payload, int msgSeq) => new TestPacket(msgId, payload, msgSeq));
 
             List<RoutePacket> result = new List<RoutePacket>();
             clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
@@ -161,8 +161,8 @@ namespace PlayHouseTests.Service.Play
         public async Task TestCreateJoinRoomInJoinState()
         {
             // Arrange
-            PacketContext.AsyncCore.Init(true);
-            PacketProducer.Init((int msgId, IPayload payload) => new TestPacket(msgId, payload));
+            PacketContext.AsyncCore.Init();
+            PacketProducer.Init((int msgId, IPayload payload, int msgSeq) => new TestPacket(msgId, payload, msgSeq));
 
             await CreateRoomWithSuccess();
 

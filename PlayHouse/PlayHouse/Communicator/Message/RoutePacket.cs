@@ -388,6 +388,7 @@ namespace PlayHouse.Communicator.Message
         public ReadOnlySpan<byte> Data => _payload.Data;
 
         public object? TimerObject { get; private set; }
+        public int MsgSeq => Header.MsgSeq;
 
         public void Dispose()
         {
@@ -396,12 +397,12 @@ namespace PlayHouse.Communicator.Message
 
         public  ReplyPacket ToReplyPacket()
         {
-            return new  ReplyPacket(RouteHeader.Header.ErrorCode,RouteHeader.MsgId,MovePayload()); 
+            return new  ReplyPacket(RouteHeader.Header.ErrorCode,RouteHeader.MsgId,MovePayload(),MsgSeq); 
         }
 
         internal IPacket ToContentsPacket()
         {
-            return PacketProducer.CreatePacket(MsgId, _payload);
+            return PacketProducer.CreatePacket(MsgId, _payload,MsgSeq);
         }
 
         

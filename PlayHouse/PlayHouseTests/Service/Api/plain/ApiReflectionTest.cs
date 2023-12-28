@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Org.Ulalax.Playhouse.Protocol;
 using PlayHouse.Communicator.Message;
@@ -22,12 +23,15 @@ namespace PlayHouseTests.Service.Api.plain
         public async Task Test_CALL_Method()
         {
 
-            PacketProducer.Init((int msgId, IPayload payload) => new TestPacket(msgId, payload));
+            PacketProducer.Init((int msgId, IPayload payload, int msgSeq) => new TestPacket(msgId, payload, msgSeq));
 
             GlobalAspectifyManager.Add(new TestGlobalAspectifyAttribute());
 
-            var apiReflections = new ApiReflection();
-            var apiSender = new Mock<IApiSender>().Object; 
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddScoped<TestApiController>();
+            var apiReflections = new ApiReflection(serviceCollection.BuildServiceProvider());
+
+            var apiSender = new Mock<IApiSender>().Object;
             bool isBackend = false;
 
             
@@ -58,13 +62,21 @@ namespace PlayHouseTests.Service.Api.plain
             ReflectionTestResult.ResultMap.ContainsKey($"TestApiMethodActionAttributeBefore_{ApiTestMsg2.Descriptor.Index}").Should().BeFalse();
             ReflectionTestResult.ResultMap.ContainsKey($"TestApiMethodActionAttributeAfter_{ApiTestMsg2.Descriptor.Index}").Should().BeFalse();
 
+            await apiReflections.InvokeCallbackMethods("OnDisconnect", apiSender);
+            ReflectionTestResult.ResultMap["OnDisconnect"].Should().Be("OnDisconnect");
+
+
         }
 
         [Fact]
         public async Task Test_CALL_Backend_Method()
         {
-            PacketProducer.Init((int msgId,IPayload payload) =>  new TestPacket(msgId, payload));
-            var apiReflections = new ApiReflection();
+            PacketProducer.Init((int msgId, IPayload payload, int msgSeq) => new TestPacket(msgId, payload, msgSeq));
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddScoped<TestApiController>();
+            var apiReflections = new ApiReflection(serviceCollection.BuildServiceProvider());
+
             var apiSender = new Mock<IApiBackendSender>().Object;
             bool isBackend = false;
 

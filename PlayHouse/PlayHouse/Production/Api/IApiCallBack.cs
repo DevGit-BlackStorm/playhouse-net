@@ -2,6 +2,6 @@
 {
     public interface IApiCallBack
     {
-        void OnDisconnect(string accountId);
+        Task OnDisconnect(IApiSender apiSender);
     }
 }

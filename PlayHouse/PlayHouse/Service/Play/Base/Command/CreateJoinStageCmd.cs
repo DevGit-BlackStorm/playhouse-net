@@ -17,9 +17,9 @@ internal class CreateJoinStageCmd : IBaseStageCmd
     public async Task Execute(BaseStage baseStage, RoutePacket routePacket)
     {
         var request = CreateJoinStageReq.Parser.ParseFrom(routePacket.Data);
-        var createStagePacket = CPacket.Of(request.CreatePayloadId, request.CreatePayload);
+        var createStagePacket = CPacket.Of(request.CreatePayloadId, request.CreatePayload,routePacket.MsgSeq);
         var stageType = request.StageType;
-        var joinStagePacket = CPacket.Of(request.JoinPayloadId, request.JoinPayload);
+        var joinStagePacket = CPacket.Of(request.JoinPayloadId, request.JoinPayload,routePacket.MsgSeq);
         var accountId = routePacket.AccountId;
         var stageId = routePacket.StageId;
         var sessionEndpoint = request.SessionEndpoint;
@@ -30,7 +30,7 @@ internal class CreateJoinStageCmd : IBaseStageCmd
 
         if (!_playProcessor.IsValidType(stageType))
         {
-            _playProcessor.ErrorReply(routePacket.RouteHeader,(int) BaseErrorCode.StageTypeIsInvalid);
+            baseStage.Reply((int) BaseErrorCode.StageTypeIsInvalid);
             return;
         }
 

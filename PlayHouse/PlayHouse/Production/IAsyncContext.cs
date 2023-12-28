@@ -19,12 +19,10 @@ public enum SendTarget
 
 public interface IAsyncCore
 {
-    public void Init(bool isRequest);
+    public void Init();
     public List<(SendTarget target, IPacket packet)> GetSendPackets();
-    public bool IsRequest();
     public void Clear();
 
     public void Add(SendTarget target, IPacket packet);
-    public void SetRequest();
 
 }

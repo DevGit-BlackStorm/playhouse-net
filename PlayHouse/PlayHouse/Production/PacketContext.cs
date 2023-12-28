@@ -9,12 +9,10 @@ internal class AsyncCore : IAsyncCore
     public AsyncCore() { }
 
     private readonly AsyncLocal<List<(SendTarget target, IPacket packet)>?> _sendPackets = new();
-    private readonly AsyncLocal<bool> _isRequest = new();
 
-    public void Init(bool isRequest)
+    public void Init()
     {
         _sendPackets.Value = new();
-        _isRequest.Value = isRequest;
     }
 
 
@@ -34,17 +32,8 @@ internal class AsyncCore : IAsyncCore
     public void Clear()
     {
         _sendPackets.Value = null;
-        _isRequest.Value = false;
     }
 
-    public bool IsRequest()
-    {
-        return _isRequest.Value;
-    }
-    public void SetRequest()
-    {
-        _isRequest.Value = true;
-    }
 }
 
 
@@ -57,7 +46,6 @@ public class PacketContext
         set { Instance._core = value; }
     }
     public static PacketContext Instance { get; private set; } = new();
-    public static bool IsRequest => Instance._core.IsRequest();
     public static List<(SendTarget target, IPacket packet)> SendPackets => AsyncCore.GetSendPackets();
 
 }

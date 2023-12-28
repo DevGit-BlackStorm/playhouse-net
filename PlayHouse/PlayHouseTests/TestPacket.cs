@@ -13,10 +13,13 @@ namespace PlayHouseTests
     {
         private int _msgId;
         private IPayload _payload;
+        private int _msgSeq;
+        public int MsgSeq { get => _msgSeq; set => _msgSeq = value; }
         public TestPacket(IMessage message)
         {
             _msgId = message.Descriptor.Index;
             _payload = new ProtoPayload(message);
+            _msgSeq = 0;
         }
 
         public TestPacket(int msgId)
@@ -25,9 +28,10 @@ namespace PlayHouseTests
             _payload = new EmptyPayload();
         }
 
-        public TestPacket(int msgId, IPayload payload) : this(msgId)
+        public TestPacket(int msgId, IPayload payload,int msgSeq) : this(msgId)
         {
             _payload = payload;
+            _msgSeq = msgSeq;
         }
 
         public int MsgId => _msgId;

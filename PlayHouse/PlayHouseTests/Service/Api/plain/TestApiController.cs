@@ -10,7 +10,7 @@ namespace PlayHouseTests.Service.Api.plain
     [TestAspectify]
     [TestBackendAspectify]
 
-    internal class TestApiController : IApiController
+    internal class TestApiController : IApiController, IApiCallBack
     {
         public void Handles(IHandlerRegister handlerRegister, IBackendHandlerRegister backendHandlerRegister)
         {
@@ -31,11 +31,6 @@ namespace PlayHouseTests.Service.Api.plain
         private Task TestApiDefaultContentsException(IPacket packet, IApiSender apiSender)
         {
             throw new Exception("test content TestApiDefaultContentsException");
-        }
-
-        public IApiController Instance()
-        {
-            return new TestApiController();
         }
 
 
@@ -66,6 +61,12 @@ namespace PlayHouseTests.Service.Api.plain
         {
             var message = ApiTestMsg2.Parser.ParseFrom(packet.Payload.Data);
             ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Test4"] = message.TestMsg;
+            await Task.CompletedTask;
+        }
+
+        public async Task OnDisconnect(IApiSender apiSender)
+        {
+            ReflectionTestResult.ResultMap[$"OnDisconnect"] = "OnDisconnect";
             await Task.CompletedTask;
         }
     }

@@ -58,10 +58,10 @@ namespace PlayHouse.Service.Play
             _baseUsers.Remove(accountId, out _);
         }
 
-        public void ErrorReply(RouteHeader routeHeader, ushort errorCode)
-        {
-            _sender.ErrorReply(routeHeader, errorCode);
-        }
+        //public void ErrorReply(RouteHeader routeHeader, ushort errorCode)
+        //{
+        //    _sender.ErrorReply(routeHeader, errorCode);
+        //}
         private BaseStage MakeBaseRoom(string stageId)
         {
             var stageSender =  new XStageSender(ServiceId, stageId, this, _clientCommunicator, _requestCache);
@@ -91,7 +91,7 @@ namespace PlayHouse.Service.Play
                         if (isBase)
                         {
                             Task.Run(async () => {
-                                PacketContext.AsyncCore.Init(routePacket.IsRequest());
+                                PacketContext.AsyncCore.Init();
                                 ServiceAsyncContext.Init();
                                 await DoBaseRoomPacket(msgId, roomPacket, stageId);
                                 PacketContext.AsyncCore.Clear();
@@ -105,7 +105,7 @@ namespace PlayHouse.Service.Play
                                 _baseRooms.TryGetValue(stageId,out var baseStage);
                                 if (baseStage != null)
                                 {
-                                    PacketContext.AsyncCore.Init(routePacket.IsRequest());
+                                    PacketContext.AsyncCore.Init();
                                     ServiceAsyncContext.Init();
                                     await baseStage.Send(roomPacket);
                                     PacketContext.AsyncCore.Clear();
@@ -135,7 +135,7 @@ namespace PlayHouse.Service.Play
                 var newStageId = routePacket.StageId;
                 if (_baseRooms.ContainsKey(newStageId))
                 {
-                    ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.AlreadyExistStage);
+                    _sender.Reply((ushort)BaseErrorCode.AlreadyExistStage);
                 }
                 else
                 {
@@ -170,7 +170,7 @@ namespace PlayHouse.Service.Play
                 {
                     if (msgId == StageTimer.Descriptor.Index) return;
                     _log.Error(()=>$"Room is not exist : {stageId},{msgId}");
-                    ErrorReply(routePacket.RouteHeader, (ushort)BaseErrorCode.StageIsNotExist);
+                    _sender.Reply((ushort)BaseErrorCode.StageIsNotExist);
                     return;
                 }
 

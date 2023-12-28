@@ -1,7 +1,9 @@
-﻿using PlayHouse.Communicator.Message;
+﻿using Microsoft.Extensions.DependencyInjection;
+using PlayHouse.Communicator.Message;
 using PlayHouse.Production;
 using PlayHouse.Production.Api;
 using PlayHouse.Production.Api.Aspectify;
+using System.Data;
 using System.Reflection;
 using System.Runtime.Serialization;
 
@@ -44,46 +46,66 @@ public class ApiMethod
 
 public class ApiInstance
 {
-    public object Instance { get; set; }
-    public MethodInfo Method { get; set; }
+    public Object Instance { get; set; }
+    public Type Type { get; set; }
+    //public MethodInfo Method { get; set; }
 
     public IEnumerable<AspectifyAttribute> ApiFilters { get; set; }
+    public IServiceProvider ServiceProvider { get; set; }
     ///public IEnumerable<ApiBackendActionFilterAttribute> BackendApiFilter { get; set; }
 
-    public ApiInstance(object instance, MethodInfo methodInfo, IEnumerable<AspectifyAttribute> apiFilters)
+    public ApiInstance(Type type, IEnumerable<AspectifyAttribute> apiFilters, IServiceProvider serviceProvider)
     {
-        Instance = instance;
-        Method = methodInfo;
+        Type = type;
+        Instance = FormatterServices.GetUninitializedObject(type);
+      //  Method = methodInfo;
         ApiFilters = apiFilters;
+        ServiceProvider = serviceProvider;
     }
 
     internal async Task Invoke(ApiMethod targetMethod, IPacket packet, IApiSender apiSender)
     {
-        var targetInstance = (Method.Invoke(Instance, null))!;
-
-        Invocation invocation = new Invocation(targetInstance, targetMethod.Method, new object[] { packet, apiSender }, targetMethod.Filters) ;
-        await invocation.Proceed();
+        using (var scope = ServiceProvider.CreateAsyncScope())
+        {
+            var targetInstance = scope.ServiceProvider.GetRequiredService(Type);
+            Invocation invocation = new Invocation(targetInstance, targetMethod.Method, new object[] { packet, apiSender }, targetMethod.Filters);
+            await invocation.Proceed();
+        }
     }
 
     internal async Task Invoke(ApiMethod targetMethod, IPacket packet, IApiBackendSender apiSender)
     {
-        var targetInstance = (Method.Invoke(Instance, null))!;
-
-        Invocation invocation = new Invocation(targetInstance, targetMethod.Method, new object[] { packet, apiSender }, targetMethod.Filters);
-        await invocation.Proceed();
-
+        using (var scope = ServiceProvider.CreateAsyncScope())
+        {
+            var targetInstance = scope.ServiceProvider.GetRequiredService(Type);
+            Invocation invocation = new Invocation(targetInstance, targetMethod.Method, new object[] { packet, apiSender }, targetMethod.Filters);
+            await invocation.Proceed();
+        }
     }
 
+    internal async Task InvokeCallback(MethodInfo targetMethod,IApiSender apiSender)
+    {
+        using (var scope = ServiceProvider.CreateAsyncScope())
+        {
+            var targetInstance = scope.ServiceProvider.GetRequiredService(Type);
+            await (Task)(targetMethod.Invoke(targetInstance,  new object[] { apiSender } )!);
+            //Invocation invocation = new Invocation(targetInstance, targetMethod.Method, new object[] { packet, apiSender }, targetMethod.Filters);
+            //await invocation.Proceed();
+        }
+    }
 }
 
 
 class Reflections
 {
     private Type[] _findTypes;
+    private IServiceProvider _serviceProvider;
 
-    public Reflections(params Type[] types)
+    public Reflections(IServiceProvider serviceProvider,params Type[] types)
     {
+        this._serviceProvider = serviceProvider;
         this._findTypes = GetAllSubtypes(types);
+        
     }
 
     public List<MethodInfo> GetMethodsBySignature(string methodName, Type returnType, params Type[] parameterTypes)
@@ -104,32 +126,45 @@ class Reflections
             .Where(type => type.IsClass && !type.IsAbstract && subTypes.Any(subType => subType.IsAssignableFrom(type)))
             .ToArray();
     }
-    public List<(string instanceName, ApiInstance apiInstance)> InvokeMethodByName(string methodName, params object[] arguments)
+    public List<(string instanceName, ApiInstance apiInstance)> GetInstanceBy(Type subtype)
     {
         return _findTypes
-            .SelectMany(type => type.GetMethods())
-            .Where(m => m.Name == methodName)
-            .Select(m =>
+            //.SelectMany(type => type.GetMethods())
+            //.Where(m => m.Name == methodName)
+            .Where(type => type.IsClass && !type.IsAbstract && subtype.IsAssignableFrom(type))
+            .Select(type =>
             {
-                var instance = FormatterServices.GetUninitializedObject(m.DeclaringType!);
-                IEnumerable<AspectifyAttribute> apiFilters = m.DeclaringType!.GetCustomAttributes(typeof(AspectifyAttribute), true).Select(e => (AspectifyAttribute)e);
-                return (m.DeclaringType!.FullName!,new ApiInstance(instance!, m, apiFilters));
+                //var instance = FormatterServices.GetUninitializedObject(m.DeclaringType!);
+                IEnumerable<AspectifyAttribute> apiFilters = type.GetCustomAttributes(typeof(AspectifyAttribute), true).Select(e => (AspectifyAttribute)e);
+                return (type.FullName!,new ApiInstance(type, apiFilters, _serviceProvider));
             })
             .ToList();
+    }
+
+    internal List<MethodInfo> GetMethodsBy(Type subtype,List<string> methods)
+    {
+        return _findTypes
+            .Where(type => type.IsClass && !type.IsAbstract && subtype.IsAssignableFrom(type))
+            .SelectMany(type=>type.GetMethods())
+            .Where(typeMethod=> methods.Contains(typeMethod.Name) && typeMethod.IsPublic).ToList();
     }
 }
 
 internal class ApiReflection
 {
     private readonly Dictionary<string, ApiInstance> _instances = new ();
-    private readonly Dictionary<int, ApiMethod> _methods = new ();
+    private readonly Dictionary<int, ApiMethod> _methods = new();
+
+    private readonly Dictionary<string, ApiInstance> _callbackInstance = new();
+    private readonly Dictionary<string, List< MethodInfo>> _callbackMethods = new (); //method name //instance name // apiMethod
+
     private readonly Dictionary<int, ApiMethod> _backendMethods = new ();
     private readonly Dictionary<int, string> _messageIndexChecker = new ();
     private readonly Dictionary<int, string> _messageIndexBackendChecker = new ();
 
-    public ApiReflection()
+    public ApiReflection(IServiceProvider serviceProvider)
     {
-        var reflections = new Reflections(typeof(IApiController));
+        var reflections = new Reflections(serviceProvider,typeof(IApiController), typeof(IApiCallBack));
         ExtractInstance(reflections);
         ExtractHandlerMethod(reflections);
 
@@ -167,8 +202,8 @@ internal class ApiReflection
 
     private void ExtractInstance(Reflections reflections)
     {
-
-        reflections.InvokeMethodByName("Instance").ForEach(instance => _instances.Add(instance.instanceName, instance.apiInstance));
+        reflections.GetInstanceBy(typeof(IApiController)).ForEach(instance => _instances.Add(instance.instanceName, instance.apiInstance));
+        reflections.GetInstanceBy(typeof(IApiCallBack)).ForEach(instance => _callbackInstance.Add(instance.instanceName, instance.apiInstance));
     }
 
     private void ExtractHandlerMethod(Reflections reflections)
@@ -210,6 +245,40 @@ internal class ApiReflection
 
         });
 
+
+        reflections.GetMethodsBy(
+            typeof(IApiCallBack),
+            typeof(IApiCallBack).GetMethods().Select(e => e.Name).ToList()
+        ).ForEach(methodInfo =>
+        {
+            
+            if (_callbackMethods.ContainsKey(methodInfo.Name) == false)
+            {    
+                _callbackMethods[methodInfo.Name] = new();
+            }
+            var methodList = _callbackMethods[methodInfo.Name];
+            methodList.Add(methodInfo);
+
+        });
+
     }
 
+    //internal async Task OnDisconnect(AllApiSender apiSender)
+    //{
+    //    await CallCallbackMethods("OnDisconnect", apiSender);
+    //}
+
+    public async Task InvokeCallbackMethods(string methodName, IApiSender apiSender)
+    {
+        var methods = _callbackMethods[methodName];
+
+        if (methods != null)
+        {
+            foreach (var method in methods)
+            {
+                var instance = _callbackInstance[method.DeclaringType!.FullName!];
+                await instance.InvokeCallback(method, apiSender);
+            }
+        }
+    }
 }

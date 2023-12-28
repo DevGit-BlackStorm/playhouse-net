@@ -17,7 +17,7 @@ namespace PlayHouse.Production.Api
     public interface IApiController
     {
         void Handles(IHandlerRegister handlerRegister, IBackendHandlerRegister backendHandlerRegister);
-        IApiController Instance();
+        //IApiController Instance();
     }
 
 }

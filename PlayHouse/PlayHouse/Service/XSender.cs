@@ -42,21 +42,26 @@ internal class XSender : ISender
 
     public void Reply(ushort errorCode,IPacket? reply = null)
     {
-        if(reply!=null)
-        {
-            PacketContext.AsyncCore.Add(SendTarget.Reply,reply);
-        }
         
         if (CurrentHeader != null)
         {
             ushort msgSeq = CurrentHeader.Header.MsgSeq;
             if (msgSeq != 0)
             {
+                if (reply != null)
+                {
+                    reply.MsgSeq = msgSeq;
+                    PacketContext.AsyncCore.Add(SendTarget.Reply, reply);
+                }
+                else
+                {
+                    PacketContext.AsyncCore.Add(SendTarget.ErrorReply, CPacket.OfEmpty(msgSeq));
+                }
+
                 string from = CurrentHeader.From;
                 RoutePacket routePacket =RoutePacket.ReplyOf(_serviceId, CurrentHeader, errorCode,reply);
                 routePacket.RouteHeader.AccountId = CurrentHeader.AccountId;
                 //_log.Trace(() => $"Before Send - [packetInfo:${routePacket.RouteHeader}]");
-                
                 _clientCommunicator.Send(from, routePacket);
             }
             else
@@ -290,21 +295,24 @@ internal class XSender : ISender
         return (replyPacket.ErrorCode, CPacket.Of(replyPacket));
     }
 
-    public void ErrorReply(RouteHeader routeHeader, ushort errorCode)
-    {
-        PacketContext.AsyncCore.Add(SendTarget.ErrorReply, CPacket.OfEmpty());
+    //public void ErrorReply(RouteHeader routeHeader, ushort errorCode)
+    //{
+    //    ushort msgSeq = routeHeader.Header.MsgSeq;
+    //    string from = routeHeader.From;
 
-        ushort msgSeq = routeHeader.Header.MsgSeq;
-        string from = routeHeader.From;
-        //int sid = routeHeader.Sid;
-        //bool forClient = routeHeader.IsToClient;
-        if (msgSeq > 0)
-        {
-            //RoutePacket reply = RoutePacket.ReplyOf(_serviceId, msgSeq,sid,!routeHeader.IsBackend, new ReplyPacket(errorCode));
-            RoutePacket reply = RoutePacket.ReplyOf(_serviceId, routeHeader, errorCode,  CPacket.OfEmpty());
-            _clientCommunicator.Send(from, reply);
-        }
-    }
+
+    //    PacketContext.AsyncCore.Add(SendTarget.ErrorReply, CPacket.OfEmpty(msgSeq));
+
+        
+    //    //int sid = routeHeader.Sid;
+    //    //bool forClient = routeHeader.IsToClient;
+    //    if (msgSeq > 0)
+    //    {
+    //        //RoutePacket reply = RoutePacket.ReplyOf(_serviceId, msgSeq,sid,!routeHeader.IsBackend, new ReplyPacket(errorCode));
+    //        RoutePacket reply = RoutePacket.ReplyOf(_serviceId, routeHeader, errorCode,  CPacket.OfEmpty(msgSeq));
+    //        _clientCommunicator.Send(from, reply);
+    //    }
+    //}
     public void SessionClose(string sessionEndpoint, int sid)
     {
         SessionCloseMsg message = new SessionCloseMsg();

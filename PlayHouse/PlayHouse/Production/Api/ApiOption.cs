@@ -2,7 +2,8 @@
 {
     public class ApiOption
     {
-        public IApiCallBack? ApiCallBackHandler { get; set; }
+        //public IApiCallBack? ApiCallBackHandler { get; set; }
+        public IServiceProvider? ServiceProvider { get; set; }
     }
 
 

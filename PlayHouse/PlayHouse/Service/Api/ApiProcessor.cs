@@ -44,7 +44,13 @@ namespace PlayHouse.Service.Api
             _clientCommunicator = clientCommunicator;
             _sender = sender;
             _systemPanel = systemPanel;
-            _apiReflection = new ApiReflection();
+
+            if(apiOption.ServiceProvider == null)
+            {
+                throw new Exception("Service Provider is not registered");
+            }
+
+            _apiReflection = new ApiReflection(apiOption.ServiceProvider);
 
             _policy = new CacheItemPolicy { SlidingExpiration =TimeSpan.FromMinutes(5) };
             var cacheSettings = new NameValueCollection
@@ -85,8 +91,8 @@ namespace PlayHouse.Service.Api
                                     _serviceId,
                                     _requestCache,
                                     _clientCommunicator,
-                                    _apiReflection,
-                                    _apiOption.ApiCallBackHandler!
+                                    _apiReflection
+                                    //_apiOption.ApiCallBackHandler!
 
                                 );
 
@@ -107,7 +113,7 @@ namespace PlayHouse.Service.Api
                                 var apiSender = new AllApiSender(_serviceId, _clientCommunicator, _requestCache);
                                 apiSender.SetCurrentPacketHeader(routeHeader);
 
-                                PacketContext.AsyncCore.Init(packet.IsRequest());
+                                PacketContext.AsyncCore.Init();
                                 ServiceAsyncContext.Init();
 
 
@@ -132,7 +138,7 @@ namespace PlayHouse.Service.Api
                                 {
                                     if (routeHeader.Header.MsgSeq > 0)
                                     {
-                                        apiSender.ErrorReply(packet.RouteHeader, (ushort)BaseErrorCode.NotRegisteredMessage);    
+                                        apiSender.Reply((ushort)BaseErrorCode.NotRegisteredMessage);    
                                     }
                                     _log.Error(() => e.Message);
                                 }
@@ -140,7 +146,7 @@ namespace PlayHouse.Service.Api
                                 {
                                     if (routeHeader.Header.MsgSeq > 0)
                                     {
-                                        apiSender.ErrorReply(packet.RouteHeader, (ushort)BaseErrorCode.SystemError);    
+                                        apiSender.Reply((ushort)BaseErrorCode.SystemError);    
                                     }
                                     _log.Error(() => e.Message);
                                 }
@@ -150,7 +156,7 @@ namespace PlayHouse.Service.Api
                                     // Use the default content error code if it's not set in the content.
                                     if(routeHeader.Header.MsgSeq > 0)
                                     {
-                                        apiSender.ErrorReply(packet.RouteHeader, (ushort)BaseErrorCode.UncheckedContentsError);
+                                        apiSender.Reply((ushort)BaseErrorCode.UncheckedContentsError);
                                     }
 
                                     _log.Error(() => $"Packet processing failed due to an unexpected error. - [msgId:{routeHeader.MsgId}]");
