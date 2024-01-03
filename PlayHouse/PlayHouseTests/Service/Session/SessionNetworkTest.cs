@@ -89,7 +89,7 @@ namespace PlayHouse.Service.Session.Network
 
                 var localIp = IpFinder.FindLocalIp();
                 var connector = new Connector();
-                connector.Init(new ConnectorConfig() { RequestTimeout = 0 ,Host = localIp,Port = port});
+                connector.Init(new ConnectorConfig() { RequestTimeoutMs = 0 ,Host = localIp,Port = port});
                 
 
                 Timer timer = new Timer((task) =>
@@ -108,7 +108,7 @@ namespace PlayHouse.Service.Session.Network
                 await Task.Delay(100);
 
 
-                var replyPacket = await connector.RequestAsync(SESSION, new PlayHouseConnector.Packet(new TestMsg { TestMsg_ = "request" }));
+                var replyPacket = await connector.AuthenticateAsync(SESSION, new PlayHouseConnector.Packet(new TestMsg { TestMsg_ = "request" }));
 
                 using (replyPacket)
                 {

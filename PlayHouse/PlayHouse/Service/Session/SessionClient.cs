@@ -202,7 +202,7 @@ internal class SessionClient
     private void SendHeartBeat(ClientPacket clientPacket)
     {
         
-        _log.Debug(() => $"send heartbeat - [packet:{clientPacket.Header}]");
+        //_log.Trace(() => $"send heartbeat - [packet:{clientPacket.Header}]");
         RoutePacket.WriteClientPacketBytes(clientPacket, _heartbeatBuffer);
         var reply = new ClientPacket(clientPacket.Header, new RingBufferPayload(_heartbeatBuffer));
         SendToClient(reply);
