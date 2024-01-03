@@ -5,6 +5,7 @@ using PlayHouse.Service.Session.Network;
 using PlayHouse.Utils;
 using System.Collections.Concurrent;
 using PlayHouse.Production;
+using NetMQ.Sockets;
 using CommonLib;
 using NetMQ;
 
@@ -55,6 +56,9 @@ internal class SessionClient
     private ushort _authenticateServiceId;
     private string _authServerEndpoint = "";
     private readonly StageIndexGenerator _stageIndexGenerator = new();
+    private DateTime _lastUpdateTime = DateTime.UtcNow;
+    private RingBuffer _heartbeatBuffer = new RingBuffer(100);
+    private bool _debugMode = false;
 
     public SessionClient(
         ushort serviceId, 
@@ -132,6 +136,11 @@ internal class SessionClient
         }
     }
 
+    public void ClientDisconnect()
+    {
+        _session.ClientDisconnect();
+    }
+
     public void Dispatch(ClientPacket clientPacket)
     {
         try
@@ -141,6 +150,20 @@ internal class SessionClient
             ushort serviceId = clientPacket.ServiceId();
             int msgId = clientPacket.GetMsgId();
 
+            UpdateHeartBeatTime();
+
+            if (msgId == -1) //heartbeat
+            {
+                SendHeartBeat(clientPacket);
+                return;
+            }
+
+            if(msgId == -2) //debug mode
+            {
+                _log.Debug(() => $"session is debug mode - [sid:{_sid}]");
+                _debugMode = true;
+                return;
+            }
 
             if (IsAuthenticated)
             {
@@ -175,6 +198,17 @@ internal class SessionClient
         }
         
     }
+
+    private void SendHeartBeat(ClientPacket clientPacket)
+    {
+        
+        _log.Debug(() => $"send heartbeat - [packet:{clientPacket.Header}]");
+        RoutePacket.WriteClientPacketBytes(clientPacket, _heartbeatBuffer);
+        var reply = new ClientPacket(clientPacket.Header, new RingBufferPayload(_heartbeatBuffer));
+        SendToClient(reply);
+        _heartbeatBuffer.Clear();
+    }
+
     private IServerInfo FindSuitableServer(ushort serviceId, string endpoint)
     {
         IServerInfo serverInfo = _serviceInfoCenter.FindServer(endpoint);
@@ -332,4 +366,43 @@ internal class SessionClient
             _session.Send(clientPacket);
         }
     }
+
+    internal bool IsIdleState(int idleTime)
+    {
+        if(IsAuthenticated == false)
+        { 
+            return false;
+        }
+
+        if (_debugMode)
+        {
+            return false;
+        }
+
+        if(idleTime <= 0)
+        {
+            return false;
+        }
+
+        var timeDifference =  DateTime.UtcNow - _lastUpdateTime;
+        if (timeDifference.TotalMilliseconds > idleTime )
+        {
+            return true;
+        }
+        return false;
+    }
+
+    internal void UpdateHeartBeatTime()
+    {
+        _lastUpdateTime = DateTime.UtcNow;
+    }
+
+    internal long IdleTime()
+    {
+        var timeDifference = DateTime.UtcNow - _lastUpdateTime;
+        return ((long)timeDifference.TotalMilliseconds);
+    }
+
+    internal string AccountId => _accountId;
+    internal int Sid => _sid;
 }

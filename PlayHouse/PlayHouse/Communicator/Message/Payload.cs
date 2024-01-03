@@ -1,4 +1,5 @@
 ﻿
+using CommonLib;
 using Google.Protobuf;
 using NetMQ;
 
@@ -72,7 +73,7 @@ namespace PlayHouse.Communicator.Message
     public class FramePayload : IPayload
     {
         private NetMQFrame _frame;
-        public ReadOnlySpan<byte> Data => new ReadOnlySpan<byte>(_frame.Buffer,0,_frame.MessageSize);
+        public ReadOnlySpan<byte> Data => new (_frame.Buffer,0,_frame.MessageSize);
         public NetMQFrame Frame => _frame;
 
         public FramePayload(NetMQFrame frame)
@@ -81,6 +82,22 @@ namespace PlayHouse.Communicator.Message
         }
         public void Dispose()
         {
+        }
+    }
+    public class RingBufferPayload : IPayload
+    {
+        private RingBuffer _ringBuffer;
+
+        public ReadOnlySpan<byte> Data => new (_ringBuffer.Buffer(),0,_ringBuffer.Count);
+
+        public RingBufferPayload(RingBuffer ringBuffer)
+        {
+            _ringBuffer = ringBuffer;
+        }
+
+        public void Dispose()
+        {
+            _ringBuffer.Clear();
         }
     }
 }

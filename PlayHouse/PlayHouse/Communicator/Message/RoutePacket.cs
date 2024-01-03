@@ -373,6 +373,7 @@ namespace PlayHouse.Communicator.Message
             buffer.Write(clientPacket.Header.StageIndex);
             buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.Header.ErrorCode));
             buffer.Write(clientPacket.Payload.Data);
+        
         }
 
 

@@ -2,14 +2,14 @@
 {
     public class SessionOption
     {
-        public long ClientSessionIdleTimeout { get; set; }
         public List<string> Urls { get; set; }
         public int SessionPort { get; set; }
         public bool UseWebSocket { get; set; }
 
+        public int ClientIdleTimeoutMSec = 5000; //  0인경우 idle확인 안함
+
         public SessionOption()
         {
-            ClientSessionIdleTimeout = 0;
             Urls = new List<string>();
             SessionPort = 0;
             UseWebSocket = false;

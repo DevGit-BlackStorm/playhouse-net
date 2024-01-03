@@ -5,6 +5,7 @@ using PlayHouse.Service.Session.Network;
 using PlayHouse.Utils;
 using PlayHouse.Production;
 using PlayHouse.Production.Session;
+using StackExchange.Redis;
 
 namespace PlayHouse.Service.Session
 {
@@ -25,6 +26,7 @@ namespace PlayHouse.Service.Session
         private readonly ConcurrentQueue<RoutePacket> _serverQueue = new();
         private Thread? _clientMessageLoopThread;
         private Thread? _serverMessageLoopThread;
+        private Timer _timer;
 
         public ushort ServiceId => _serviceId;
         
@@ -40,6 +42,28 @@ namespace PlayHouse.Service.Session
 
             _sessionNetwork = new SessionNetwork(sessionOption, this);
             _performanceTester = new PerformanceTester(showQps, "client");
+            _timer = new Timer(TimerCallback, this, 1000, 1000);
+        }
+
+        private static void TimerCallback(Object? o)
+        {
+            SessionProcessor session = (SessionProcessor)o!;
+            // 여기에 타이머 만료 시 실행할 코드 작성
+            var keysToRemove = 
+                session._clients.Where(k => k.Value.IsIdleState(session._sessionOption.ClientIdleTimeoutMSec)).Select(k => k.Key);
+
+            foreach (var key in keysToRemove)
+            {
+                SessionClient? client;
+                session._clients.Remove(key, out client);
+                if (client != null)
+                {
+
+                    session._log.Debug(() => $"idle client disconnect - [sid:{client.Sid},accountId:{client.AccountId},idleTime:{client.IdleTime()}]");
+                    client.ClientDisconnect();
+                    
+                }
+            }
         }
 
         public void OnStart()
@@ -54,7 +78,10 @@ namespace PlayHouse.Service.Session
 
             _serverMessageLoopThread = new Thread(ServerMessageLoop) { Name = "session:server-message-loop" };
             _serverMessageLoopThread.Start();
+
             
+
+
         }
 
         private void ClientMessageLoop()
@@ -71,7 +98,7 @@ namespace PlayHouse.Service.Session
                         //LOG.Trace(()=>$"OnRecevie From Client: {clientPacket.Header}", this.GetType());
                         if (!_clients.TryGetValue(sessionId, out var sessionClient))
                         {
-                            _log.Error(()=>$"sessionId is not exist - [sessionId:{sessionId},packetInfo:{clientPacket.Header}]");
+                            _log.Debug(()=>$"sessionId is not exist - [sessionId:{sessionId},packetInfo:{clientPacket.Header}]");
                         }
                         else
                         {
@@ -182,7 +209,7 @@ namespace PlayHouse.Service.Session
             }
             else
             {
-                _log.Error(()=>$"sessionId is not exist - [sid:{sid}]");
+                _log.Debug(() => $"sessionId is not exist - [sid:{sid}]");
             }
         }
         
