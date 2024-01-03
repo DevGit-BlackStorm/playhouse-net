@@ -28,15 +28,16 @@ internal class CPacket
         return PacketProducer.CreatePacket(replyPacket.MsgId, replyPacket.Payload, replyPacket.MsgSeq);
     }
 
-    public static IPacket OfEmpty(int msgSeq)
+    public static IPacket OfError(int msgSeq)
     {
-        return new EmptyPacket() { MsgSeq = msgSeq};
+        return PacketProducer.CreatePacket(-3,new EmptyPayload(), msgSeq);
+        //return new EmptyPacket() { MsgSeq = msgSeq};
     }
 
-    public static IPacket OfEmpty()
-    {
-        return new EmptyPacket();
-    }
+    //public static IPacket OfEmpty()
+    //{
+    //    return new EmptyPacket();
+    //}
 }
 
 internal class XPacket : IPacket
@@ -72,22 +73,22 @@ internal class XPacket : IPacket
     }
 }
 
-internal class EmptyPacket : IPacket
-{
-    private IPayload _payload = new EmptyPayload();
-    public int MsgId => 0;
-    private int _msgSeq;
-    public int MsgSeq { get => 0; set => _msgSeq = value; }
-    public IPayload Payload => _payload;
+//internal class EmptyPacket : IPacket
+//{
+//    private IPayload _payload = new EmptyPayload();
+//    public int MsgId => 0;
+//    private int _msgSeq;
+//    public int MsgSeq { get => 0; set => _msgSeq = value; }
+//    public IPayload Payload => _payload;
 
-    public IPacket Copy()
-    {
-        throw new NotImplementedException();
-    }
+//    public IPacket Copy()
+//    {
+//        throw new NotImplementedException();
+//    }
 
-    public T Parse<T>()
-    {
-        throw new NotImplementedException();
-    }
-}
+//    public T Parse<T>()
+//    {
+//        throw new NotImplementedException();
+//    }
+//}
 

@@ -31,9 +31,9 @@ internal class ReplyObject
         _taskCompletionSource?.SetResult(routePacket.ToReplyPacket());
     }
 
-    public void Throw(ushort errorCode)
+    public void Throw(ushort errorCode,int msgSeq)
     {
-        _replyCallback?.Invoke(errorCode,CPacket.OfEmpty());
+        _replyCallback?.Invoke(errorCode,CPacket.OfError(msgSeq));
         _taskCompletionSource?.SetResult(new ReplyPacket(errorCode));
         
     }
@@ -58,7 +58,8 @@ internal class RequestCache
             if (args.RemovedReason == CacheEntryRemovedReason.Expired)
             {
                 var replyObject = (ReplyObject)args.CacheItem.Value;
-                replyObject.Throw((int)BaseErrorCode.RequestTimeout);
+                int msgSeq = int.Parse(args.CacheItem.Key);
+                replyObject.Throw((int)BaseErrorCode.RequestTimeout,msgSeq);
             }
         });
 
