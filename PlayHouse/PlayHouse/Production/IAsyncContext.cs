@@ -22,6 +22,7 @@ public class SendPacketInfo
     public SendTarget Target { get; set; }
     public ushort ErrorCode { get; set; }
     public IPacket? Packet { get; set; } 
+    public ushort MsgSeq { get; set; }
 }
 
 
@@ -31,6 +32,7 @@ public interface IAsyncCore
     public List<SendPacketInfo> GetSendPackets();
     public void Clear();
 
-    public void Add(SendTarget target, IPacket? packet, ushort errorCode = 0);
+    public void Add(SendTarget target,ushort msgSeq, IPacket? packet);
+    public void Add(SendTarget target, ushort msgSeq, ushort errorCode);
 
 }

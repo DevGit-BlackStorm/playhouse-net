@@ -29,17 +29,11 @@ internal class CPacket
         return PacketProducer.CreatePacket(replyPacket.MsgId, replyPacket.Payload, replyPacket.MsgSeq);
     }
 
-    //public static IPacket OfError(int msgSeq, ushort errorCode)
-    //{
-    //    return PacketProducer.CreatePacket(-3, new EmptyPayload(), msgSeq);
-    //    return new EmptyPacket() { MsgSeq = msgSeq };
-    //}
+    public static IPacket OfError(int msgSeq)
+    {
+        return PacketProducer.CreatePacket(-3, new EmptyPayload(), msgSeq);
+    }
 
-    //    public static IPacket OfEmpty()
-    //    {
-    //        return new EmptyPacket();
-    //    }
-    //}
 }
 
 //internal class XPacket : IPacket

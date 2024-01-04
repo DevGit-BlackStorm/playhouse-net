@@ -21,11 +21,19 @@ internal class AsyncCore : IAsyncCore
         return _sendPackets.Value != null ? _sendPackets.Value : new();
     }
 
-    public void Add(SendTarget target, IPacket? packet,ushort errorCode = 0)
+    public void Add(SendTarget target,ushort msgSeq, IPacket? packet)
     {
         if (_sendPackets.Value != null)
         {
-            _sendPackets.Value.Add(new SendPacketInfo { Target = target,Packet = packet,ErrorCode = errorCode });
+            _sendPackets.Value.Add(new SendPacketInfo { Target = target,Packet = packet,MsgSeq = msgSeq});
+        }
+    }
+
+    public void Add(SendTarget target, ushort msgSeq, ushort errorCode)
+    {
+        if (_sendPackets.Value != null)
+        {
+            _sendPackets.Value.Add(new SendPacketInfo { Target = target, Packet = null, ErrorCode = errorCode,MsgSeq = msgSeq });
         }
     }
 
