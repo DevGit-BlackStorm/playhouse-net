@@ -311,7 +311,7 @@ internal class SessionClient
                 string stageId = joinStageMsg.StageId;
                 var stageIndex = UpdateStageInfo(playEndpoint, stageId);
                 _sessionSender.Reply((ushort)BaseErrorCode.Success, 
-                    XPacket.Of(new JoinStageInfoUpdateRes()
+                    CPacket.Of(new JoinStageInfoUpdateRes()
                     {
                         StageIdx = stageIndex,
                     }

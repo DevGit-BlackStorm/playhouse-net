@@ -33,7 +33,7 @@ internal class ReplyObject
 
     public void Throw(ushort errorCode,int msgSeq)
     {
-        _replyCallback?.Invoke(errorCode,CPacket.OfError(msgSeq));
+        _replyCallback?.Invoke(errorCode,new EmptyPacket());
         _taskCompletionSource?.SetResult(new ReplyPacket(errorCode));
         
     }

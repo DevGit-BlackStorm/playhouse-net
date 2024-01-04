@@ -17,12 +17,20 @@ public enum SendTarget
 
 };
 
+public class SendPacketInfo
+{
+    public SendTarget Target { get; set; }
+    public ushort ErrorCode { get; set; }
+    public IPacket? Packet { get; set; } 
+}
+
+
 public interface IAsyncCore
 {
     public void Init();
-    public List<(SendTarget target, IPacket packet)> GetSendPackets();
+    public List<SendPacketInfo> GetSendPackets();
     public void Clear();
 
-    public void Add(SendTarget target, IPacket packet);
+    public void Add(SendTarget target, IPacket? packet, ushort errorCode = 0);
 
 }

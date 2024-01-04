@@ -55,7 +55,7 @@ internal class XSender : ISender
                 }
                 else
                 {
-                    PacketContext.AsyncCore.Add(SendTarget.ErrorReply, CPacket.OfError(msgSeq));
+                    PacketContext.AsyncCore.Add(SendTarget.ErrorReply, null,errorCode);
                 }
 
                 string from = CurrentHeader.From;

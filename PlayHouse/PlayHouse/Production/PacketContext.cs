@@ -8,7 +8,7 @@ internal class AsyncCore : IAsyncCore
     
     public AsyncCore() { }
 
-    private readonly AsyncLocal<List<(SendTarget target, IPacket packet)>?> _sendPackets = new();
+    private readonly AsyncLocal<List<SendPacketInfo>?> _sendPackets = new();
 
     public void Init()
     {
@@ -16,16 +16,16 @@ internal class AsyncCore : IAsyncCore
     }
 
 
-    public List<(SendTarget target, IPacket packet)> GetSendPackets()
+    public List<SendPacketInfo> GetSendPackets()
     {
         return _sendPackets.Value != null ? _sendPackets.Value : new();
     }
 
-    public void Add(SendTarget target, IPacket packet)
+    public void Add(SendTarget target, IPacket? packet,ushort errorCode = 0)
     {
         if (_sendPackets.Value != null)
         {
-            _sendPackets.Value.Add((target, packet));
+            _sendPackets.Value.Add(new SendPacketInfo { Target = target,Packet = packet,ErrorCode = errorCode });
         }
     }
 
@@ -46,6 +46,6 @@ public class PacketContext
         set { Instance._core = value; }
     }
     public static PacketContext Instance { get; private set; } = new();
-    public static List<(SendTarget target, IPacket packet)> SendPackets => AsyncCore.GetSendPackets();
+    public static List<SendPacketInfo> SendPackets => AsyncCore.GetSendPackets();
 
 }
