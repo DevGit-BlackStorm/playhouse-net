@@ -401,9 +401,9 @@ namespace PlayHouse.Communicator.Message
             return new  ReplyPacket(RouteHeader.Header.ErrorCode,RouteHeader.MsgId,MovePayload()); 
         }
 
-        internal IPacket ToContentsPacket()
+        internal IPacket ToContentsPacket(int msgSeq)
         {
-            return PacketProducer.CreatePacket(MsgId, _payload);
+            return PacketProducer.CreatePacket(MsgId, _payload, msgSeq > 0);
         }
 
         

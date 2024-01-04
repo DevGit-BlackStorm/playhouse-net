@@ -8,6 +8,8 @@ namespace PlayHouseTests
     {
         private int _msgId;
         private IPayload _payload;
+        private bool _isReqeust;
+
         public TestPacket(IMessage message)
         {
             _msgId = message.Descriptor.Index;
@@ -20,14 +22,16 @@ namespace PlayHouseTests
             _payload = new EmptyPayload();
         }
 
-        public TestPacket(int msgId, IPayload payload) : this(msgId)
+        public TestPacket(int msgId, IPayload payload, bool isReqeust) : this(msgId)
         {
             _payload = payload;
+            _isReqeust = isReqeust;
         }
 
         public int MsgId => _msgId;
 
         public IPayload Payload => _payload;
+        public bool IsRequest => _isReqeust;
 
         public IPacket Copy()
         {

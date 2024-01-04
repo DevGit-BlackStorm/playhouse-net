@@ -21,7 +21,7 @@ namespace PlayHouse.Production
         public int NodeId { get; set; } // 0~ 4096
         public int MaxBufferPoolSize = 1024 * 1024 * 100;
 
-        public Func<int,IPayload,IPacket>? PacketProducer { get; set; }
+        public Func<int, IPayload, bool, IPacket>? PacketProducer { get; set; }
 
     }
 

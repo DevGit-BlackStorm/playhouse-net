@@ -182,7 +182,7 @@ internal class ApiReflection
             if (!_instances.ContainsKey(targetMethod.ClassName)) throw new ApiException.NotRegisterApiInstance(targetMethod.ClassName);
             ApiInstance classInstance = _instances[targetMethod.ClassName];
 
-            await classInstance.Invoke(targetMethod, packet.ToContentsPacket(), apiSender);
+            await classInstance.Invoke(targetMethod, packet.ToContentsPacket(packet.MsgSeq), apiSender);
         }
 
     }
@@ -196,7 +196,7 @@ internal class ApiReflection
         if (!_instances.ContainsKey(targetMethod.ClassName)) throw new ApiException.NotRegisterApiInstance(targetMethod.ClassName);
         ApiInstance classInstance = _instances[targetMethod.ClassName];
 
-        await classInstance.Invoke(targetMethod, packet.ToContentsPacket(), apiBackendSender);
+        await classInstance.Invoke(targetMethod, packet.ToContentsPacket(packet.MsgSeq), apiBackendSender);
     }
 
 

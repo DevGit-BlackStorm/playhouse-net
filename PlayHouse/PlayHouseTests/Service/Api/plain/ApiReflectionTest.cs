@@ -23,7 +23,7 @@ namespace PlayHouseTests.Service.Api.plain
         public async Task Test_CALL_Method()
         {
 
-            PacketProducer.Init((int msgId, IPayload payload) => new TestPacket(msgId, payload));
+            PacketProducer.Init((int msgId, IPayload payload, bool isReqeust) => new TestPacket(msgId, payload, isReqeust));
 
             GlobalAspectifyManager.Add(new TestGlobalAspectifyAttribute());
 
@@ -71,7 +71,7 @@ namespace PlayHouseTests.Service.Api.plain
         [Fact]
         public async Task Test_CALL_Backend_Method()
         {
-            PacketProducer.Init((int msgId, IPayload payload) => new TestPacket(msgId, payload));
+            PacketProducer.Init((int msgId, IPayload payload, bool isReqeust) => new TestPacket(msgId, payload, isReqeust));
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddScoped<TestApiController>();
