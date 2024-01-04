@@ -8,7 +8,7 @@ namespace PlayHouseTests
     {
         private int _msgId;
         private IPayload _payload;
-        private bool _isReqeust;
+        private ushort _msgSeq;
 
         public TestPacket(IMessage message)
         {
@@ -22,16 +22,16 @@ namespace PlayHouseTests
             _payload = new EmptyPayload();
         }
 
-        public TestPacket(int msgId, IPayload payload, bool isReqeust) : this(msgId)
+        public TestPacket(int msgId, IPayload payload, ushort msgSeq) : this(msgId)
         {
             _payload = payload;
-            _isReqeust = isReqeust;
+            _msgSeq = msgSeq;
         }
 
         public int MsgId => _msgId;
 
         public IPayload Payload => _payload;
-        public bool IsRequest => _isReqeust;
+        public bool IsRequest => _msgSeq > 0;
 
         public IPacket Copy()
         {

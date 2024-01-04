@@ -27,6 +27,6 @@ internal class XApiCommonSender : XSender, IApiCommonSender
 
         var res = CreateStageRes.Parser.ParseFrom(reply.Data);
 
-        return new CreateStageResult(reply.ErrorCode,  PacketProducer.CreatePacket(res.PayloadId, new ByteStringPayload(res.Payload), false));
+        return new CreateStageResult(reply.ErrorCode, CPacket.Of(res.PayloadId, new ByteStringPayload(res.Payload)));
     }
 }

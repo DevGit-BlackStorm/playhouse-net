@@ -13,20 +13,20 @@ internal class CPacket
 
     public static IPacket Of(int msgId, ByteString message)
     {
-        return PacketProducer.CreatePacket(msgId, new ByteStringPayload(message),false);
+        return PacketProducer.CreatePacket(msgId, new ByteStringPayload(message), 0);
     }
     public static IPacket Of(IMessage message)
     {
-        return PacketProducer.CreatePacket(message.Descriptor.Index, new ProtoPayload(message), false);
+        return PacketProducer.CreatePacket(message.Descriptor.Index, new ProtoPayload(message), 0);
     }
     public static IPacket Of(int msgId, IPayload payload)
     {
-        return PacketProducer.CreatePacket(msgId, payload, false);
+        return PacketProducer.CreatePacket(msgId, payload,0);
     }
 
     public static IPacket Of(ReplyPacket replyPacket)
     {
-        return PacketProducer.CreatePacket(replyPacket.MsgId, replyPacket.Payload, false);
+        return PacketProducer.CreatePacket(replyPacket.MsgId, replyPacket.Payload, 0);
     }
 
 }

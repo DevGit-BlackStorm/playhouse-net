@@ -389,7 +389,7 @@ namespace PlayHouse.Communicator.Message
         public ReadOnlySpan<byte> Data => _payload.Data;
 
         public object? TimerObject { get; private set; }
-        public int MsgSeq => Header.MsgSeq;
+        public ushort MsgSeq => Header.MsgSeq;
 
         public void Dispose()
         {
@@ -401,9 +401,9 @@ namespace PlayHouse.Communicator.Message
             return new  ReplyPacket(RouteHeader.Header.ErrorCode,RouteHeader.MsgId,MovePayload()); 
         }
 
-        internal IPacket ToContentsPacket(int msgSeq)
+        internal IPacket ToContentsPacket(ushort msgSeq)
         {
-            return PacketProducer.CreatePacket(MsgId, _payload, msgSeq > 0);
+            return PacketProducer.CreatePacket(MsgId, _payload,msgSeq);
         }
 
         

@@ -11,16 +11,16 @@ namespace PlayHouse.Service
     internal static class PacketProducer
     {
 
-        public static void Init(Func<int , IPayload,bool, IPacket> CreateFunc)//int msgId, payload,is request packet return IPacket
+        public static void Init(Func<int , IPayload,ushort, IPacket> CreateFunc)//int msgId, payload,msgSeq return IPacket
         {
             _createFunc = CreateFunc;  
         }
 
-        private  static Func<int,IPayload,bool,IPacket>? _createFunc { get; set; } //msgId,
+        private  static Func<int,IPayload,ushort,IPacket>? _createFunc { get; set; } //msgId,
 
-        public static IPacket CreatePacket(int msgId,IPayload payload,bool isReqeust)
+        public static IPacket CreatePacket(int msgId,IPayload payload,ushort msgSeq)
         {
-            return _createFunc!.Invoke(msgId, payload,isReqeust);
+            return _createFunc!.Invoke(msgId, payload,msgSeq);
         }
     }
 }
