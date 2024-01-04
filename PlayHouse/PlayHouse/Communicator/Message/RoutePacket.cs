@@ -398,12 +398,12 @@ namespace PlayHouse.Communicator.Message
 
         public  ReplyPacket ToReplyPacket()
         {
-            return new  ReplyPacket(RouteHeader.Header.ErrorCode,RouteHeader.MsgId,MovePayload(),MsgSeq); 
+            return new  ReplyPacket(RouteHeader.Header.ErrorCode,RouteHeader.MsgId,MovePayload()); 
         }
 
         internal IPacket ToContentsPacket()
         {
-            return PacketProducer.CreatePacket(MsgId, _payload,MsgSeq);
+            return PacketProducer.CreatePacket(MsgId, _payload);
         }
 
         

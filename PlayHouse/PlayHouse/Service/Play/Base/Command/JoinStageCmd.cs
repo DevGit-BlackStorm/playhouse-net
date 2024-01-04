@@ -19,7 +19,7 @@ internal class JoinStageCmd : IBaseStageCmd
         var accountId = routePacket.AccountId;
         var sessionEndpoint = request.SessionEndpoint;
         var sid = request.Sid;
-        var packet = CPacket.Of(request.PayloadId, request.Payload,routePacket.Header.MsgSeq);
+        var packet = CPacket.Of(request.PayloadId, request.Payload);
         var apiEndpoint = routePacket.RouteHeader.From;
 
         (ReplyPacket reply, int stageKey) joinResult = await baseStage.Join(accountId, sessionEndpoint, sid, apiEndpoint, packet);

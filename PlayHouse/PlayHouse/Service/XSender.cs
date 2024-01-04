@@ -50,7 +50,6 @@ internal class XSender : ISender
             {
                 if (reply != null)
                 {
-                    reply.MsgSeq = msgSeq;
                     PacketContext.AsyncCore.Add(SendTarget.Reply,msgSeq, reply);
                 }
                 else

@@ -16,7 +16,7 @@ internal class CreateStageCmd : IBaseStageCmd
     public  async Task Execute(BaseStage baseStage, RoutePacket routePacket)
     {
         var createStageReq = CreateStageReq.Parser.ParseFrom(routePacket.Data);
-        var packet = CPacket.Of(createStageReq.PayloadId, createStageReq.Payload,routePacket.Header.MsgSeq);
+        var packet = CPacket.Of(createStageReq.PayloadId, createStageReq.Payload);
         var stageType = createStageReq.StageType;
 
         if (!_playProcessor.IsValidType(stageType))

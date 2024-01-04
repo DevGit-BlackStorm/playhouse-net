@@ -95,7 +95,7 @@ namespace PlayHouseTests.Service.Play
         {
             // given
             PacketContext.AsyncCore.Init();
-            PacketProducer.Init((int msgId, IPayload payload,int msgSeq) => new TestPacket(msgId, payload,msgSeq));
+            PacketProducer.Init((int msgId, IPayload payload) => new TestPacket(msgId, payload));
 
             List<RoutePacket> result = new List<RoutePacket>();
             clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
@@ -136,7 +136,7 @@ namespace PlayHouseTests.Service.Play
         public async Task CreateJoinRoomInCreateState_ShouldBeSuccess()
         {
             PacketContext.AsyncCore.Init();
-            PacketProducer.Init((int msgId, IPayload payload, int msgSeq) => new TestPacket(msgId, payload, msgSeq));
+            PacketProducer.Init((int msgId, IPayload payload) => new TestPacket(msgId, payload));
 
             List<RoutePacket> result = new List<RoutePacket>();
             clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
@@ -162,7 +162,7 @@ namespace PlayHouseTests.Service.Play
         {
             // Arrange
             PacketContext.AsyncCore.Init();
-            PacketProducer.Init((int msgId, IPayload payload, int msgSeq) => new TestPacket(msgId, payload, msgSeq));
+            PacketProducer.Init((int msgId, IPayload payload) => new TestPacket(msgId, payload));
 
             await CreateRoomWithSuccess();
 

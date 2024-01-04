@@ -11,27 +11,22 @@ public delegate void ReplyCallback(ushort errorCode, IPacket reply);
 internal class CPacket
 {
 
-    public static IPacket Of(int msgId, ByteString message, int msgSeq)
+    public static IPacket Of(int msgId, ByteString message)
     {
-        return PacketProducer.CreatePacket(msgId, new ByteStringPayload(message), msgSeq);
+        return PacketProducer.CreatePacket(msgId, new ByteStringPayload(message));
     }
     public static IPacket Of(IMessage message)
     {
-        return PacketProducer.CreatePacket(message.Descriptor.Index, new ProtoPayload(message), 0);
+        return PacketProducer.CreatePacket(message.Descriptor.Index, new ProtoPayload(message));
     }
     public static IPacket Of(int msgId, IPayload payload)
     {
-        return PacketProducer.CreatePacket(msgId, payload, 0);
+        return PacketProducer.CreatePacket(msgId, payload);
     }
 
     public static IPacket Of(ReplyPacket replyPacket)
     {
-        return PacketProducer.CreatePacket(replyPacket.MsgId, replyPacket.Payload, replyPacket.MsgSeq);
-    }
-
-    public static IPacket OfError(int msgSeq)
-    {
-        return PacketProducer.CreatePacket(-3, new EmptyPayload(), msgSeq);
+        return PacketProducer.CreatePacket(replyPacket.MsgId, replyPacket.Payload);
     }
 
 }

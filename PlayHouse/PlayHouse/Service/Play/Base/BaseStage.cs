@@ -151,7 +151,7 @@ internal class BaseStage
             stageKey = await _sessionUpdater.UpdateStageInfo(sessionEndpoint, sid);
         }
 
-        return  (new ReplyPacket(outcome.errorCode, outcome.reply.MsgId,outcome.reply.Payload,outcome.reply.MsgSeq), stageKey);
+        return  (new ReplyPacket(outcome.errorCode, outcome.reply.MsgId,outcome.reply.Payload), stageKey);
     }
 
 

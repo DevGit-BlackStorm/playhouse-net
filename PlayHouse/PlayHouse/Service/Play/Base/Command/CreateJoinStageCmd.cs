@@ -17,9 +17,9 @@ internal class CreateJoinStageCmd : IBaseStageCmd
     public async Task Execute(BaseStage baseStage, RoutePacket routePacket)
     {
         var request = CreateJoinStageReq.Parser.ParseFrom(routePacket.Data);
-        var createStagePacket = CPacket.Of(request.CreatePayloadId, request.CreatePayload,routePacket.MsgSeq);
+        var createStagePacket = CPacket.Of(request.CreatePayloadId, request.CreatePayload);
         var stageType = request.StageType;
-        var joinStagePacket = CPacket.Of(request.JoinPayloadId, request.JoinPayload,routePacket.MsgSeq);
+        var joinStagePacket = CPacket.Of(request.JoinPayloadId, request.JoinPayload);
         var accountId = routePacket.AccountId;
         var stageId = routePacket.StageId;
         var sessionEndpoint = request.SessionEndpoint;
