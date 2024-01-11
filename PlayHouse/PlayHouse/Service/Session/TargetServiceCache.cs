@@ -1,5 +1,5 @@
 ﻿using PlayHouse.Communicator;
-using PlayHouse.Production;
+using PlayHouse.Production.Shared;
 
 namespace PlayHouse.Service.Session
 {

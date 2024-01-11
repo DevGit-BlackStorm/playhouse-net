@@ -89,7 +89,7 @@ internal class XClientCommunicator : IClientCommunicator
             catch (Exception e)
             {
                 _log.Error(
-                    ()=>$"{_playSocket.Id()} socket send error : {endpoint},{routePacket.MsgId} - {e.Message}"
+                    ()=>$"socket send error : [target endpoint:{endpoint},target msgId:{routePacket.MsgId}] - {e.Message}"
                 );
             }
         });

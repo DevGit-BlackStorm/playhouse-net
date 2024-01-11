@@ -3,11 +3,8 @@
 namespace PlayHouse.Service.Play.Base.Command;
 internal class DisconnectNoticeCmd : IBaseStageCmd
 {
-    private readonly PlayProcessor _playProcessor;
-    public PlayProcessor PlayProcessor => _playProcessor;
-    public DisconnectNoticeCmd(PlayProcessor playProcessor)
+    public DisconnectNoticeCmd()
     {
-        _playProcessor = playProcessor;
     }
 
     public  async Task Execute(BaseStage baseStage, RoutePacket routePacket)

@@ -1,17 +1,16 @@
 ﻿using Google.Protobuf;
 using PlayHouse.Communicator.Message;
 using Playhouse.Protocol;
+using PlayHouse.Service.Shared;
 
 namespace PlayHouse.Service.Play.Base.Command;
 internal class CreateJoinStageCmd : IBaseStageCmd
 {
-    private readonly PlayProcessor _playProcessor;
+    private readonly PlayDispatcher _dispatcher;
 
-    public PlayProcessor PlayProcessor => _playProcessor;
-
-    public CreateJoinStageCmd(PlayProcessor playProcessor)
+    public CreateJoinStageCmd(PlayDispatcher dispatcher)
     {
-        _playProcessor = playProcessor;
+        _dispatcher = dispatcher;
     }
 
     public async Task Execute(BaseStage baseStage, RoutePacket routePacket)
@@ -28,7 +27,7 @@ internal class CreateJoinStageCmd : IBaseStageCmd
 
         CreateJoinStageRes response = new CreateJoinStageRes();
 
-        if (!_playProcessor.IsValidType(stageType))
+        if (!_dispatcher.IsValidType(stageType))
         {
             baseStage.Reply((int) BaseErrorCode.StageTypeIsInvalid);
             return;
@@ -40,32 +39,34 @@ internal class CreateJoinStageCmd : IBaseStageCmd
             response.CreatePayloadId = createReply.reply.MsgId;
             response.CreatePayload = ByteString.CopyFrom(createReply.reply.Payload.Data);
 
-            if (createReply.errorCode != (ushort)BaseErrorCode.Success)
-            {
-                _playProcessor.RemoveRoom(stageId);                    
-                baseStage.Reply(createReply.errorCode, CPacket.Of(response));
-                return;
-            }
-            else
+            if (createReply.errorCode == (ushort)BaseErrorCode.Success)
             {
                 await baseStage.OnPostCreate();
                 response.IsCreated = true;
             }
+            else
+            {
+                _dispatcher.RemoveRoom(stageId);
+                baseStage.Reply(createReply.errorCode);
+                return;
+            }
         }
 
         var joinResult = await baseStage.Join(accountId, sessionEndpoint, sid, apiEndpoint, joinStagePacket);
-        var joinReply = joinResult.reply;
-        var stageKey = joinResult.stageKey;
 
-        response.JoinPayloadId = joinReply.MsgId;
-        response.JoinPayload = ByteString.CopyFrom(joinReply.Data);
-        response.StageIdx = stageKey;
+        response.JoinPayloadId = joinResult.reply.MsgId;
+        response.JoinPayload = ByteString.CopyFrom(joinResult.reply.Payload.Data);
+        response.StageIdx = joinResult.stageKey;
 
-        baseStage.Reply(joinReply.ErrorCode, CPacket.Of(response));
 
-        if (joinReply.IsSuccess())
+        if (joinResult.errorCode == (ushort)BaseErrorCode.Success)
         {
+            baseStage.Reply(CPacket.Of(response));
             await baseStage.OnPostJoinRoom(accountId);
+        }
+        else
+        {
+            baseStage.Reply(joinResult.errorCode);
         }
     }
 }

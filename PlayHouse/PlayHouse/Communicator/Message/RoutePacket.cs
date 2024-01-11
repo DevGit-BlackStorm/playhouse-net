@@ -2,8 +2,8 @@
 using Google.Protobuf;
 using NetMQ;
 using Playhouse.Protocol;
-using PlayHouse.Production;
-using PlayHouse.Service;
+using PlayHouse.Production.Shared;
+using PlayHouse.Service.Shared;
 using System.Runtime.InteropServices;
 
 namespace PlayHouse.Communicator.Message
@@ -147,6 +147,7 @@ namespace PlayHouse.Communicator.Message
 
  
         public Header Header=>RouteHeader.Header;
+        public ushort ErrorCode => RouteHeader.Header.ErrorCode;
 
         public ClientPacket ToClientPacket()
         {
@@ -182,14 +183,16 @@ namespace PlayHouse.Communicator.Message
 
         public string StageId => RouteHeader.StageId;
 
-        public bool IsSystem()
-        {
-            return RouteHeader.IsSystem;
-        }
+        public bool IsSystem => RouteHeader.IsSystem;
 
         public bool IsToClient()
         {
             return RouteHeader.IsToClient;
+        }
+
+        public static RoutePacket Of(ushort errorCode)
+        {
+            return new RoutePacket(new RouteHeader(new Header() { ErrorCode = errorCode }), new EmptyPayload());
         }
 
         public static RoutePacket MoveOf(RoutePacket routePacket)
@@ -396,14 +399,14 @@ namespace PlayHouse.Communicator.Message
             _payload.Dispose();
         }
 
-        public  ReplyPacket ToReplyPacket()
-        {
-            return new  ReplyPacket(RouteHeader.Header.ErrorCode,RouteHeader.MsgId,MovePayload()); 
-        }
+        //public  ReplyPacket ToReplyPacket()
+        //{
+        //    return new  ReplyPacket(RouteHeader.Header.ErrorCode,RouteHeader.MsgId,MovePayload()); 
+        //}
 
-        internal IPacket ToContentsPacket(ushort msgSeq)
+        internal IPacket ToContentsPacket()
         {
-            return PacketProducer.CreatePacket(MsgId, _payload,msgSeq);
+            return PacketProducer.CreatePacket(MsgId, _payload,MsgSeq);
         }
 
         

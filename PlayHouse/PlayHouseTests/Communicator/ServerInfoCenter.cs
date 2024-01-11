@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using PlayHouse;
 using PlayHouse.Communicator;
-using PlayHouse.Production;
+using PlayHouse.Production.Shared;
 using Xunit;
 
 namespace PlayHouseTests.Communicator

@@ -6,8 +6,8 @@ using PlayHouse.Service.Session;
 using Xunit;
 using Moq;
 using PlayHouse.Service.Session.Network;
-using PlayHouse.Production;
 using Google.Protobuf;
+using PlayHouse.Production.Shared;
 
 namespace PlayHouseTests.Service.Session
 {
@@ -42,29 +42,29 @@ namespace PlayHouseTests.Service.Session
         }
 
         [Fact]
-        public void WithoutAuthenticate_SendPacket_SocketShouldBeDisconnected()
+        public async Task WithoutAuthenticate_SendPacket_SocketShouldBeDisconnected()
         {
-            var sessionClient = new SessionClient(_idSession, _sid, _serviceCenter, _session, _clientCommunicator, _urls, _reqCache);
+            var sessionClient = new SessionActor(_idSession, _sid, _serviceCenter, _session, _clientCommunicator, _urls, _reqCache);
             var clientPacket = new ClientPacket(new Header(serviceId:_idApi), new EmptyPayload());
-            sessionClient.Dispatch(clientPacket);
+            await sessionClient.DispatchAsync(clientPacket);
             Mock.Get(_session).Verify(s => s.ClientDisconnect(), Moq.Times.Once());
         }
 
         [Fact]
-        public void PacketOnTheAuthList_ShouldBeDelivered()
+        public async Task PacketOnTheAuthList_ShouldBeDelivered()
         {
             short messageId = 2;
             _urls.Add($"{_idApi}:{messageId}");
             
-            var sessionClient = new SessionClient(_idSession, _sid, _serviceCenter, _session, _clientCommunicator, _urls, _reqCache);
+            var sessionClient = new SessionActor(_idSession, _sid, _serviceCenter, _session, _clientCommunicator, _urls, _reqCache);
             var clientPacket = new ClientPacket(new Header(serviceId: _idApi,msgId:messageId), new EmptyPayload());
-            sessionClient.Dispatch(clientPacket);
+            await sessionClient.DispatchAsync(clientPacket);
 
             Mock.Get(_clientCommunicator).Verify(c => c.Send(It.IsAny<string>(),It.IsAny<RoutePacket>()),Times.Once());
         }
 
         [Fact]
-        public void ReceiveAuthenticatePacket_SessionClientShouldBeAuthenticated()
+        public async Task ReceiveAuthenticatePacket_SessionClientShouldBeAuthenticated()
         {
             // api 서버로부터 authenticate 패킷을 받을 경우 인증 확인 및 session info 정보 확인
             //long accountId = 1000L;
@@ -77,8 +77,8 @@ namespace PlayHouseTests.Service.Session
             };
             var routePacket = RoutePacket.SessionOf(_sid, RoutePacket.Of(message), true, true);
 
-            var sessionClient = new SessionClient(_idSession, _sid, _serviceCenter, _session, _clientCommunicator, _urls, _reqCache);
-            sessionClient.Dispatch(routePacket);
+            var sessionClient = new SessionActor(_idSession, _sid, _serviceCenter, _session, _clientCommunicator, _urls, _reqCache);
+            await sessionClient.DispatchAsync(routePacket);
 
             sessionClient.IsAuthenticated.Should().BeTrue();
         }

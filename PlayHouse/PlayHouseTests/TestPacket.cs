@@ -1,6 +1,6 @@
 ﻿using Google.Protobuf;
 using PlayHouse.Communicator.Message;
-using PlayHouse.Production;
+using PlayHouse.Production.Shared;
 
 namespace PlayHouseTests
 {

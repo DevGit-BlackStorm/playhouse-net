@@ -1,6 +1,6 @@
-﻿namespace PlayHouse.Communicator;
-internal interface IStorageClient
-{
-    void UpdateServerInfo(XServerInfo serverInfo);
-    List<XServerInfo> GetServerList(string endpoint);
-}
+﻿//namespace PlayHouse.Communicator;
+//internal interface IServerInfoRetriever
+//{
+//    //void UpdateServerInfo(XServerInfo serverInfo);
+//    Task<List<XServerInfo>> UpdateServerListAsync(XServerInfo serverInfo);
+//}

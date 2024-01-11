@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using PlayHouse.Production;
+using PlayHouse.Production.Shared;
 
 namespace PlayHouse.Communicator
 {

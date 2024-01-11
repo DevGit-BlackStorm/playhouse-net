@@ -1,6 +1,7 @@
 ﻿using PlayHouse.Communicator;
 using PlayHouse.Communicator.Message;
-using PlayHouse.Production;
+using PlayHouse.Production.Shared;
+using PlayHouse.Service.Shared;
 
 namespace PlayHouse.Service.Session
 {

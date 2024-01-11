@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 namespace PlayHouse.Communicator.PlaySocket;
 internal abstract class PlaySocketFactory
 {
-    public static IPlaySocket CreatePlaySocket(SocketConfig config, String id)
+    public static IPlaySocket CreatePlaySocket(SocketConfig config,string bindEndpoint)
     {
-        return new NetMQPlaySocket(config, id);
+        return new NetMQPlaySocket(config, bindEndpoint);
     }
 }

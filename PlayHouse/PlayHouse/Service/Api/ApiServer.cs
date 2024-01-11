@@ -1,8 +1,8 @@
 ﻿using PlayHouse.Communicator.PlaySocket;
 using PlayHouse.Communicator;
-using PlayHouse.Production;
 using PlayHouse.Production.Api;
 using CommonLib;
+using PlayHouse.Production.Shared;
 
 namespace PlayHouse.Service.Api;
 public class ApiServer : IServer
@@ -13,7 +13,7 @@ public class ApiServer : IServer
 
     public ApiServer(
         CommonOption commonOption, 
-        ApiOption apiOption)
+        ApiOption apiOption )
     {
         _commonOption = commonOption;
         _apiOption = apiOption;
@@ -21,13 +21,16 @@ public class ApiServer : IServer
 
     public void Start()
     {
-        
+
         var communicatorOption = new CommunicatorOption.Builder()
-          .SetPort(_commonOption.Port)
-          .SetServerSystem(_commonOption.ServerSystem!)
-          .SetShowQps(_commonOption.ShowQps)
-          .SetNodeId(_commonOption.NodeId)
-          .Build();
+                .SetPort(_commonOption.Port)
+                .SetServiceProvider(_commonOption.ServiceProvider)
+                .SetShowQps(_commonOption.ShowQps)
+                .SetNodeId(_commonOption.NodeId)
+                .SetPacketProducer(_commonOption.PacketProducer)
+                .SetAddressServerEndpoints(_commonOption.AddressServerEndpoints)
+                .SetAddressServerServiceId(_commonOption.AddressServerServiceId)
+                .Build();
 
         var bindEndpoint = communicatorOption.BindEndpoint;
         var serviceId = _commonOption.ServiceId;
@@ -36,45 +39,26 @@ public class ApiServer : IServer
         PooledBuffer.Init(_commonOption.MaxBufferPoolSize);
 
         var requestCache = new RequestCache(_commonOption.RequestTimeoutSec);
-        var storageClient = new RedisStorageClient(_commonOption.RedisIp, _commonOption.RedisPort);
-        storageClient.Connect();
-
         var serverInfoCenter = new XServerInfoCenter();
-
-        var communicateServer = new XServerCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(), bindEndpoint));
+        
         var communicateClient = new XClientCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(), bindEndpoint));
 
-        var sender = new XSender(serviceId, communicateClient, requestCache);
-                
-        var nodeId = communicatorOption.NodeId;
+        var service = new ApiService(serviceId, _apiOption,  requestCache, communicateClient,  communicatorOption.ServiceProvider);
 
-        var systemPanel = new XSystemPanel(serverInfoCenter, communicateClient, nodeId);
-
-        ControlContext.BaseSender = sender;
-        ControlContext.SystemPanel = systemPanel;
-        PacketProducer.Init(_commonOption.PacketProducer!);
-        
-
-
-        var service = new ApiProcessor(serviceId, _apiOption, requestCache, communicateClient, sender, systemPanel);
         _communicator = new Communicator.Communicator(
             communicatorOption,
             requestCache,
             serverInfoCenter,
             service,
-            storageClient,
-            sender,
-            systemPanel,
-            communicateServer,
             communicateClient
         );
 
         _communicator!.Start();
     }
 
-    public void Stop()
+    public async Task StopAsync()
     {
-        _communicator!.Stop();
+        await _communicator!.StopAsync();
     }
 
     public void AwaitTermination()

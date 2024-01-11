@@ -1,4 +1,4 @@
-﻿using PlayHouse.Production;
+﻿using PlayHouse.Production.Shared;
 using PlayHouse.Service.Play.Base;
 
 namespace PlayHouse.Service.Play

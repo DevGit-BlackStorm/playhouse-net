@@ -4,19 +4,16 @@ using PlayHouse.Utils;
 using PlayHouse.Communicator;
 using System.Collections.Concurrent;
 using PlayHouse.Service.Play.Base.Command;
-using PlayHouse.Production;
 using PlayHouse.Production.Play;
-using Google.Protobuf;
-using PlayHouse.Service.Api;
+using PlayHouse.Service.Shared;
+using PlayHouse.Production.Shared;
 
 namespace PlayHouse.Service.Play.Base;
 internal class BaseStage
 {
     private readonly LOG<BaseStage> _log = new ();
     private readonly string _stageId;
-    private readonly PlayProcessor _playProcessor;
-    private IClientCommunicator _clientCommunicator;
-    private RequestCache _reqCache;
+    private readonly PlayDispatcher _dispatcher;
     private readonly IServerInfoCenter _serverInfoCenter;
     private readonly XStageSender _stageSender;
     private readonly BaseStageCmdHandler _msgHandler = new BaseStageCmdHandler();
@@ -29,8 +26,8 @@ internal class BaseStage
     private IStage?  _stage; 
     public bool IsCreated { get; private set; }
 
-    public BaseStage(string stageId, 
-                     PlayProcessor playProcessor, 
+    public BaseStage(string stageId,
+                     PlayDispatcher dispatcher, 
                      IClientCommunicator clientCommunicator,
                      RequestCache reqCache, 
                      IServerInfoCenter serverInfoCenter,
@@ -38,20 +35,18 @@ internal class BaseStage
                      XStageSender stageSender )
     {
         _stageId = stageId;
-        _playProcessor = playProcessor;
-        _clientCommunicator = clientCommunicator;
-        _reqCache = reqCache;
+        _dispatcher = dispatcher;
         _serverInfoCenter = serverInfoCenter;
         _stageSender = stageSender;
         _sessionUpdater = sessionUpdater;
 
 
-        _msgHandler.Register(CreateStageReq.Descriptor.Index, new CreateStageCmd(playProcessor));
-        _msgHandler.Register(JoinStageReq.Descriptor.Index, new JoinStageCmd(playProcessor));
-        _msgHandler.Register(CreateJoinStageReq.Descriptor.Index, new CreateJoinStageCmd(playProcessor));
-        _msgHandler.Register(StageTimer.Descriptor.Index, new StageTimerCmd(playProcessor));
-        _msgHandler.Register(DisconnectNoticeMsg.Descriptor.Index, new DisconnectNoticeCmd(playProcessor));
-        _msgHandler.Register(AsyncBlock.Descriptor.Index, new AsyncBlockCmd(playProcessor));
+        _msgHandler.Register(CreateStageReq.Descriptor.Index, new CreateStageCmd(dispatcher));
+        _msgHandler.Register(JoinStageReq.Descriptor.Index, new JoinStageCmd(dispatcher));
+        _msgHandler.Register(CreateJoinStageReq.Descriptor.Index, new CreateJoinStageCmd(dispatcher));
+        _msgHandler.Register(StageTimer.Descriptor.Index, new StageTimerCmd());
+        _msgHandler.Register(DisconnectNoticeMsg.Descriptor.Index, new DisconnectNoticeCmd());
+        _msgHandler.Register(AsyncBlock.Descriptor.Index, new AsyncBlockCmd());
     }
 
     private async Task Dispatch(RoutePacket routePacket)
@@ -66,7 +61,7 @@ internal class BaseStage
             else
             {
                 string accountId = routePacket.AccountId;
-                var baseUser = _playProcessor.FindUser(accountId);
+                var baseUser = _dispatcher.FindUser(accountId);
                 if (baseUser != null)
                 {
                     await _stage!.OnDispatch(baseUser.Actor,CPacket.Of(routePacket.MsgId, routePacket.Payload));
@@ -114,7 +109,7 @@ internal class BaseStage
 
     public async Task<(ushort errorCode, IPacket reply)> Create(string stageType, IPacket packet)
     {
-        _stage = _playProcessor.CreateContentRoom(stageType, _stageSender);
+        _stage = _dispatcher.CreateContentRoom(stageType, _stageSender);
         _stageSender.SetStageType(stageType);
         var outcome = await _stage.OnCreate(packet);
         IsCreated = true;
@@ -122,17 +117,17 @@ internal class BaseStage
     }
 
 
-    public async Task<(ReplyPacket reply, int stageKey)> Join(string accountId, string sessionEndpoint, int sid, string apiEndpoint, IPacket packet)
+    public async Task<(ushort errorCode,IPacket reply,int stageKey)> Join(string accountId, string sessionEndpoint, int sid, string apiEndpoint, IPacket packet)
     {
-        BaseActor? baseUser = _playProcessor.FindUser(accountId);
+        BaseActor? baseUser = _dispatcher.FindUser(accountId);
 
         if (baseUser == null)
         {
             XActorSender userSender = new XActorSender(accountId, sessionEndpoint, sid, apiEndpoint, this, _serverInfoCenter);
-            IActor user = _playProcessor.CreateContentUser(_stageSender.StageType, userSender);
+            IActor user = _dispatcher.CreateContentUser(_stageSender.StageType, userSender);
             baseUser = new BaseActor(user, userSender);
             await baseUser.Actor.OnCreate();
-            _playProcessor.AddUser(baseUser);
+            _dispatcher.AddUser(baseUser);
         }
         else
         {
@@ -144,26 +139,30 @@ internal class BaseStage
 
         if (outcome.errorCode != (ushort)BaseErrorCode.Success)
         {
-            _playProcessor.RemoveUser(accountId);
+            _dispatcher.RemoveUser(accountId);
         }
         else
         {
             stageKey = await _sessionUpdater.UpdateStageInfo(sessionEndpoint, sid);
         }
 
-        return  (new ReplyPacket(outcome.errorCode, outcome.reply.MsgId,outcome.reply.Payload), stageKey);
+        return  (outcome.errorCode, outcome.reply, stageKey);
     }
 
 
 
-    public void Reply(ushort errorCode,IPacket? packet = null)
+    public void Reply(ushort errorCode)
     {
-        this._stageSender.Reply(errorCode, packet);
+        this._stageSender.Reply(errorCode);
+    }
+    public void Reply(IPacket packet)
+    {
+        this._stageSender.Reply(packet);
     }
 
     public void LeaveStage(string accountId, string sessionEndpoint, int sid)
     {
-        this._playProcessor.RemoveUser(accountId);
+        this._dispatcher.RemoveUser(accountId);
         var request = new LeaveStageMsg();
         request.StageId = _stageId;
         this._stageSender.SendToBaseSession(sessionEndpoint, sid,RoutePacket.Of(request));
@@ -197,7 +196,7 @@ internal class BaseStage
     {
         try
         {
-            BaseActor? baseUser = _playProcessor.FindUser(accountId);
+            BaseActor? baseUser = _dispatcher.FindUser(accountId);
 
             if (baseUser != null)
             {
@@ -217,7 +216,7 @@ internal class BaseStage
 
     public async Task OnDisconnect(string accountId)
     {
-        var baseUser = _playProcessor.FindUser(accountId);
+        var baseUser = _dispatcher.FindUser(accountId);
 
         if (baseUser != null)
         {

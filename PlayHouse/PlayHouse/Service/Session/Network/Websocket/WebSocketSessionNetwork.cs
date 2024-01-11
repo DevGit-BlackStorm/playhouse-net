@@ -145,7 +145,7 @@ class WsSessionNetwork : ISessionNetwork
 
     public void Stop()
     {
-        _log.Info(()=>"WsSessionNetwork Stop");
+        _log.Info(()=>"WsSessionNetwork StopAsync");
         _wsSessionServer.Stop();
     }
 }

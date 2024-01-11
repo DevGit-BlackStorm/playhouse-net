@@ -1,21 +1,27 @@
 ﻿using PlayHouse.Communicator.Message;
 using Playhouse.Protocol;
 using PlayHouse.Communicator;
-using PlayHouse.Production;
+using PlayHouse.Service.Shared;
+using PlayHouse.Production.Shared;
 
 namespace PlayHouse.Service.Play
 {
     internal class XStageSender : XSender, IStageSender
     {
         private readonly string _stageId;
-        private readonly PlayProcessor _playProcessor;
+        private readonly IPlayDispatcher _dispatcher;
         private readonly HashSet<long> _timerIds = new();
         private string _stateType = "";
 
-        public XStageSender(ushort serviceId, string stageId, PlayProcessor playProcessor,IClientCommunicator clientCommunicator, RequestCache reqCache) : base(serviceId, clientCommunicator, reqCache)
+        public XStageSender(
+            ushort serviceId, 
+            string stageId,
+            IPlayDispatcher dispatcher,
+            IClientCommunicator clientCommunicator, 
+            RequestCache reqCache) : base(serviceId, clientCommunicator, reqCache)
         {
             _stageId = stageId;
-            _playProcessor = playProcessor;
+            _dispatcher = dispatcher;
         }
 
         public string StageId => _stageId;
@@ -38,7 +44,7 @@ namespace PlayHouse.Service.Play
                 initialDelay,
                 period
             );
-            _playProcessor.OnReceive(packet);
+            _dispatcher.Post(packet);
             _timerIds.Add(timerId);
             return timerId;
         }
@@ -55,7 +61,7 @@ namespace PlayHouse.Service.Play
                 period,
                 count
             );
-            _playProcessor.OnReceive(packet);
+            _dispatcher.Post(packet);
             _timerIds.Add(timerId);
             return timerId;
         }
@@ -70,7 +76,7 @@ namespace PlayHouse.Service.Play
                 TimeSpan.Zero,
                 TimeSpan.Zero
             );
-            _playProcessor.OnReceive(packet);
+            _dispatcher.Post(packet);
             _timerIds.Remove(timerId);
         }
 
@@ -86,12 +92,12 @@ namespace PlayHouse.Service.Play
                     TimeSpan.Zero,
                     TimeSpan.Zero
                 );
-                _playProcessor.OnReceive(packet);
+                _dispatcher.Post(packet);
             }
             _timerIds.Clear();
 
             var packet2 = RoutePacket.StageOf(_stageId, string.Empty, RoutePacket.Of(DestroyStage.Descriptor.Index,new EmptyPayload()), true, false);
-            _playProcessor.OnReceive(packet2);
+            _dispatcher.Post(packet2);
         }
 
         public void AsyncBlock(AsyncPreCallback preCallback, AsyncPostCallback? postCallback = null)
@@ -102,7 +108,7 @@ namespace PlayHouse.Service.Play
                 if (postCallback != null)
                 {
                     var packet = AsyncBlockPacket.Of(_stageId,  postCallback, result!);
-                    _playProcessor.OnReceive(packet);
+                    _dispatcher.Post(packet);
                 }
             });
             

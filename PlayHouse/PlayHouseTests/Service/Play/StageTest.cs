@@ -17,9 +17,9 @@ using Playhouse.Protocol;
 using FluentAssertions;
 using System.Runtime.CompilerServices;
 using System.Reflection;
-using PlayHouse.Production;
 using PlayHouse.Production.Play;
-using PlayHouse.Service;
+using PlayHouse.Service.Shared;
+using PlayHouse.Production.Shared;
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 namespace PlayHouseTests.Service.Play
@@ -29,7 +29,6 @@ namespace PlayHouseTests.Service.Play
     {
         private readonly List<RoutePacket> resultList = new();
         private readonly string stageType = "dungeon";
-        private PlayProcessor playProcessor;
         private readonly string testStageId = string.Empty;
         private readonly string sessionEndpoint = "tcp://127.0.0.1:5555";
         private readonly string bindEndpoint = "tcp://127.0.0.1:8777";
@@ -54,15 +53,16 @@ namespace PlayHouseTests.Service.Play
             );
             var serverInfoCenter = Mock.Of<IServerInfoCenter>();
 
-            playProcessor = new PlayProcessor(
-                2,
-                bindEndpoint,
-                playOption,
-                clientCommunicator.Object,
-                reqCache,
-                Mock.Of<IServerInfoCenter>()
-            );
-            xStageSender = new XStageSender(2, stageId, playProcessor, clientCommunicator.Object, reqCache);
+            //playProcessor = new PlayService(
+            //    2,
+            //    bindEndpoint,
+            //    playOption,
+            //    clientCommunicator.Object,
+            //    reqCache,
+            //    Mock.Of<IServerInfoCenter>()
+            //);
+            var playDispacher = new PlayDispatcher(2, clientCommunicator.Object, reqCache, serverInfoCenter, bindEndpoint, playOption);
+            xStageSender = new XStageSender(2, stageId, playDispacher, clientCommunicator.Object, reqCache);
 
             Mock<ISessionUpdater> sessionUpdator = new Mock<ISessionUpdater>();
 
@@ -71,7 +71,7 @@ namespace PlayHouseTests.Service.Play
 
             stage = new BaseStage(
                 stageId,
-                playProcessor,
+                playDispacher,
                 clientCommunicator.Object,
                 reqCache,
                 serverInfoCenter,

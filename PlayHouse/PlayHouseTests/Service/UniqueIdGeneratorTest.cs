@@ -1,6 +1,6 @@
 ﻿using ConcurrentCollections;
 using FluentAssertions;
-using PlayHouse.Service;
+using PlayHouse.Service.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;

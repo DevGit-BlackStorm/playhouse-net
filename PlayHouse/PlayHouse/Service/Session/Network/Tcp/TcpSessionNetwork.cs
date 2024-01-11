@@ -152,7 +152,7 @@ class TcpSessionNetwork : ISessionNetwork
 
     public void Stop()
     {
-        _log.Info(()=>"TcpSessionNetwork Stop");
+        _log.Info(()=>"TcpSessionNetwork StopAsync");
         _tcpSessionServer.Stop();
     }
 }

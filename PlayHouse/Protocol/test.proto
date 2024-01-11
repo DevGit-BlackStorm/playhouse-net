@@ -26,6 +26,12 @@ message ApiHandlerTestMsg2{
   int32 test_number	 = 2;
 }
 
+message SystemHandlerTestMsg
+{
+	string test_msg = 1;
+	int32 test_number = 2;
+}
+
 message ApiDefaultContentsExceptionTest
 {
 

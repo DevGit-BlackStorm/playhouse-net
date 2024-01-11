@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Reflection;
 
 namespace PlayHouse.Production.Api.Aspectify;
 
@@ -14,6 +9,8 @@ public class Invocation
     private readonly object[] _arguments;
     private readonly List<AspectifyAttribute> _interceptors;
     private int _currentInterceptorIndex = -1;
+
+    public dynamic? ReturnValue { get; private set; }
 
     public Invocation(object target, MethodInfo method, object[] arguments, List<AspectifyAttribute> interceptors)
     {
@@ -35,7 +32,19 @@ public class Invocation
         }
         else
         {
-            await  (Task)_method.Invoke(_target, _arguments)!;
+            var returnType = _method.ReturnType;
+
+            if (returnType == typeof(Task))
+            {
+                // 반환 타입이 void
+                 await (Task)_method.Invoke(_target, _arguments)!;
+            }
+            else
+            {
+                // 반환 타입이 void가 아님
+                ReturnValue = await (dynamic) _method.Invoke(_target, _arguments)!;
+            }
+            
         }
     }
 }

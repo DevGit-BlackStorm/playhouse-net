@@ -12,13 +12,15 @@ namespace PlayHouse.Communicator.PlaySocket;
 internal class NetMQPlaySocket : IPlaySocket
 {
     private readonly RouterSocket _socket = new();
-    private readonly String _bindEndpoint;
+    private readonly string _bindEndpoint;
     private readonly RingBuffer _buffer = new RingBuffer(ConstOption.MaxPacketSize);
     private readonly LOG<NetMQPlaySocket> _log = new ();
 
-    public NetMQPlaySocket(SocketConfig socketConfig,String bindEndpoint)
+    public NetMQPlaySocket(SocketConfig socketConfig,string bindEndpoint)
     {
-        _socket.Options.Identity = Encoding.UTF8.GetBytes(bindEndpoint);
+        _bindEndpoint = bindEndpoint;
+
+        _socket.Options.Identity = Encoding.UTF8.GetBytes(_bindEndpoint);
         _socket.Options.DelayAttachOnConnect = true; // immediate
         _socket.Options.RouterHandover = true;
         _socket.Options.Backlog = socketConfig.BackLog;
@@ -30,7 +32,7 @@ internal class NetMQPlaySocket : IPlaySocket
         _socket.Options.SendHighWatermark = socketConfig.SendHighWatermark;
         _socket.Options.RouterMandatory = true;
 
-        this._bindEndpoint = bindEndpoint;
+        
     }
 
     public void Bind()
@@ -130,7 +132,7 @@ internal class NetMQPlaySocket : IPlaySocket
 
             if (!_socket.TrySendMultipartMessage(message))
             {
-                _log.Error(()=>$"Send fail to {endpoint}, MsgName:{routePacket.MsgId}");
+                _log.Error(()=>$"PostAsync fail to {endpoint}, MsgName:{routePacket.MsgId}");
             }
         }
     }

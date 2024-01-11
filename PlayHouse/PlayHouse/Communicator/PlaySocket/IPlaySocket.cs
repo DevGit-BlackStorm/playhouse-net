@@ -4,7 +4,7 @@ namespace PlayHouse.Communicator.PlaySocket
 {
     internal interface IPlaySocket
     {
-        String GetBindEndpoint();
+        string GetBindEndpoint();
         void Bind();
         void Send(String endpoint, RoutePacket routerPacket);
         void Connect(String target);
@@ -13,7 +13,7 @@ namespace PlayHouse.Communicator.PlaySocket
 
         void Close();
 
-        String Id();
+        string Id();
 
     }
 }

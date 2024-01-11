@@ -1,16 +1,18 @@
 ﻿using Google.Protobuf;
 using PlayHouse.Communicator.Message;
 using Playhouse.Protocol;
+using PlayHouse.Service.Shared;
+using PlayHouse.Production.Shared;
 
 namespace PlayHouse.Service.Play.Base.Command;
 
 internal class JoinStageCmd : IBaseStageCmd
 {
-    public PlayProcessor PlayProcessor { get; }
+    private PlayDispatcher _dispatcher;
 
-    public JoinStageCmd(PlayProcessor playProcessor)
+    public JoinStageCmd(PlayDispatcher dispatcher)
     {
-        PlayProcessor = playProcessor;
+        _dispatcher = dispatcher;
     }
 
     public  async Task Execute(BaseStage baseStage, RoutePacket routePacket)
@@ -22,22 +24,25 @@ internal class JoinStageCmd : IBaseStageCmd
         var packet = CPacket.Of(request.PayloadId, request.Payload);
         var apiEndpoint = routePacket.RouteHeader.From;
 
-        (ReplyPacket reply, int stageKey) joinResult = await baseStage.Join(accountId, sessionEndpoint, sid, apiEndpoint, packet);
+        (ushort errorCode,IPacket reply,int stageKey) joinResult = await baseStage.Join(accountId, sessionEndpoint, sid, apiEndpoint, packet);
 
         var outcome = joinResult.reply;
         var stageIndex = joinResult.stageKey;
         var response = new JoinStageRes()
         {
-            Payload = ByteString.CopyFrom(outcome.Data),
+            Payload = ByteString.CopyFrom(joinResult.reply.Payload.Data),
             PayloadId = outcome.MsgId,
             StageIdx = stageIndex,
         };
 
-        baseStage.Reply(outcome.ErrorCode, CPacket.Of(response));
-
-        if (outcome.IsSuccess())
+        if (joinResult.errorCode == (ushort)BaseErrorCode.Success)
         {
+            baseStage.Reply(CPacket.Of(response));
             await baseStage.OnPostJoinRoom(accountId);
+        }
+        else
+        {
+            baseStage.Reply(joinResult.errorCode);
         }
     }
 }

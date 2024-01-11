@@ -2,7 +2,8 @@
 using Playhouse.Protocol;
 using PlayHouse.Communicator;
 using PlayHouse.Communicator.Message;
-using PlayHouse.Production;
+using PlayHouse.Production.Shared;
+using PlayHouse.Service.Shared;
 
 namespace PlayHouse.Service.Api
 {
@@ -42,7 +43,7 @@ namespace PlayHouse.Service.Api
             }
             else
             {
-                throw new ApiException.NotExistApiHeaderInfoException();
+                throw new Exception("request header is not exist ,This function should only be called from the request packet handle");
             }
         }
 
@@ -58,7 +59,7 @@ namespace PlayHouse.Service.Api
                 Payload = ByteString.CopyFrom(packet.Payload.Data),
             };
 
-            ReplyPacket reply = await RequestToBaseStage(playEndpoint, stageId, this.AccountId, RoutePacket.Of(req));
+            RoutePacket reply = await RequestToBaseStage(playEndpoint, stageId, this.AccountId, RoutePacket.Of(req));
 
             JoinStageRes res = JoinStageRes.Parser.ParseFrom(reply.Data);
 

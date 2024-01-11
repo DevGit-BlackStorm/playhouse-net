@@ -1,4 +1,6 @@
-﻿namespace PlayHouse.Production.Play
+﻿using PlayHouse.Production.Shared;
+
+namespace PlayHouse.Production.Play
 {
     public interface IStage
     {

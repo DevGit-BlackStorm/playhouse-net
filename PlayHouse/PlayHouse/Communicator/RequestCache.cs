@@ -1,6 +1,6 @@
 ﻿using Playhouse.Protocol;
 using PlayHouse.Communicator.Message;
-using PlayHouse.Service;
+using PlayHouse.Service.Shared;
 using PlayHouse.Utils;
 using System.Collections.Specialized;
 using System.Runtime.Caching;
@@ -9,9 +9,9 @@ namespace PlayHouse.Communicator;
 internal class ReplyObject
 {
     private readonly ReplyCallback? _replyCallback = null;
-    private readonly TaskCompletionSource<ReplyPacket>? _taskCompletionSource= null;
+    private readonly TaskCompletionSource<RoutePacket>? _taskCompletionSource= null;
     
-    public ReplyObject(ReplyCallback? callback = null, TaskCompletionSource<ReplyPacket>? taskCompletionSource = null)  
+    public ReplyObject(ReplyCallback? callback = null, TaskCompletionSource<RoutePacket>? taskCompletionSource = null)  
     { 
         _replyCallback = callback;
         _taskCompletionSource = taskCompletionSource;
@@ -23,18 +23,17 @@ internal class ReplyObject
         {
             using (routePacket)
             {
-                var replyPacket = routePacket.ToReplyPacket();
-                _replyCallback?.Invoke(replyPacket.ErrorCode,CPacket.Of(replyPacket));
+                _replyCallback?.Invoke(routePacket.ErrorCode,CPacket.Of(routePacket));
             }
         }
         
-        _taskCompletionSource?.SetResult(routePacket.ToReplyPacket());
+        _taskCompletionSource?.SetResult(routePacket);
     }
 
-    public void Throw(ushort errorCode,int msgSeq)
+    public void Throw(ushort errorCode)
     {
         _replyCallback?.Invoke(errorCode,new EmptyPacket());
-        _taskCompletionSource?.SetResult(new ReplyPacket(errorCode));
+        _taskCompletionSource?.SetResult(RoutePacket.Of(errorCode));
         
     }
 }
@@ -58,8 +57,8 @@ internal class RequestCache
             if (args.RemovedReason == CacheEntryRemovedReason.Expired)
             {
                 var replyObject = (ReplyObject)args.CacheItem.Value;
-                int msgSeq = int.Parse(args.CacheItem.Key);
-                replyObject.Throw((int)BaseErrorCode.RequestTimeout,msgSeq);
+                //int msgSeq = int.Parse(args.CacheItem.Key);
+                replyObject.Throw((int)BaseErrorCode.RequestTimeout);
             }
         });
 

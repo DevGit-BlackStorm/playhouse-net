@@ -1,36 +1,42 @@
 ﻿using Google.Protobuf;
 using Playhouse.Protocol;
-using PlayHouse.Production;
+using PlayHouse.Production.Shared;
 
 namespace PlayHouse.Communicator
 {
     internal class XServerInfo : IServerInfo
     {
-        public string BindEndpoint { get; }
-        public ServiceType ServiceType { get; }
-        public ushort ServiceId { get; }
-        public ServerState State { get; set; }
-        public int WeightingPoint { get; set; }
-        public long LastUpdate { get; set; }
+        public string BindEndpoint {get;set;}
+        public ServiceType ServiceType {get;set;}
+        public ushort ServiceId {get;set;}
+        public ServerState State {get;set;}
+        public long LastUpdate {get;set;}
+        public int ActorCount { get; set; }
 
-        public XServerInfo(string bindEndpoint, ServiceType serviceType, ushort serviceId, ServerState state, int weightingPoint, long lastUpdate)
+        public XServerInfo(
+            string bindEndpoint, 
+            ServiceType serviceType, 
+            ushort serviceId, 
+            ServerState state, 
+            int actorCount, 
+            long lastUpdate)
         {
             BindEndpoint = bindEndpoint;
             ServiceType = serviceType;
             ServiceId = serviceId;
             State = state;
-            WeightingPoint = weightingPoint;
+            ActorCount = actorCount;
             LastUpdate = lastUpdate;
         }
 
-        public static XServerInfo Of(string bindEndpoint, IProcessor service)
+        public static XServerInfo Of(string bindEndpoint, IService service)
         {
             return new XServerInfo(
                 bindEndpoint,
                 service.GetServiceType(),
                 service.ServiceId,
                 service.GetServerState(),
-                service.GetWeightPoint(),
+                service.GetActorCount(),
                 DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
             );
         }
@@ -42,14 +48,37 @@ namespace PlayHouse.Communicator
                 Enum.Parse<ServiceType>(infoMsg.ServiceType),
                 (ushort)infoMsg.ServiceId,
                 Enum.Parse<ServerState>(infoMsg.ServerState),
-                infoMsg.WeightingPoint,
+                infoMsg.ActorCount,
                 infoMsg.Timestamp
             );
         }
 
-        public static XServerInfo Of(string bindEndpoint, ServiceType serviceType, ushort serviceId, ServerState state, int weightingPoint, long timeStamp)
+        public static XServerInfo Of(
+            string bindEndpoint, 
+            ServiceType serviceType, 
+            ushort serviceId, 
+            ServerState state, 
+            int actorCount, 
+            long timeStamp)
         {
-            return new XServerInfo(bindEndpoint, serviceType, serviceId, state, weightingPoint, timeStamp);
+            return new XServerInfo(
+                bindEndpoint, 
+                serviceType, 
+                serviceId, 
+                state, 
+                actorCount, 
+                timeStamp);
+        }
+
+        public static XServerInfo Of(IServerInfo serverInfo)
+        {
+            return new XServerInfo(
+                serverInfo.BindEndpoint, 
+                serverInfo.ServiceType, 
+                serverInfo.ServiceId, 
+                serverInfo.State, 
+                serverInfo.ActorCount, 
+                serverInfo.LastUpdate);
         }
 
         public ServerInfoMsg ToMsg()
@@ -61,7 +90,7 @@ namespace PlayHouse.Communicator
                 Endpoint = BindEndpoint,
                 ServerState = State.ToString(),
                 Timestamp = LastUpdate,
-                WeightingPoint = WeightingPoint
+                ActorCount = ActorCount
             };
         }
 
@@ -78,7 +107,7 @@ namespace PlayHouse.Communicator
 
             LastUpdate = serverInfo.LastUpdate;
 
-            WeightingPoint = serverInfo.WeightingPoint;
+            ActorCount = serverInfo.ActorCount;
 
             return stateChanged;
         }
@@ -103,35 +132,14 @@ namespace PlayHouse.Communicator
             return false;
         }
 
-        string IServerInfo.BindEndpoint()
-        {
-            return BindEndpoint;
-        }
-
-        ServiceType IServerInfo.ServiceType()
-        {
-            return ServiceType;
-        }
-
-        ushort IServerInfo.ServiceId()
-        {
-            return ServiceId;
-        }
-
-        ServerState IServerInfo.State()
-        {
-            return State;
-        }
-
-        long IServerInfo.TimeStamp()
-        {
-            return LastUpdate;
-        }
-
+     
+      
         public override string ToString()
         {
-            return $"[Endpoint: {BindEndpoint}, ServiceType: {ServiceType}, ServiceId: {ServiceId}, State: {State}, WeightingPoint: {WeightingPoint}, LastUpdate: {LastUpdate}]";
+            return $"[endpoint: {BindEndpoint}, service type: {ServiceType}, serviceId: {ServiceId}, state: {State}, actor count: {ActorCount}, LastUpdate: {LastUpdate}]";
         }
+
+        
     }
 
 }

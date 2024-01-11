@@ -3,11 +3,9 @@
 namespace PlayHouse.Service.Play.Base.Command;
 internal class AsyncBlockCmd : IBaseStageCmd
 {
-    public PlayProcessor PlayProcessor { get; }
 
-    public AsyncBlockCmd(PlayProcessor playProcessor)
+    public AsyncBlockCmd()
     {
-        PlayProcessor = playProcessor;
     }
 
     public  async Task Execute(BaseStage baseStage, RoutePacket routePacket)

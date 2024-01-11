@@ -31,11 +31,11 @@ message RoutePacketMsg {
 
 message ServerInfoMsg{
   string service_type = 1;
-  int32 service_id = 2;
+  int32  service_id = 2;
   string endpoint = 3;
   string server_state = 4;
   int64 timestamp = 5;
-  int32 weighting_point = 6;
+  int32 actor_count = 6;
 }
 
 message AuthenticateMsg {
@@ -155,3 +155,12 @@ message DestroyStage {
 message AsyncBlock {
 }
 
+message UpdateServerInfoReq
+{
+    ServerInfoMsg server_info = 1;
+}
+
+message UpdateServerInfoRes
+{
+    repeated ServerInfoMsg server_infos = 1;
+}

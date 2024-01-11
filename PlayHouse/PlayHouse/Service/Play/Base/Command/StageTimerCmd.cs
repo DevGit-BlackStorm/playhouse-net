@@ -8,11 +8,9 @@ namespace PlayHouse.Service.Play.Base.Command;
 internal class StageTimerCmd : IBaseStageCmd
 {
     private readonly LOG<StageTimerCmd> _log = new ();
-    public PlayProcessor PlayProcessor { get; }
 
-    public StageTimerCmd(PlayProcessor playProcessor)
+    public StageTimerCmd()
     {
-        PlayProcessor = playProcessor;
     }
 
     public async Task Execute(BaseStage baseStage, RoutePacket routePacket)
