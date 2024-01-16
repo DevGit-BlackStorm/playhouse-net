@@ -12,11 +12,11 @@ namespace PlayHouse.Production.Shared
 
     public interface IServerInfo
     {
-        string BindEndpoint { get; }
-        ServiceType ServiceType { get; }
-        ushort ServiceId { get; }
-        ServerState State { get; }
-        long LastUpdate { get; }
-        int ActorCount { get; }
+        string GetBindEndpoint();
+        ServiceType GetServiceType();
+        ushort GetServiceId();
+        ServerState GetState();
+        long GetLastUpdate();
+        int GetActorCount();
     }
 }

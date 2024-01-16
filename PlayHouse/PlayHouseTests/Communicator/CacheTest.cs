@@ -21,16 +21,16 @@ namespace PlayHouseTests.Communicator
 
 
         //    // act
-        //    redisClient.UpdateServerInfo(new XServerInfo(endpoint1,ServiceType.SESSION,(ushort)ServiceType.SESSION, ServerState.RUNNING,0,0));
-        //    redisClient.UpdateServerInfo(new XServerInfo(endpoint2, ServiceType.API, (ushort)ServiceType.API, ServerState.RUNNING, 0, 0));
+        //    redisClient.UpdateServerInfo(new XServerInfo(endpoint1,GetServiceType.SESSION,(ushort)GetServiceType.SESSION, ServerState.RUNNING,0,0));
+        //    redisClient.UpdateServerInfo(new XServerInfo(endpoint2, GetServiceType.API, (ushort)GetServiceType.API, ServerState.RUNNING, 0, 0));
 
         //    // Assert
         //    List<XServerInfo> serverList = redisClient.GetServerList("");
 
         //    serverList.Count.Should().Be(2);
-        //    serverList[0].State.Should().Be(ServerState.RUNNING);
-        //    serverList.Should().Contain(s => s.BindEndpoint == endpoint1)
-        //         .And.Contain(s => s.BindEndpoint == endpoint2);
+        //    serverList[0].GetState.Should().Be(ServerState.RUNNING);
+        //    serverList.Should().Contain(s => s.GetBindEndpoint == endpoint1)
+        //         .And.Contain(s => s.GetBindEndpoint == endpoint2);
 
         //}
 
@@ -44,11 +44,11 @@ namespace PlayHouseTests.Communicator
 
             serverInfo.TimeOver().Should().BeFalse();
 
-            serverInfo.LastUpdate = timestamp - 59000;
+            serverInfo.SetLastUpdate(timestamp - 59000);
 
             serverInfo.TimeOver().Should().BeFalse();
 
-            serverInfo.LastUpdate = timestamp - 61000;
+            serverInfo.SetLastUpdate(timestamp - 61000);
 
             serverInfo.TimeOver().Should().BeTrue();
         }

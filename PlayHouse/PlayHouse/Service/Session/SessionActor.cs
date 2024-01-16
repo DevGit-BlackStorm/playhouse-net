@@ -126,11 +126,11 @@ internal class SessionActor
         {
             IServerInfo serverInfo = FindSuitableServer(_authenticateServiceId, _authServerEndpoint);
             RoutePacket disconnectPacket = RoutePacket.Of(new DisconnectNoticeMsg());
-            _sessionSender.SendToBaseApi(serverInfo.BindEndpoint,_accountId, disconnectPacket);
+            _sessionSender.SendToBaseApi(serverInfo.GetBindEndpoint(),_accountId, disconnectPacket);
             foreach (var targetId in _playEndpoints.Values)
             {
                 IServerInfo targetServer = _serviceInfoCenter.FindServer(targetId.Endpoint);
-                _sessionSender.SendToBaseStage(targetServer.BindEndpoint, targetId.StageId, _accountId, disconnectPacket);
+                _sessionSender.SendToBaseStage(targetServer.GetBindEndpoint(), targetId.StageId, _accountId, disconnectPacket);
             }
         }
     }
@@ -213,7 +213,7 @@ internal class SessionActor
     private IServerInfo FindSuitableServer(ushort serviceId, string endpoint)
     {
         IServerInfo serverInfo = _serviceInfoCenter.FindServer(endpoint);
-        if (serverInfo.State != ServerState.RUNNING)
+        if (serverInfo.GetState() != ServerState.RUNNING)
         {
             serverInfo = _serviceInfoCenter.FindServerByAccountId(serviceId, _accountId);
         }
@@ -237,7 +237,7 @@ internal class SessionActor
                 {
                     serverInfo = FindSuitableServer(serviceId, _authServerEndpoint);
                 }
-                _sessionSender.RelayToApi(serverInfo.BindEndpoint, _sid, _accountId, clientPacket);
+                _sessionSender.RelayToApi(serverInfo.GetBindEndpoint(), _sid, _accountId, clientPacket);
                 break;
 
             case ServiceType.Play:
@@ -249,7 +249,7 @@ internal class SessionActor
                 else
                 {
                     serverInfo = _serviceInfoCenter.FindServer(targetId.Endpoint);
-                    _sessionSender.RelayToStage(serverInfo.BindEndpoint, targetId.StageId, _sid, _accountId, clientPacket);
+                    _sessionSender.RelayToStage(serverInfo.GetBindEndpoint(), targetId.StageId, _sid, _accountId, clientPacket);
                 }
                 break;
 

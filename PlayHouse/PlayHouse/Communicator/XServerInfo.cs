@@ -6,12 +6,19 @@ namespace PlayHouse.Communicator
 {
     internal class XServerInfo : IServerInfo
     {
-        public string BindEndpoint {get;set;}
-        public ServiceType ServiceType {get;set;}
-        public ushort ServiceId {get;set;}
-        public ServerState State {get;set;}
-        public long LastUpdate {get;set;}
-        public int ActorCount { get; set; }
+        private string _bindEndpoint = string.Empty;
+        private ServiceType _serviceType;
+        private ushort _serviceId;
+        private ServerState _serverState;
+        private long _lastUpdate;
+        private int _actorCount;
+
+        public string GetBindEndpoint() => _bindEndpoint;
+        public ServiceType GetServiceType() => _serviceType;
+        public ushort GetServiceId() => _serviceId;
+        public ServerState GetState() => _serverState;
+        public long GetLastUpdate() => _lastUpdate;
+        public int GetActorCount() => _actorCount;
 
         public XServerInfo(
             string bindEndpoint, 
@@ -21,12 +28,12 @@ namespace PlayHouse.Communicator
             int actorCount, 
             long lastUpdate)
         {
-            BindEndpoint = bindEndpoint;
-            ServiceType = serviceType;
-            ServiceId = serviceId;
-            State = state;
-            ActorCount = actorCount;
-            LastUpdate = lastUpdate;
+            _bindEndpoint = bindEndpoint;
+            _serviceType = serviceType;
+            _serviceId = serviceId;
+            _serverState = state;
+            _actorCount = actorCount;
+            _lastUpdate = lastUpdate;
         }
 
         public static XServerInfo Of(string bindEndpoint, IService service)
@@ -73,48 +80,48 @@ namespace PlayHouse.Communicator
         public static XServerInfo Of(IServerInfo serverInfo)
         {
             return new XServerInfo(
-                serverInfo.BindEndpoint, 
-                serverInfo.ServiceType, 
-                serverInfo.ServiceId, 
-                serverInfo.State, 
-                serverInfo.ActorCount, 
-                serverInfo.LastUpdate);
+                serverInfo.GetBindEndpoint(), 
+                serverInfo.GetServiceType(), 
+                serverInfo.GetServiceId(), 
+                serverInfo.GetState(), 
+                serverInfo.GetActorCount(), 
+                serverInfo.GetLastUpdate());
         }
 
         public ServerInfoMsg ToMsg()
         {
             return new ServerInfoMsg
             {
-                ServiceType = ServiceType.ToString(),
-                ServiceId = ServiceId,
-                Endpoint = BindEndpoint,
-                ServerState = State.ToString(),
-                Timestamp = LastUpdate,
-                ActorCount = ActorCount
+                ServiceType = _serviceType.ToString(),
+                ServiceId = _serviceId,
+                Endpoint = _bindEndpoint,
+                ServerState = _serverState.ToString(),
+                Timestamp = _lastUpdate,
+                ActorCount = _actorCount
             };
         }
 
         public bool TimeOver()
         {
-            return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - LastUpdate > 60000;
+            return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - _lastUpdate > 60000;
         }
 
         public bool Update(XServerInfo serverInfo)
         {
-            bool stateChanged = State != serverInfo.State;
+            bool stateChanged = GetState != serverInfo.GetState;
 
-            State = serverInfo.State;
+            _serverState = serverInfo.GetState();
 
-            LastUpdate = serverInfo.LastUpdate;
+            _lastUpdate = serverInfo.GetLastUpdate();
 
-            ActorCount = serverInfo.ActorCount;
+            _actorCount = serverInfo.GetActorCount();
 
             return stateChanged;
         }
 
         public bool IsValid()
         {
-            return State == ServerState.RUNNING;
+            return _serverState == ServerState.RUNNING;
         }
 
         public byte[] ToByteArray()
@@ -126,7 +133,7 @@ namespace PlayHouse.Communicator
         {
             if (TimeOver())
             {
-                State = ServerState.DISABLE;
+                _serverState = ServerState.DISABLE;
                 return true;
             }
             return false;
@@ -136,10 +143,17 @@ namespace PlayHouse.Communicator
       
         public override string ToString()
         {
-            return $"[endpoint: {BindEndpoint}, service type: {ServiceType}, serviceId: {ServiceId}, state: {State}, actor count: {ActorCount}, LastUpdate: {LastUpdate}]";
+            return $"[endpoint: {GetBindEndpoint}, service type: {GetServiceType}, serviceId: {GetServiceId}, state: {GetState}, actor count: {GetActorCount}, GetLastUpdate: {GetLastUpdate}]";
         }
 
-        
+        internal void SetState(ServerState state)
+        {
+            _serverState = state;
+        }
+        internal void SetLastUpdate(long updatTime)
+        {
+            _lastUpdate = updatTime;    
+        }
     }
 
 }

@@ -49,13 +49,13 @@ class ServerAddressResolver
 
                 foreach (XServerInfo serverInfo in updateList)
                 {
-                    switch (serverInfo.State)
+                    switch (serverInfo.GetState())
                     {
                         case ServerState.RUNNING:
-                            _communicateClient.Connect(serverInfo.BindEndpoint);
+                            _communicateClient.Connect(serverInfo.GetBindEndpoint());
                             break;
                         case ServerState.DISABLE:
-                            _communicateClient.Disconnect(serverInfo.BindEndpoint);
+                            _communicateClient.Disconnect(serverInfo.GetBindEndpoint());
                             break;
                     }
                 }

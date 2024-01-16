@@ -45,9 +45,9 @@ namespace PlayHouse.Service.Play
             var serverInfo = _serverInfoCenter.FindServer(_apiEndpoint);
             if (!serverInfo.IsValid())
             {
-                serverInfo = _serverInfoCenter.FindServerByAccountId(serverInfo.ServiceId, _accountId);
+                serverInfo = _serverInfoCenter.FindServerByAccountId(serverInfo.GetServiceId(), _accountId);
             }
-            _baseStage.StageSender.SendToApi(serverInfo.BindEndpoint, _accountId, packet);
+            _baseStage.StageSender.SendToApi(serverInfo.GetBindEndpoint(), _accountId, packet);
         }
 
         public async Task<(ushort errorCode,IPacket reply)> RequestToApi(IPacket packet)
@@ -55,9 +55,9 @@ namespace PlayHouse.Service.Play
             var serverInfo = _serverInfoCenter.FindServer(_apiEndpoint);
             if (!serverInfo.IsValid())
             {
-                serverInfo = _serverInfoCenter.FindServerByAccountId(serverInfo.ServiceId, _accountId);
+                serverInfo = _serverInfoCenter.FindServerByAccountId(serverInfo.GetServiceId(), _accountId);
             }
-            return await _baseStage.StageSender.RequestToApi(serverInfo.BindEndpoint, _accountId, packet);
+            return await _baseStage.StageSender.RequestToApi(serverInfo.GetBindEndpoint(), _accountId, packet);
         }
 
         public async Task<(ushort errorCode, IPacket reply)> AsyncToApi(IPacket packet)
@@ -65,9 +65,9 @@ namespace PlayHouse.Service.Play
             var serverInfo = _serverInfoCenter.FindServer(_apiEndpoint);
             if (!serverInfo.IsValid())
             {
-                serverInfo = _serverInfoCenter.FindServerByAccountId(serverInfo.ServiceId, _accountId);
+                serverInfo = _serverInfoCenter.FindServerByAccountId(serverInfo.GetServiceId(), _accountId);
             }
-            return await _baseStage.StageSender.AsyncToApi(serverInfo.BindEndpoint, _accountId, packet);
+            return await _baseStage.StageSender.AsyncToApi(serverInfo.GetBindEndpoint(), _accountId, packet);
         }
 
         public void Update(string sessionEndpoint, int sid, string apiEndpoint)

@@ -212,7 +212,7 @@ internal class Communicator : ICommunicateListener
     {
 
         XServerInfo serverInfo = XServerInfo.Of(_option.BindEndpoint, _service);
-        serverInfo.State = ServerState.DISABLE;
+        serverInfo.SetState(ServerState.DISABLE);
         
         await _serverRetriever.UpdateServerListAsync(serverInfo);
     }

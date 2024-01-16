@@ -19,27 +19,27 @@ namespace PlayHouse.Communicator
             //foreach (XServerInfo serverInfo in serverList)
             //{
             //    serverInfo.CheckTimeout();
-            //    _serverInfoMap.Add(serverInfo.BindEndpoint,serverInfo);
+            //    _serverInfoMap.Add(serverInfo.GetBindEndpoint,serverInfo);
             //}
             //_serverInfoMap = serverInfoMap;
-            //_serverInfoList = _serverInfoMap.Values.ToList().OrderBy(x => x.BindEndpoint).ToList();
+            //_serverInfoList = _serverInfoMap.Values.ToList().OrderBy(x => x.GetBindEndpoint).ToList();
             //return _serverInfoList;
             var updatedMap = new Dictionary<string, XServerInfo>();
             foreach (var newInfo in serverList)
             {
                 newInfo.CheckTimeout();
 
-                if (_serverInfoMap.TryGetValue(newInfo.BindEndpoint, out var oldInfo))
+                if (_serverInfoMap.TryGetValue(newInfo.GetBindEndpoint(), out var oldInfo))
                 {
                     if (oldInfo.Update(newInfo))
                     {
-                        updatedMap[newInfo.BindEndpoint] = newInfo;
+                        updatedMap[newInfo.GetBindEndpoint()] = newInfo;
                     }
                 }
                 else
                 {
-                    _serverInfoMap[newInfo.BindEndpoint] = newInfo;
-                    updatedMap[newInfo.BindEndpoint] = newInfo;
+                    _serverInfoMap[newInfo.GetBindEndpoint()] = newInfo;
+                    updatedMap[newInfo.GetBindEndpoint()] = newInfo;
                 }
             }
 
@@ -48,20 +48,20 @@ namespace PlayHouse.Communicator
             {
                 if (oldInfo.CheckTimeout())
                 {
-                    updatedMap[oldInfo.BindEndpoint] = oldInfo;
+                    updatedMap[oldInfo.GetBindEndpoint()] = oldInfo;
                 }
 
                 //if (!serverList.Contains(oldInfo))
                 //{
-                //    _serverInfoMap.Remove(oldInfo.BindEndpoint);
+                //    _serverInfoMap.Remove(oldInfo.GetBindEndpoint);
                 //    if (oldInfo.CheckTimeout())
                 //    {
-                //        updatedMap[oldInfo.BindEndpoint] = oldInfo;
+                //        updatedMap[oldInfo.GetBindEndpoint] = oldInfo;
                 //    }
                 //}
             }
 
-            _serverInfoList = _serverInfoMap.Values.ToList().OrderBy(x => x.BindEndpoint).ToList();
+            _serverInfoList = _serverInfoMap.Values.ToList().OrderBy(x => x.GetBindEndpoint()).ToList();
 
             return updatedMap.Values.ToList();
         }
@@ -79,7 +79,7 @@ namespace PlayHouse.Communicator
         public XServerInfo FindRoundRobinServer(ushort serviceId)
         {
             var list = _serverInfoList
-                .Where(x => x.State == ServerState.RUNNING && x.ServiceId == serviceId)
+                .Where(x => x.GetState() == ServerState.RUNNING && x.GetServiceId() == serviceId)
             .ToList();
 
             if (!list.Any())
@@ -105,7 +105,7 @@ namespace PlayHouse.Communicator
         public XServerInfo FindServerByAccountId(ushort serviceId, string accountId)
         {
             var list = _serverInfoList
-                .Where(info => info.State.Equals(ServerState.RUNNING) && info.ServiceId == serviceId)
+                .Where(info => info.GetState() == ServerState.RUNNING && info.GetServiceId() == serviceId)
                 .ToList();
 
             if (list.Count == 0)
@@ -120,7 +120,7 @@ namespace PlayHouse.Communicator
         public ServiceType FindServerType(ushort serviceId)
         {
             var list = _serverInfoList
-                .Where(info => info.ServiceId == serviceId)
+                .Where(info => info.GetServiceId() == serviceId)
                 .ToList();
 
             if (list.Count == 0)
@@ -128,7 +128,7 @@ namespace PlayHouse.Communicator
                 throw new CommunicatorException.NotExistServerInfo($"serviceId:{serviceId} , ServerInfo is not exist");
             }
 
-            return list.First().ServiceType;
+            return list.First().GetServiceType();
         }
     }
 }

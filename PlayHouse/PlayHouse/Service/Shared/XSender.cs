@@ -332,8 +332,8 @@ internal class XSender : ISender
     //    //bool forClient = routeHeader.IsToClient;
     //    if (msgSeq > 0)
     //    {
-    //        //RoutePacket reply = RoutePacket.ReplyOf(ServiceId, msgSeq,sid,!routeHeader.IsBackend, new ReplyPacket(errorCode));
-    //        RoutePacket reply = RoutePacket.ReplyOf(ServiceId, routeHeader, errorCode,  CPacket.OfEmpty(msgSeq));
+    //        //RoutePacket reply = RoutePacket.ReplyOf(GetServiceId, msgSeq,sid,!routeHeader.IsBackend, new ReplyPacket(errorCode));
+    //        RoutePacket reply = RoutePacket.ReplyOf(GetServiceId, routeHeader, errorCode,  CPacket.OfEmpty(msgSeq));
     //        _clientCommunicator.Send(from, reply);
     //    }
     //}

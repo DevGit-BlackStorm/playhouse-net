@@ -63,7 +63,7 @@ namespace PlayHouseTests.Communicator
             var updatedList = _serverInfoCenter.Update(update);
 
             updatedList.Should().HaveCount(1);
-            updatedList[0].State.Should().Be(ServerState.DISABLE);
+            updatedList[0].GetState().Should().Be(ServerState.DISABLE);
         }
 
         [Fact]
@@ -74,8 +74,8 @@ namespace PlayHouseTests.Communicator
             var findServerEndpoint = "tcp://127.0.0.1:0021";
             var serverInfo = _serverInfoCenter.FindServer(findServerEndpoint);
 
-            serverInfo.BindEndpoint.Should().Be(findServerEndpoint);
-            serverInfo.State.Should().Be(ServerState.RUNNING);
+            serverInfo.GetBindEndpoint().Should().Be(findServerEndpoint);
+            serverInfo.GetState().Should().Be(ServerState.RUNNING);
 
             System.Action act = () => _serverInfoCenter.FindServer("");
             act.Should().Throw<CommunicatorException.NotExistServerInfo>();
@@ -89,14 +89,14 @@ namespace PlayHouseTests.Communicator
             _serverInfoCenter.Update(_serverList);
 
             // Play service should return servers in order 0012 -> 0022 -> 0002
-            _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.Play).BindEndpoint.Should().Be("tcp://127.0.0.1:0012");
-            _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.Play).BindEndpoint.Should().Be("tcp://127.0.0.1:0022");
-            _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.Play).BindEndpoint.Should().Be("tcp://127.0.0.1:0002");
+            _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.Play).GetBindEndpoint().Should().Be("tcp://127.0.0.1:0012");
+            _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.Play).GetBindEndpoint().Should().Be("tcp://127.0.0.1:0022");
+            _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.Play).GetBindEndpoint().Should().Be("tcp://127.0.0.1:0002");
 
             // Session service should return servers in order 0013 -> 0023 -> 0003
-            _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.SESSION).BindEndpoint.Should().Be("tcp://127.0.0.1:0013");
-            _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.SESSION).BindEndpoint.Should().Be("tcp://127.0.0.1:0023");
-            _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.SESSION).BindEndpoint.Should().Be("tcp://127.0.0.1:0003");
+            _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.SESSION).GetBindEndpoint().Should().Be("tcp://127.0.0.1:0013");
+            _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.SESSION).GetBindEndpoint().Should().Be("tcp://127.0.0.1:0023");
+            _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.SESSION).GetBindEndpoint().Should().Be("tcp://127.0.0.1:0003");
         }
 
         [Fact]

@@ -44,7 +44,7 @@ namespace PlayHouse.Communicator.Message
         }
         public override string ToString()
         {
-            return $"Header(ServiceId={ServiceId}, MsgId={MsgId}, MsgSeq={MsgSeq}, ErrorCode={ErrorCode}, StageIndex={StageIndex})";
+            return $"Header(GetServiceId={ServiceId}, MsgId={MsgId}, MsgSeq={MsgSeq}, ErrorCode={ErrorCode}, StageIndex={StageIndex})";
         }
     }
     public class RouteHeader
@@ -303,7 +303,7 @@ namespace PlayHouse.Communicator.Message
         //{
         //    Header header = new(msgId:reply.MsgId)
         //    {
-        //        ServiceId = serviceId,
+        //        GetServiceId = serviceId,
         //        MsgSeq = msgSeq
         //    };
 
