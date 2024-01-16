@@ -4,6 +4,7 @@ using PlayHouse.Communicator.PlaySocket;
 using PlayHouse.Production.Shared;
 using PlayHouse.Service.Shared;
 using PlayHouse.Utils;
+using System.Reflection.Metadata;
 
 namespace PlayHouse.Communicator;
 public class CommunicatorOption
@@ -218,11 +219,11 @@ internal class Communicator : ICommunicateListener
 
     public async Task StopAsync()
     {
-        
+        _service.OnStop();
+
+        await Task.Delay(ConstOption.StopDelyMs);
+
         _performanceTester.Stop();
-
-        await UpdateDisableASync();
-
         _addressResolver.Stop();
         _messageLoop.Stop();
 
@@ -316,35 +317,16 @@ internal class Communicator : ICommunicateListener
         _performanceTester.IncCounter();
 
         Task.Run(async () =>  { await DispatchAsync(routePacket); });
-
-        //_service.OnReceive(routePacket);
-
-        //if (routePacket.IsBackend() && routePacket.IsReply())
-        //{
-        //    _requestCache.OnReply(routePacket);
-        //    return;
-        //}
-
-        //if (routePacket.IsSystem())
-        //{
-        //    //_baseSystem.OnReceive(routePacket);
-        //}
-        //else
-        //{
-        //    _service.OnReceive(routePacket);
-        //}
-
-
     }
 
     public void Pause()
     {
-        _service.Pause();
+        _service.OnPause();
     }
 
     public void Resume()
     {
-        _service.Resume();
+        _service.ONResume();
     }
 
     public ServerState GetServerState()

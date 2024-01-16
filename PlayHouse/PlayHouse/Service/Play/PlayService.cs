@@ -42,12 +42,12 @@ namespace PlayHouse.Service.Play
             return ServiceType.Play;
         }
 
-        public void Pause()
+        public void OnPause()
         {
             _state.Set(ServerState.PAUSE);
         }
 
-        public void Resume()
+        public void ONResume()
         {
             _state.Set(ServerState.RUNNING);
         }

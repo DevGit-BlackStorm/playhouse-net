@@ -18,6 +18,6 @@ internal interface IService
     int GetActorCount();
     ServerState GetServerState();
     ServiceType GetServiceType();
-    void Pause();
-    void Resume();
+    void OnPause();
+    void ONResume();
 }

@@ -45,6 +45,7 @@ namespace PlayHouse.Service.Api
 
         public void OnStop()
         {
+            _state.Set(ServerState.DISABLE);
         }
 
 
@@ -53,11 +54,11 @@ namespace PlayHouse.Service.Api
             return ServiceType.API;
         }
 
-        public void Pause()
+        public void OnPause()
         {
             _state.Set(ServerState.PAUSE);
         }
-        public void Resume()
+        public void ONResume()
         {
             _state.Set(ServerState.RUNNING);
         }

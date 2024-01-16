@@ -68,7 +68,7 @@ class ServerAddressResolver
                 ServiceAsyncContext.Clear();
             }
 
-        }, null, ConstOption.AddressResolverInitialDelay, ConstOption.AddressResolverPeriod);
+        }, null, ConstOption.AddressResolverInitialDelayMs, ConstOption.AddressResolverPeriodMs);
     }
 
     public void Stop()
