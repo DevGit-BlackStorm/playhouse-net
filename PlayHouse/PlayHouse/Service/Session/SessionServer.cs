@@ -9,10 +9,10 @@ namespace PlayHouse.Service.Session;
 public class SessionServer : IServer
 {
     private Communicator.Communicator? _communicator;
-    private readonly CommonOption _commonOption;
+    private readonly PlayhouseOption _commonOption;
     private readonly SessionOption _sessionOption;
 
-    public SessionServer(CommonOption commonOption, SessionOption sessionOption)
+    public SessionServer(PlayhouseOption commonOption, SessionOption sessionOption)
     {
         _commonOption = commonOption;
         _sessionOption = sessionOption;

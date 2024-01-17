@@ -7,12 +7,12 @@ using PlayHouse.Production.Shared;
 namespace PlayHouse.Service.Api;
 public class ApiServer : IServer
 {
-    private readonly CommonOption _commonOption;
+    private readonly PlayhouseOption _commonOption;
     private readonly ApiOption _apiOption;
     private Communicator.Communicator? _communicator;
 
     public ApiServer(
-        CommonOption commonOption, 
+        PlayhouseOption commonOption, 
         ApiOption apiOption )
     {
         _commonOption = commonOption;

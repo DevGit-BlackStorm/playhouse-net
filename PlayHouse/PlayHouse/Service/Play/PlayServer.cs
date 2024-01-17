@@ -9,11 +9,11 @@ namespace PlayHouse.Service.Play
 {
     public class PlayServer : IServer
     {
-        private readonly CommonOption _commonOption;
+        private readonly PlayhouseOption _commonOption;
         private readonly PlayOption _playOption;
         private Communicator.Communicator? _communicator;
 
-        public PlayServer(CommonOption commonOption, PlayOption playOption)
+        public PlayServer(PlayhouseOption commonOption, PlayOption playOption)
         {
             _commonOption = commonOption;
             _playOption = playOption;

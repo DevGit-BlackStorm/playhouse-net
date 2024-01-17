@@ -3,8 +3,7 @@ using PlayHouse.Communicator.Message;
 
 namespace PlayHouse.Production.Shared;
 
-
-public class CommonOption
+public class PlayhouseOption
 {
     public int Port { get; set; }
     public ushort ServiceId { get; set; } 
