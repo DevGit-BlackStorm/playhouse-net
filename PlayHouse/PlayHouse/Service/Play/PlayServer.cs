@@ -22,6 +22,7 @@ namespace PlayHouse.Service.Play
         public void Start()
         {
             var communicatorOption = new CommunicatorOption.Builder()
+                .SetIp(_commonOption.Ip)
                 .SetPort(_commonOption.Port)
                 .SetServiceProvider(_commonOption.ServiceProvider)
                 .SetShowQps(_commonOption.ShowQps)

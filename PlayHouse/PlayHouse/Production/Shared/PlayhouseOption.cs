@@ -5,6 +5,7 @@ namespace PlayHouse.Production.Shared;
 
 public class PlayhouseOption
 {
+    public string Ip { get; set; } = string.Empty;
     public int Port { get; set; }
     public ushort ServiceId { get; set; } 
     public IServiceProvider? ServiceProvider { get; set; }

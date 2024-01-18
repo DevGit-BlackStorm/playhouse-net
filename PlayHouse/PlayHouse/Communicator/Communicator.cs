@@ -4,7 +4,6 @@ using PlayHouse.Communicator.PlaySocket;
 using PlayHouse.Production.Shared;
 using PlayHouse.Service.Shared;
 using PlayHouse.Utils;
-using System.Reflection.Metadata;
 
 namespace PlayHouse.Communicator;
 public class CommunicatorOption
@@ -39,6 +38,7 @@ public class CommunicatorOption
 
     public class Builder
     {
+        private string _Ip = string.Empty;
         private int _port;
         private bool _showQps;
         private int _nodeId;
@@ -46,6 +46,12 @@ public class CommunicatorOption
         private ushort _addressServerId;
         private List<string> _addressServerEndpoints = new();
         public Func<int, IPayload, ushort, IPacket>? _packetProducer;
+
+        public Builder SetIp(string ip )
+        {
+            _Ip = ip;
+            return this;
+        }
 
         public Builder SetPort(int port)
         {
@@ -68,6 +74,12 @@ public class CommunicatorOption
         public CommunicatorOption Build()
         {
             var localIp = IpFinder.FindLocalIp();
+            if(_Ip != string.Empty)
+            {
+                localIp = _Ip;
+            }
+
+
             var bindEndpoint = $"tcp://{localIp}:{_port}";
 
             if (_serviceProvider == null)

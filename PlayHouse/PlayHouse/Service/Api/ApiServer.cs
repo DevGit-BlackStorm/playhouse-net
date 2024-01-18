@@ -23,6 +23,7 @@ public class ApiServer : IServer
     {
 
         var communicatorOption = new CommunicatorOption.Builder()
+                .SetIp( _commonOption.Ip )
                 .SetPort(_commonOption.Port)
                 .SetServiceProvider(_commonOption.ServiceProvider)
                 .SetShowQps(_commonOption.ShowQps)
