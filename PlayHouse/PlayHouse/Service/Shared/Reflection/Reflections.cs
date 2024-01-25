@@ -28,6 +28,8 @@ public class ReflectionMethod
         MsgId = msgId;
         ClassName = className;
         Method = method;
+        Filters.AddRange(method.GetCustomAttributes(typeof(AspectifyAttribute), true)
+         .Select(e => (AspectifyAttribute)e));
     }
 }
 

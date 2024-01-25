@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace PlayHouse.Production.Api.Aspectify;
 
-namespace PlayHouse.Production.Api.Aspectify
+public interface IInterceptor
 {
-    public interface IInterceptor
-    {
-        Task Intercept(Invocation invocation);
-    }
+    Task Intercept(Invocation invocation);
 }
