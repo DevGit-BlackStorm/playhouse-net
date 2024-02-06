@@ -47,7 +47,8 @@ public class ReflectionInstance
     {
         Type = type;
         //Instance = FormatterServices.GetUninitializedObject(type);
-        Instance = Activator.CreateInstance(type)!;
+        //Instance = Activator.CreateInstance(type)!;
+        Instance = ActivatorUtilities.CreateInstance(serviceProvider, type);
         Filters = filters;
         ServiceProvider = serviceProvider;
     }
