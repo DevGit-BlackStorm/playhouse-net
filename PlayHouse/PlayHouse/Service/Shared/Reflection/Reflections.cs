@@ -46,7 +46,8 @@ public class ReflectionInstance
     public ReflectionInstance(Type type, IEnumerable<AspectifyAttribute> filters, IServiceProvider serviceProvider)
     {
         Type = type;
-        Instance = FormatterServices.GetUninitializedObject(type);
+        //Instance = FormatterServices.GetUninitializedObject(type);
+        Instance = Activator.CreateInstance(type)!;
         Filters = filters;
         ServiceProvider = serviceProvider;
     }
