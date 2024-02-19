@@ -55,7 +55,7 @@ class ServerAddressResolver
                             _communicateClient.Connect(serverInfo.GetBindEndpoint());
                             break;
                         case ServerState.DISABLE:
-                            _communicateClient.Disconnect(serverInfo.GetBindEndpoint());
+                            //_communicateClient.Disconnect(serverInfo.GetBindEndpoint());
                             break;
                     }
                 }
