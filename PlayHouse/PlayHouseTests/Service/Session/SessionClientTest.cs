@@ -42,23 +42,23 @@ namespace PlayHouseTests.Service.Session
         }
 
         [Fact]
-        public async Task WithoutAuthenticate_SendPacket_SocketShouldBeDisconnected()
+        public void WithoutAuthenticate_SendPacket_SocketShouldBeDisconnected()
         {
             var sessionClient = new SessionActor(_idSession, _sid, _serviceCenter, _session, _clientCommunicator, _urls, _reqCache);
             var clientPacket = new ClientPacket(new Header(serviceId:_idApi), new EmptyPayload());
-            await sessionClient.DispatchAsync(clientPacket);
+            sessionClient.Dispatch(clientPacket);
             Mock.Get(_session).Verify(s => s.ClientDisconnect(), Moq.Times.Once());
         }
 
         [Fact]
-        public async Task PacketOnTheAuthList_ShouldBeDelivered()
+        public void PacketOnTheAuthList_ShouldBeDelivered()
         {
             short messageId = 2;
             _urls.Add($"{_idApi}:{messageId}");
             
             var sessionClient = new SessionActor(_idSession, _sid, _serviceCenter, _session, _clientCommunicator, _urls, _reqCache);
             var clientPacket = new ClientPacket(new Header(serviceId: _idApi,msgId:messageId), new EmptyPayload());
-            await sessionClient.DispatchAsync(clientPacket);
+            sessionClient.Dispatch(clientPacket);
 
             Mock.Get(_clientCommunicator).Verify(c => c.Send(It.IsAny<string>(),It.IsAny<RoutePacket>()),Times.Once());
         }

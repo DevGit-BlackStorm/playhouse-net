@@ -253,7 +253,7 @@ internal class Communicator : ICommunicateListener
         try
         {
             PacketContext.AsyncCore.Init();
-            ServiceAsyncContext.Init();
+            //ServiceAsyncContext.Init();
 
             if (routePacket.IsBackend() && routePacket.IsReply())
             {

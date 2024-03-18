@@ -24,7 +24,7 @@ internal class XApiCommonSender : XSender, IApiCommonSender
             Payload = ByteString.CopyFrom(packet.Payload.Data)
         };
 
-        var reply = await RequestToBaseStage(playEndpoint, stageId, string.Empty, RoutePacket.Of(req));
+        using var reply = await RequestToBaseStage(playEndpoint, stageId, string.Empty, RoutePacket.Of(req));
 
         var res = CreateStageRes.Parser.ParseFrom(reply.Data);
 

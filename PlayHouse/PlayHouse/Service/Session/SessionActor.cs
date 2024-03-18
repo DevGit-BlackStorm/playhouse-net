@@ -140,7 +140,7 @@ internal class SessionActor
         _session.ClientDisconnect();
     }
 
-    public async Task DispatchAsync(ClientPacket clientPacket)
+    public void Dispatch(ClientPacket clientPacket)
     {
         try
         {
@@ -195,9 +195,6 @@ internal class SessionActor
         {
             _log.Error(()=>ex.Message);
         }
-
-        await Task.CompletedTask;
-        
     }
 
     private void SendHeartBeat(ClientPacket clientPacket)

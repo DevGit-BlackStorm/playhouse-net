@@ -90,7 +90,7 @@ namespace PlayHouse.Service.Session
             }
         }
 
-        private async  Task DispatchAsync(int sessionId, ClientPacket clientPacket) 
+        private void Dispatch(int sessionId, ClientPacket clientPacket) 
         {
             using(clientPacket)
             {
@@ -100,7 +100,7 @@ namespace PlayHouse.Service.Session
                 }
                 else
                 {
-                    await sessionClient.DispatchAsync(clientPacket);
+                    sessionClient.Dispatch(clientPacket);
                 }
             }
         }
@@ -139,7 +139,8 @@ namespace PlayHouse.Service.Session
 
         public void OnReceive(int sid, ClientPacket clientPacket)
         {
-            Task.Run(async () => { await DispatchAsync(sid, clientPacket); });
+            Dispatch(sid, clientPacket);
+            //Task.Run(async () => { await Dispatch(sid, clientPacket); });
         }
 
         internal int GetActorCount()

@@ -28,6 +28,7 @@ namespace PlayHouse.Production.Shared
         void RequestToApi(string apiEndpoint, IPacket packet, ReplyCallback replyCallback);
         void RequestToStage(string playEndpoint, string stageId, string accountId, IPacket packet, ReplyCallback replyCallback);
         Task<(ushort errorCode, IPacket reply)> RequestToApi(string apiEndpoint, IPacket packet);
+        Task<(ushort errorCode, IPacket reply)> RequestToApi(string apiEndpoint,string accountId, IPacket packet);
         Task<(ushort errorCode, IPacket reply)> RequestToStage(string playEndpoint, string stageId, string accountId, IPacket packet);
 
         //TaskCompletionSource<(ushort errorCode, IPacket reply)> AsyncToApi(string apiEndpoint, IPacket packet);

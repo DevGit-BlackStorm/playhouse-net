@@ -59,7 +59,7 @@ namespace PlayHouse.Service.Api
                 Payload = ByteString.CopyFrom(packet.Payload.Data),
             };
 
-            RoutePacket reply = await RequestToBaseStage(playEndpoint, stageId, this.AccountId, RoutePacket.Of(req));
+            using RoutePacket reply = await RequestToBaseStage(playEndpoint, stageId, this.AccountId, RoutePacket.Of(req));
 
             JoinStageRes res = JoinStageRes.Parser.ParseFrom(reply.Data);
 
@@ -83,7 +83,7 @@ namespace PlayHouse.Service.Api
                 JoinPayload = ByteString.CopyFrom(joinPacket.Payload.Data),
             };
 
-            var reply = await RequestToBaseStage(playEndpoint, stageId, this.AccountId, RoutePacket.Of(req));
+            using var reply = await RequestToBaseStage(playEndpoint, stageId, this.AccountId, RoutePacket.Of(req));
 
             var res = CreateJoinStageRes.Parser.ParseFrom(reply.Data);
 

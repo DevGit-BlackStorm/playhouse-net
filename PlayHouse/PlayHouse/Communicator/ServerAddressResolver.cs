@@ -33,7 +33,7 @@ class ServerAddressResolver
             try
             {
                 
-                ServiceAsyncContext.Init();
+                //ServiceAsyncContext.Init();
 
                 
                 IList<XServerInfo> serverInfoList = await _serverRetriever.UpdateServerListAsync(new XServerInfo(
@@ -65,7 +65,7 @@ class ServerAddressResolver
                 _log.Error(()=>e.Message);
             }finally
             {
-                ServiceAsyncContext.Clear();
+                ///ServiceAsyncContext.Clear();
             }
 
         }, null, ConstOption.AddressResolverInitialDelayMs, ConstOption.AddressResolverPeriodMs);

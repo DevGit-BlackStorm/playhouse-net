@@ -182,7 +182,7 @@ internal class XSender : ISender
         _clientCommunicator.Send(apiEndpoint, routePacket);
 
         var replyPacket = await deferred.Task;
-        ServiceAsyncContext.AddReply(replyPacket);
+        //ServiceAsyncContext.AddReply(replyPacket);
 
         return replyPacket;
     }
@@ -199,7 +199,7 @@ internal class XSender : ISender
     public async Task<(ushort errorCode, IPacket reply)> RequestToApi(string apiEndpoint, IPacket packet)
     {
         RoutePacket replyPacket = await AsyncToApi(apiEndpoint, packet).Task;
-        ServiceAsyncContext.AddReply(replyPacket);
+        //ServiceAsyncContext.AddReply(replyPacket);
 
         return (replyPacket.ErrorCode, CPacket.Of(replyPacket));
     }
@@ -220,7 +220,7 @@ internal class XSender : ISender
         _clientCommunicator.Send(apiEndpoint, routePacket);
 
         var replyPacket = await taskCompletionSource.Task;
-        ServiceAsyncContext.AddReply(replyPacket);
+        //ServiceAsyncContext.AddReply(replyPacket);
 
         return (replyPacket.ErrorCode, CPacket.Of(replyPacket));
     }
@@ -277,7 +277,7 @@ internal class XSender : ISender
     public async Task<(ushort errorCode, IPacket reply)> RequestToStage(string playEndpoint, string stageId, string accountId, IPacket packet)
     {
         RoutePacket replyPacket = await AsyncToStage(playEndpoint, stageId, accountId, packet).Task;
-        ServiceAsyncContext.AddReply(replyPacket);
+        //ServiceAsyncContext.AddReply(replyPacket);
 
         return (replyPacket.ErrorCode, CPacket.Of(replyPacket));
     }
@@ -292,7 +292,7 @@ internal class XSender : ISender
         _clientCommunicator.Send(playEndpoint, routePacket);
 
         var replyPacket = await deferred.Task;
-        ServiceAsyncContext.AddReply(replyPacket);
+        //ServiceAsyncContext.AddReply(replyPacket);
 
         return replyPacket;
     }
@@ -315,7 +315,7 @@ internal class XSender : ISender
         _reqCache.Put(msgSeq, new ReplyObject(null, deferred));
         _clientCommunicator.Send(endpoint, routePacket);
         var replyPacket = await deferred.Task;
-        ServiceAsyncContext.AddReply(replyPacket);
+        //ServiceAsyncContext.AddReply(replyPacket);
         return (replyPacket.ErrorCode, CPacket.Of(replyPacket));
     }
 
