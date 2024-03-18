@@ -18,9 +18,13 @@ namespace PlayHouse.Service.Shared
             _uniqueIdGenerator = new UniqueIdGenerator(NodeId);
         }
 
-        public IServerInfo GetServerInfoByService(ushort serviceId)
+        public IServerInfo GetServerInfoBy(ushort serviceId)
         {
             return _serverInfoCenter.FindRoundRobinServer(serviceId);
+        }
+        public IServerInfo GetServerInfoBy(ushort serviceId, string accountId)
+        {
+            return _serverInfoCenter.FindServerByAccountId(serviceId, accountId);
         }
 
         public IServerInfo GetServerInfoByEndpoint(string endpoint)
@@ -57,5 +61,7 @@ namespace PlayHouse.Service.Shared
         {
             return _uniqueIdGenerator.NextId();
         }
+
+        
     }
 }

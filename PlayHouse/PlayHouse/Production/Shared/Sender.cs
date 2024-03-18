@@ -5,7 +5,8 @@ namespace PlayHouse.Production.Shared
     public delegate Task TimerCallbackTask();
     public interface ISystemPanel
     {
-        IServerInfo GetServerInfoByService(ushort serviceId);
+        IServerInfo GetServerInfoBy(ushort serviceId);
+        IServerInfo GetServerInfoBy(ushort serviceId,string accountId);
         IServerInfo GetServerInfoByEndpoint(string endpoint);
         IList<IServerInfo> GetServers();
         void Pause();
