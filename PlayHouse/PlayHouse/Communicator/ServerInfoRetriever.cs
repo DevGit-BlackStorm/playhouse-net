@@ -50,7 +50,7 @@ internal class ServerInfoRetriever : IServerInfoRetriever
         {
             _apiEndpoints  = endpoints;
         }
-
-        return updateRes.ServerInfos.Where(e=>e.Endpoint != serverInfo.GetBindEndpoint()).Select(e=>XServerInfo.Of(e)).ToList();
+        return updateRes.ServerInfos.Select(e => XServerInfo.Of(e)).ToList();
+        //return updateRes.ServerInfos.Where(e=>e.Endpoint != serverInfo.GetBindEndpoint()).Select(e=>XServerInfo.Of(e)).ToList();
     }
 }
