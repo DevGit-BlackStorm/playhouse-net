@@ -90,7 +90,7 @@ internal class ApiDispatcher
 
                 if (routePacket.IsBackend())
                 {
-                    await _apiReflection.CallMethodAsync(routePacket.ToContentsPacket(), apiSender);
+                    await _apiReflection.CallBackendMethodAsync(routePacket.ToContentsPacket(), apiSender);
                 }
                 else
                 {
