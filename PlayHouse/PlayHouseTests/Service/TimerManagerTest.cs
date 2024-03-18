@@ -19,7 +19,7 @@ namespace PlayHouseTests.Service
 
             Thread.Sleep(350);
 
-            processor.Verify(p => p.Post(It.IsAny<RoutePacket>()), Times.AtLeast(3));
+            processor.Verify(p => p.OnPost(It.IsAny<RoutePacket>()), Times.AtLeast(3));
         }
 
         [Fact]
@@ -32,7 +32,7 @@ namespace PlayHouseTests.Service
 
             Thread.Sleep(500);
 
-            processor.Verify(p => p.Post(It.IsAny<RoutePacket>()), Times.Exactly(3));
+            processor.Verify(p => p.OnPost(It.IsAny<RoutePacket>()), Times.Exactly(3));
         }
 
         [Fact]
@@ -47,7 +47,7 @@ namespace PlayHouseTests.Service
 
             Thread.Sleep(300);
 
-            processor.Verify(p => p.Post(It.IsAny<RoutePacket>()), Times.Never);
+            processor.Verify(p => p.OnPost(It.IsAny<RoutePacket>()), Times.Never);
         }
     }
 }

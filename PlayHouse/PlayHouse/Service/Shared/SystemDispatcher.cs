@@ -13,9 +13,8 @@ internal class SystemDispatcher
     private readonly RequestCache _requestCache;
     private readonly IClientCommunicator _clientCommunicator;
     private readonly XSystemPanel _xSystemPanel;
-
     private readonly SystemReflection _systemReflection;
-
+    private readonly PacketWorkerQueue _packetWorkerQueue;
     public SystemDispatcher(
         ushort serviceId,
         RequestCache requestCache,
@@ -29,23 +28,33 @@ internal class SystemDispatcher
         _clientCommunicator = clientCommunicator;
         _xSystemPanel = xSystemPanel;
         _systemReflection = new SystemReflection(serviceProvider);
+        _packetWorkerQueue = new PacketWorkerQueue(Dispatch);
     }
 
+    public void Start()
+    {
+        _packetWorkerQueue.Start();
+    }
 
-    public async Task DispatchAsync(RoutePacket routePacket)
+    
+    public void Stop()
+    {
+        _packetWorkerQueue.Stop();
+    }
+
+   
+    async Task Dispatch(RoutePacket routePacket)
     {
         using(routePacket)
         {
-            //if (routePacket.IsReply())
-            //{
-            //    _requestCache.OnReply(routePacket);
-            //    return;
-            //}
-
             XSender sender = new XSender(_serviceId, _clientCommunicator, _requestCache);
             sender.SetCurrentPacketHeader(routePacket.RouteHeader);
             await _systemReflection.CallMethodAsync(routePacket.ToContentsPacket(), _xSystemPanel, sender);
-          
         }
+    }
+
+    public void OnPost(RoutePacket routePacket)
+    {
+        _packetWorkerQueue.Post(routePacket);
     }
 }

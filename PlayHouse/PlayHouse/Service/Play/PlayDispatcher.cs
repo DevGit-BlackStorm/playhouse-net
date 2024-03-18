@@ -12,7 +12,7 @@ namespace PlayHouse.Service.Play;
 
 internal interface IPlayDispatcher
 {
-    public void Post(RoutePacket routePacket);
+    public void OnPost(RoutePacket routePacket);
 }
 
 internal class PlayDispatcher : IPlayDispatcher
@@ -29,6 +29,7 @@ internal class PlayDispatcher : IPlayDispatcher
     private readonly TimerManager _timerManager;
     private readonly XSender _sender;
     private readonly PlayOption _playOption;
+    private readonly PacketWorkerQueue _workerQueue;
 
     public PlayDispatcher(
         ushort serviceId, 
@@ -47,8 +48,15 @@ internal class PlayDispatcher : IPlayDispatcher
         _timerManager = new TimerManager(this);
         _sender = new XSender(serviceId, clientCommunicator, requestCache);
         _playOption = playOption;
+        _workerQueue = new PacketWorkerQueue(DispatchAsync);
     }
-
+    public void Start()
+    {
+        _workerQueue.Start();
+    }
+    public void Stop() { 
+        _workerQueue.Stop(); 
+    } 
     public void RemoveRoom(string stageId)
     {
         _baseRooms.Remove(stageId, out _);
@@ -217,10 +225,10 @@ internal class PlayDispatcher : IPlayDispatcher
         }
     }
 
-    public void Post(RoutePacket routePacket)
-    {
-        Task.Run(async () => await DispatchAsync(routePacket));
-    }
+    //public void OnPost(RoutePacket routePacket)
+    //{
+    //    Task.Run(async () => await DispatchAsync(routePacket));
+    //}
 
     public async Task  DispatchAsync(RoutePacket routePacket)
     {
@@ -266,5 +274,10 @@ internal class PlayDispatcher : IPlayDispatcher
     internal int GetActorCount()
     {
         return _baseUsers.Count;
+    }
+
+    public void OnPost(RoutePacket routePacket)
+    {
+        _workerQueue.Post(routePacket);
     }
 }

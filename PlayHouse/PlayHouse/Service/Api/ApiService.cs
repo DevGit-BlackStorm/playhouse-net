@@ -34,18 +34,13 @@ namespace PlayHouse.Service.Api
         public void OnStart()
         {
             _state.Set(ServerState.RUNNING);
-        }
-
-     
-
-        public async Task OnDispatchAsync(RoutePacket routePacket)
-        {
-            await _apiDispatcher.DispatchAsync(routePacket);  
+            _apiDispatcher.Start();
         }
 
         public void OnStop()
         {
             _state.Set(ServerState.DISABLE);
+            _apiDispatcher.Stop();
         }
 
 
@@ -58,7 +53,7 @@ namespace PlayHouse.Service.Api
         {
             _state.Set(ServerState.PAUSE);
         }
-        public void ONResume()
+        public void OnResume()
         {
             _state.Set(ServerState.RUNNING);
         }
@@ -76,6 +71,11 @@ namespace PlayHouse.Service.Api
         public int GetActorCount()
         {
             return _apiDispatcher.GetAccountCount();
+        }
+
+        public void OnPost(RoutePacket routePacket)
+        {
+            _apiDispatcher.OnPost(routePacket);
         }
     }
 

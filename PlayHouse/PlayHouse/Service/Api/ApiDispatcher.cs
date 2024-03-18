@@ -7,6 +7,8 @@ using PlayHouse.Service.Shared;
 using PlayHouse.Utils;
 using System.Collections.Specialized;
 using System.Runtime.Caching;
+using System.Security.Cryptography.Xml;
+using System.Security.Policy;
 
 namespace PlayHouse.Service.Api;
 
@@ -20,6 +22,7 @@ internal class ApiDispatcher
     private readonly ApiReflectionCallback _apiReflectionCallback;
     private readonly CacheItemPolicy _policy;
     private readonly MemoryCache _cache;
+    private readonly PacketWorkerQueue _workerQueue;
 
     public ApiDispatcher(
         ushort serviceId,
@@ -41,6 +44,16 @@ internal class ApiDispatcher
                 { "PhysicalMemoryLimitPercentage", "1" }
             };
         _cache = new MemoryCache("ApiService", cacheSettings);
+        _workerQueue = new PacketWorkerQueue(DispatchAsync);
+    }
+
+    public void Start()
+    {
+        _workerQueue.Start();
+    }
+    public void Stop() 
+    { 
+        _workerQueue.Stop();
     }
 
     public async Task DispatchAsync(RoutePacket routePacket)
@@ -103,5 +116,10 @@ internal class ApiDispatcher
     internal int GetAccountCount()
     {
         return _cache.Count();
+    }
+
+    internal void OnPost(RoutePacket routePacket)
+    {
+        _workerQueue.Post(routePacket);
     }
 }

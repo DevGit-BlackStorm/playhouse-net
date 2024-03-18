@@ -216,6 +216,7 @@ internal class Communicator : ICommunicateListener
 
         _service.OnStart();
         _performanceTester.Start();
+        _systemDispatcher.Start();
 
         _log.Info(() => "============== server start ==============");
         _log.Info(() => $"Ready for bind: {bindEndpoint}");
@@ -231,6 +232,7 @@ internal class Communicator : ICommunicateListener
 
     public async Task StopAsync()
     {
+        
         _service.OnStop();
 
         await Task.Delay(ConstOption.StopDelyMs);
@@ -238,6 +240,7 @@ internal class Communicator : ICommunicateListener
         _performanceTester.Stop();
         _addressResolver.Stop();
         _messageLoop.Stop();
+        _systemDispatcher.Stop();
 
         _log.Info(()=>"============== server stop ==============");
     }
@@ -247,29 +250,27 @@ internal class Communicator : ICommunicateListener
         _messageLoop.AwaitTermination();
     }
 
-    private async Task DispatchAsync(RoutePacket routePacket)
+    private void Dispatch(RoutePacket routePacket)
     {
 
         try
         {
-            PacketContext.AsyncCore.Init();
+            //PacketContext.AsyncCore.Init();
             //ServiceAsyncContext.Init();
 
             if (routePacket.IsBackend() && routePacket.IsReply())
             {
                 _requestCache.OnReply(routePacket);
-                await Task.CompletedTask;
                 return;
             }
 
-
             if (routePacket.IsSystem)
             {
-                await _systemDispatcher.DispatchAsync(routePacket);
+                _systemDispatcher.OnPost(routePacket);
             }
             else
             {
-                await _service.OnDispatchAsync(routePacket);
+                _service.OnPost(routePacket);
             }
         }
         catch (ServiceException.NotRegisterMethod e)
@@ -317,7 +318,7 @@ internal class Communicator : ICommunicateListener
         }
         finally
         {
-            PacketContext.AsyncCore.Clear();
+            //PacketContext.AsyncCore.Clear();
             //ServiceAsyncContext.Clear();
         }
 
@@ -328,7 +329,8 @@ internal class Communicator : ICommunicateListener
 
         _performanceTester.IncCounter();
 
-        Task.Run(async () =>  { await DispatchAsync(routePacket); });
+        Dispatch(routePacket);
+        //Task.Run(async () =>  { await Dispatch(routePacket); });
     }
 
     public void Pause()
@@ -338,7 +340,7 @@ internal class Communicator : ICommunicateListener
 
     public void Resume()
     {
-        _service.ONResume();
+        _service.OnResume();
     }
 
     public ServerState GetServerState()

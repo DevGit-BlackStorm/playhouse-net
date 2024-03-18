@@ -44,7 +44,7 @@ namespace PlayHouse.Service.Play
                 initialDelay,
                 period
             );
-            _dispatcher.Post(packet);
+            _dispatcher.OnPost(packet);
             _timerIds.Add(timerId);
             return timerId;
         }
@@ -61,7 +61,7 @@ namespace PlayHouse.Service.Play
                 period,
                 count
             );
-            _dispatcher.Post(packet);
+            _dispatcher.OnPost(packet);
             _timerIds.Add(timerId);
             return timerId;
         }
@@ -76,7 +76,7 @@ namespace PlayHouse.Service.Play
                 TimeSpan.Zero,
                 TimeSpan.Zero
             );
-            _dispatcher.Post(packet);
+            _dispatcher.OnPost(packet);
             _timerIds.Remove(timerId);
         }
 
@@ -92,12 +92,12 @@ namespace PlayHouse.Service.Play
                     TimeSpan.Zero,
                     TimeSpan.Zero
                 );
-                _dispatcher.Post(packet);
+                _dispatcher.OnPost(packet);
             }
             _timerIds.Clear();
 
             var packet2 = RoutePacket.StageOf(_stageId, string.Empty, RoutePacket.Of(DestroyStage.Descriptor.Index,new EmptyPayload()), true, false);
-            _dispatcher.Post(packet2);
+            _dispatcher.OnPost(packet2);
         }
 
         public void AsyncBlock(AsyncPreCallback preCallback, AsyncPostCallback? postCallback = null)
@@ -108,7 +108,7 @@ namespace PlayHouse.Service.Play
                 if (postCallback != null)
                 {
                     var packet = AsyncBlockPacket.Of(_stageId,  postCallback, result!);
-                    _dispatcher.Post(packet);
+                    _dispatcher.OnPost(packet);
                 }
             });
             

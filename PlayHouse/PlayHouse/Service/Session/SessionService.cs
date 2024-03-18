@@ -42,9 +42,9 @@ namespace PlayHouse.Service.Session
 
         }
 
-        public async Task OnDispatchAsync(RoutePacket routePacket)
+        public void OnPost(RoutePacket routePacket)
         {
-            await _sessionDispatcher.DispatchAsync(routePacket);
+            _sessionDispatcher.OnPost(routePacket);
         }
 
 
@@ -77,7 +77,7 @@ namespace PlayHouse.Service.Session
             _state.Set(ServerState.PAUSE);
         }
 
-        public void ONResume()
+        public void OnResume()
         {
             _state.Set(ServerState.RUNNING);
         }

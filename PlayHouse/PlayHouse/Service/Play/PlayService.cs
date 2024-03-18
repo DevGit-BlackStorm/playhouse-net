@@ -24,12 +24,14 @@ namespace PlayHouse.Service.Play
         public  void OnStart()
         {
             _state.Set(ServerState.RUNNING);
+            _playDispatcher.Start();
         }
 
         
         public void OnStop()
         {
             _state.Set(ServerState.DISABLE);
+            _playDispatcher.Stop();
         }
         
         public ServerState GetServerState()
@@ -47,19 +49,19 @@ namespace PlayHouse.Service.Play
             _state.Set(ServerState.PAUSE);
         }
 
-        public void ONResume()
+        public void OnResume()
         {
             _state.Set(ServerState.RUNNING);
-        }
-
-        public async Task OnDispatchAsync(RoutePacket routePacket)
-        {
-            await _playDispatcher.DispatchAsync(routePacket);
         }
 
         public int GetActorCount()
         {
            return _playDispatcher.GetActorCount();
+        }
+
+        public void OnPost(RoutePacket routePacket)
+        {
+            _playDispatcher.OnPost(routePacket);
         }
     }
 

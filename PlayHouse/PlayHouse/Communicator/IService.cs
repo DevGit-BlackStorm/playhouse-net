@@ -13,11 +13,11 @@ internal interface IService
 {
     ushort ServiceId { get; }
     void OnStart();
-    Task OnDispatchAsync(RoutePacket routePacket);
+    void OnPost(RoutePacket routePacket);
     void OnStop();
     int GetActorCount();
     ServerState GetServerState();
     ServiceType GetServiceType();
     void OnPause();
-    void ONResume();
+    void OnResume();
 }

@@ -20,7 +20,7 @@ internal class TimerManager
         var timer = new Timer(timerState =>
         {
             var routePacket = RoutePacket.StageTimerOf(stageId, timerId, timerCallback, timerState);
-            _dispatcher.Post(routePacket);
+            _dispatcher.OnPost(routePacket);
         }, null, initialDelay, period);
 
 
@@ -37,7 +37,7 @@ internal class TimerManager
             if (remainingCount > 0)
             {
                 var routePacket = RoutePacket.StageTimerOf(stageId, timerId, timerCallback, timerState);
-                _dispatcher.Post(routePacket);
+                _dispatcher.OnPost(routePacket);
                 remainingCount--;
             }
             else

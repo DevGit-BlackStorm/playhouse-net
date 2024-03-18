@@ -62,6 +62,7 @@ namespace PlayHouseTests.Service.Play
             //    Mock.Of<IServerInfoCenter>()
             //);
             var playDispacher = new PlayDispatcher(2, clientCommunicator.Object, reqCache, serverInfoCenter, bindEndpoint, playOption);
+            playDispacher.Start();
             xStageSender = new XStageSender(2, stageId, playDispacher, clientCommunicator.Object, reqCache);
 
             Mock<ISessionUpdater> sessionUpdator = new Mock<ISessionUpdater>();
