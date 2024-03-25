@@ -109,7 +109,7 @@ namespace PlayHouseTests.Service.Play
             result[0].RouteHeader.Header.ErrorCode.Should().Be((ushort)BaseErrorCode.Success);
 
             result[0].MsgId.Should().Be(CreateStageRes.Descriptor.Index);
-            var createStageRes = CreateStageRes.Parser.ParseFrom(result[0].Data);
+            var createStageRes = CreateStageRes.Parser.ParseFrom(result[0].Span);
 
             createStageRes.PayloadId.Should().Be(TestMsg.Descriptor.Index);
 
@@ -148,7 +148,7 @@ namespace PlayHouseTests.Service.Play
 
 
             result[0].MsgId.Should().Be(CreateJoinStageRes.Descriptor.Index);
-            var createJoinStageRes = CreateJoinStageRes.Parser.ParseFrom(result[0].Data);
+            var createJoinStageRes = CreateJoinStageRes.Parser.ParseFrom(result[0].Span);
 
             createJoinStageRes.IsCreated.Should().BeTrue();
             createJoinStageRes.CreatePayloadId.Should().Be(TestMsg.Descriptor.Index);
@@ -177,7 +177,7 @@ namespace PlayHouseTests.Service.Play
 
             // Assert
             CreateJoinStageRes.Descriptor.Index.Should().Be(result[0].MsgId);
-            var createJoinStageRes = CreateJoinStageRes.Parser.ParseFrom(result[0].Data);
+            var createJoinStageRes = CreateJoinStageRes.Parser.ParseFrom(result[0].Span);
 
             createJoinStageRes.IsCreated.Should().BeFalse();
             createJoinStageRes.CreatePayloadId.Should().Be(0);
@@ -247,7 +247,7 @@ namespace PlayHouseTests.Service.Play
 
             result[0].RouteHeader.Header.ErrorCode.Should().Be((ushort)BaseErrorCode.Success);
 
-            var createStageRes = CreateStageRes.Parser.ParseFrom(result[0].Data);
+            var createStageRes = CreateStageRes.Parser.ParseFrom(result[0].Span);
         }
     }
 }

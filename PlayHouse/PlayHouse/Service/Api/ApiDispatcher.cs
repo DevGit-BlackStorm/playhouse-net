@@ -90,7 +90,7 @@ internal class ApiDispatcher
                 if (routeHeader.IsBase && routeHeader.MsgId == UpdateServerInfoReq.Descriptor.Index)
                 {
 
-                    var updateServerInfoReq = UpdateServerInfoReq.Parser.ParseFrom(routePacket.Data);
+                    var updateServerInfoReq = UpdateServerInfoReq.Parser.ParseFrom(routePacket.Span);
 
                     _clientCommunicator.Connect(updateServerInfoReq.ServerInfo.Endpoint);
                     List<IServerInfo> serverInfoList = await _apiReflectionCallback.UpdateServerInfoAsync(XServerInfo.Of(updateServerInfoReq.ServerInfo));

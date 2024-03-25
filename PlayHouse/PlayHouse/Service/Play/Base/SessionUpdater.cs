@@ -29,7 +29,7 @@ namespace PlayHouse.Service.Play.Base
             };
 
             var res = await _stageSender.RequestToBaseSession(sessionEndpoint, sid, RoutePacket.Of(joinStageInfoUpdateReq));
-            var result = JoinStageInfoUpdateRes.Parser.ParseFrom(res.Data);
+            var result = JoinStageInfoUpdateRes.Parser.ParseFrom(res.Span);
             return result.StageIdx;
         }
     }

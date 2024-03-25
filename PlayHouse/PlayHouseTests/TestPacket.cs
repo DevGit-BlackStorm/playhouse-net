@@ -38,6 +38,11 @@ namespace PlayHouseTests
             throw new NotImplementedException();
         }
 
+        public void Dispose()
+        {
+            _payload.Dispose();
+        }
+
         public T Parse<T>()
         {
             throw new NotImplementedException();

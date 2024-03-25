@@ -351,14 +351,14 @@ namespace PlayHouse.Communicator.Message
             return new RoutePacket(routeHeader, packet.Payload);
         }
 
-        public void WriteClientPacketBytes(RingBuffer buffer)
+        public void WriteClientPacketBytes(PooledByteBuffer buffer)
         {
             ClientPacket clientPacket = ToClientPacket();
             WriteClientPacketBytes(clientPacket, buffer);
         }
 
 
-        public static  void WriteClientPacketBytes(ClientPacket clientPacket, RingBuffer buffer)
+        public static  void WriteClientPacketBytes(ClientPacket clientPacket, PooledByteBuffer buffer)
         {
             var body = clientPacket.Payload.Data;
 
@@ -375,7 +375,7 @@ namespace PlayHouse.Communicator.Message
             buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.GetMsgSeq()));
             buffer.Write(clientPacket.Header.StageIndex);
             buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.Header.ErrorCode));
-            buffer.Write(clientPacket.Payload.Data);
+            buffer.Write(clientPacket.Payload.DataSpan);
         
         }
 
@@ -389,7 +389,8 @@ namespace PlayHouse.Communicator.Message
 
         public IPayload Payload => _payload;
 
-        public ReadOnlySpan<byte> Data => _payload.Data;
+        public ReadOnlyMemory<byte> Data => _payload.Data;
+        public ReadOnlySpan<byte> Span => _payload.DataSpan;
 
         public object? TimerObject { get; private set; }
         public ushort MsgSeq => Header.MsgSeq;

@@ -56,7 +56,7 @@ internal class SessionActor
     private string _authServerEndpoint = "";
     private readonly StageIndexGenerator _stageIndexGenerator = new();
     private DateTime _lastUpdateTime = DateTime.UtcNow;
-    private RingBuffer _heartbeatBuffer = new RingBuffer(100);
+    private PooledByteBuffer _heartbeatBuffer = new PooledByteBuffer(100);
     private bool _debugMode = false;
 
     public SessionActor(
@@ -202,7 +202,7 @@ internal class SessionActor
         
         //_log.Trace(() => $"send heartbeat - [packet:{clientPacket.Header}]");
         RoutePacket.WriteClientPacketBytes(clientPacket, _heartbeatBuffer);
-        var reply = new ClientPacket(clientPacket.Header, new RingBufferPayload(_heartbeatBuffer));
+        var reply = new ClientPacket(clientPacket.Header, new PooledBytePayload(_heartbeatBuffer));
         SendToClient(reply);
         _heartbeatBuffer.Clear();
     }
@@ -292,7 +292,7 @@ internal class SessionActor
         {
             if(msgId == AuthenticateMsg.Descriptor.Index) 
             {
-                AuthenticateMsg authenticateMsg = AuthenticateMsg.Parser.ParseFrom(packet.Data);
+                AuthenticateMsg authenticateMsg = AuthenticateMsg.Parser.ParseFrom(packet.Span);
                 var apiEndpoint = packet.RouteHeader.From;
                 Authenticate((ushort)authenticateMsg.ServiceId, apiEndpoint, authenticateMsg.AccountId);
                 _log.Debug(()=>$"session authenticated - [accountId:{_accountId}]");
@@ -304,7 +304,7 @@ internal class SessionActor
             }
             else if(msgId == JoinStageInfoUpdateReq.Descriptor.Index)
             {
-                JoinStageInfoUpdateReq joinStageMsg = JoinStageInfoUpdateReq.Parser.ParseFrom(packet.Data);
+                JoinStageInfoUpdateReq joinStageMsg = JoinStageInfoUpdateReq.Parser.ParseFrom(packet.Span);
                 string playEndpoint = joinStageMsg.PlayEndpoint;
                 string stageId = joinStageMsg.StageId;
                 var stageIndex = UpdateStageInfo(playEndpoint, stageId);
@@ -319,7 +319,7 @@ internal class SessionActor
             }
             else if (msgId == LeaveStageMsg.Descriptor.Index)
             {
-                string stageId = LeaveStageMsg.Parser.ParseFrom(packet.Data).StageId;
+                string stageId = LeaveStageMsg.Parser.ParseFrom(packet.Span).StageId;
                 ClearRoomInfo(stageId);
                 _log.Debug(()=>$"stage info clear - [accountId: {_accountId}, stageId: {stageId}]");
 

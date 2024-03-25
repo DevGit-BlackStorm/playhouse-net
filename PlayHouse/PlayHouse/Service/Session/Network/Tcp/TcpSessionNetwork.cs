@@ -93,7 +93,7 @@ internal class XTcpSession : TcpSession, ISession
     {
         using (packet)
         {
-            base.SendAsync(packet.Data);
+            base.SendAsync(packet.Span);
         }
     }
 }

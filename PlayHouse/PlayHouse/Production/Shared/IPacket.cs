@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PlayHouse.Production.Shared
 {
-    public interface IPacket
+    public interface IPacket : IDisposable
     {
         public int MsgId { get; }
         public IPayload Payload { get; }

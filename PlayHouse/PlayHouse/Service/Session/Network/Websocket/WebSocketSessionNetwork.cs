@@ -94,7 +94,7 @@ class XWsSession : WsSession, ISession
     {
         using(packet)
         {
-            base.Send(packet.Data);
+            base.Send(packet.Span);
         }
     }
 }

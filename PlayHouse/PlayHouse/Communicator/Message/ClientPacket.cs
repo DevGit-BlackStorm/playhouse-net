@@ -10,7 +10,8 @@
             Header = header;
             Payload = payload;
         }
-        public ReadOnlySpan<byte> Data => Payload.Data;
+        public ReadOnlyMemory<byte> Data => Payload.Data;
+        public ReadOnlySpan<byte> Span => Payload.DataSpan;
 
         public void Dispose()
         {

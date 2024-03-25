@@ -37,14 +37,14 @@ internal class TestApiController : IApiController, IDisconnectCallback
     [TestMethodAspectify]
     public async Task Test1(IPacket packet, IApiSender apiSender)
     {
-        var message = ApiTestMsg1.Parser.ParseFrom(packet.Payload.Data);
+        var message = ApiTestMsg1.Parser.ParseFrom(packet.Payload.DataSpan);
         ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Test1"] = message.TestMsg;
         await Task.CompletedTask;
     }
 
     public async Task Test2(IPacket packet, IApiSender apiSender)
     {
-        var message = ApiTestMsg2.Parser.ParseFrom(packet.Payload.Data);
+        var message = ApiTestMsg2.Parser.ParseFrom(packet.Payload.DataSpan);
         ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Test2"] = message.TestMsg;
         await Task.CompletedTask;
     }
@@ -52,14 +52,14 @@ internal class TestApiController : IApiController, IDisconnectCallback
     [TestBackendMethodAspectify]
     public async Task Test3(IPacket packet, IApiBackendSender apiSender)
     {
-        var message = ApiTestMsg1.Parser.ParseFrom(packet.Payload.Data);
+        var message = ApiTestMsg1.Parser.ParseFrom(packet.Payload.DataSpan);
         ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Test3"] = message.TestMsg;
         await Task.CompletedTask;
     }
 
     public async Task Test4(IPacket packet, IApiBackendSender apiSender)
     {
-        var message = ApiTestMsg2.Parser.ParseFrom(packet.Payload.Data);
+        var message = ApiTestMsg2.Parser.ParseFrom(packet.Payload.DataSpan);
         ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Test4"] = message.TestMsg;
         await Task.CompletedTask;
     }
@@ -81,7 +81,7 @@ internal class TestSystemController : ISystemController, IUpdateServerInfoCallba
 
     public async Task Test(IPacket packet, ISystemPanel panel, ISender sender)
     {
-        var message = SystemHandlerTestMsg.Parser.ParseFrom(packet.Payload.Data);
+        var message = SystemHandlerTestMsg.Parser.ParseFrom(packet.Payload.DataSpan);
         ReflectionTestResult.ResultMap[$"{this.GetType().Name}_Test"] = message.TestMsg;
         await Task.CompletedTask;
     }

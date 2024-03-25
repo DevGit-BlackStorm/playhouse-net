@@ -63,6 +63,11 @@ internal class XPacket : IPacket
         throw new NotImplementedException();
     }
 
+    public void Dispose()
+    {
+        _payload.Dispose();
+    }
+
     public T Parse<T>()
     {
         throw new NotImplementedException();
@@ -85,6 +90,11 @@ internal class EmptyPacket : IPacket
     public T Parse<T>()
     {
         throw new NotImplementedException();
+    }
+
+    public void Dispose()
+    {
+        _payload.Dispose();
     }
 }
 

@@ -15,7 +15,7 @@ internal class CreateJoinStageCmd : IBaseStageCmd
 
     public async Task Execute(BaseStage baseStage, RoutePacket routePacket)
     {
-        var request = CreateJoinStageReq.Parser.ParseFrom(routePacket.Data);
+        var request = CreateJoinStageReq.Parser.ParseFrom(routePacket.Span);
         var createStagePacket = CPacket.Of(request.CreatePayloadId, request.CreatePayload);
         var stageType = request.StageType;
         var joinStagePacket = CPacket.Of(request.JoinPayloadId, request.JoinPayload);
@@ -37,7 +37,7 @@ internal class CreateJoinStageCmd : IBaseStageCmd
         {
             var createReply = await baseStage.Create(stageType, createStagePacket);
             response.CreatePayloadId = createReply.reply.MsgId;
-            response.CreatePayload = ByteString.CopyFrom(createReply.reply.Payload.Data);
+            response.CreatePayload = ByteString.CopyFrom(createReply.reply.Payload.DataSpan);
 
             if (createReply.errorCode == (ushort)BaseErrorCode.Success)
             {
@@ -55,7 +55,7 @@ internal class CreateJoinStageCmd : IBaseStageCmd
         var joinResult = await baseStage.Join(accountId, sessionEndpoint, sid, apiEndpoint, joinStagePacket);
 
         response.JoinPayloadId = joinResult.reply.MsgId;
-        response.JoinPayload = ByteString.CopyFrom(joinResult.reply.Payload.Data);
+        response.JoinPayload = ByteString.CopyFrom(joinResult.reply.Payload.DataSpan);
         response.StageIdx = joinResult.stageKey;
 
 

@@ -21,12 +21,12 @@ internal class XApiCommonSender : XSender, IApiCommonSender
         {
             StageType = stageType,
             PayloadId = packet.MsgId,
-            Payload = ByteString.CopyFrom(packet.Payload.Data)
+            Payload = ByteString.CopyFrom(packet.Payload.DataSpan)
         };
 
         using var reply = await RequestToBaseStage(playEndpoint, stageId, string.Empty, RoutePacket.Of(req));
 
-        var res = CreateStageRes.Parser.ParseFrom(reply.Data);
+        var res = CreateStageRes.Parser.ParseFrom(reply.Span);
 
         return new CreateStageResult(reply.ErrorCode, CPacket.Of(res.PayloadId, new ByteStringPayload(res.Payload)));
     }

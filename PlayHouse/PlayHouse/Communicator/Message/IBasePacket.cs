@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PlayHouse.Communicator.Message
+namespace PlayHouse.Communicator.Message;
+
+public interface IBasePacket : IDisposable
 {
-    public interface IBasePacket : IDisposable
-    {
-        IPayload MovePayload();
-        ReadOnlySpan<byte> Data { get; }
-    }
+    public IPayload MovePayload();
+    public ReadOnlyMemory<byte> Data { get; }
+    public ReadOnlySpan<byte> Span => Data.Span;
 }

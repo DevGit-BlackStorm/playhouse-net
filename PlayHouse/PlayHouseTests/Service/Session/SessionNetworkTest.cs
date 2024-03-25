@@ -13,7 +13,7 @@ namespace PlayHouse.Service.Session.Network
     internal class SessionServerListener : ISessionListener
     {
         public bool UseWebSocket { get; set; }
-        public RingBuffer Buffer { get; } = new RingBuffer(ConstOption.MaxPacketSize);
+        public PooledByteBuffer Buffer { get; } = new PooledByteBuffer(ConstOption.MaxPacketSize);
 
         public string ResultValue { get; set; } = "";
         private ISession? _session;
@@ -27,7 +27,7 @@ namespace PlayHouse.Service.Session.Network
         public void OnReceive(int sid, ClientPacket clientPacket)
         {
             Console.WriteLine($"OnReceive sid:{sid},packetInfo:{clientPacket.Header}");
-            var testMsg = TestMsg.Parser.ParseFrom(clientPacket.Data);
+            var testMsg = TestMsg.Parser.ParseFrom(clientPacket.Span);
 
             if (testMsg.TestMsg_ == "request")
             {

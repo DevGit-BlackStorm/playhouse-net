@@ -7,7 +7,8 @@ namespace PlayHouse.Communicator.Message
 {
     public interface IPayload : IDisposable
     {
-        ReadOnlySpan<byte> Data { get; }
+        public ReadOnlyMemory<byte> Data { get; }
+        public ReadOnlySpan<byte> DataSpan => Data.Span;
     }
 
     public class CopyPayload : IPayload
@@ -17,7 +18,8 @@ namespace PlayHouse.Communicator.Message
         {
             _data = payload.Data.ToArray();
         }
-        public ReadOnlySpan<byte> Data => _data;
+        public ReadOnlyMemory<byte> Data => _data;
+
 
         public void Dispose()
         {
@@ -38,7 +40,7 @@ namespace PlayHouse.Communicator.Message
             return _proto;
         }
 
-        public ReadOnlySpan<byte> Data => _proto.ToByteArray();
+        public ReadOnlyMemory<byte> Data => _proto.ToByteArray();
 
         public void Dispose()
         {
@@ -58,7 +60,7 @@ namespace PlayHouse.Communicator.Message
         {
         }
 
-        public ReadOnlySpan<byte> Data => _byteString.ToByteArray();
+        public ReadOnlyMemory<byte> Data => _byteString.ToByteArray();
     }
 
     public class EmptyPayload : IPayload
@@ -67,13 +69,13 @@ namespace PlayHouse.Communicator.Message
         {
         }
 
-        public ReadOnlySpan<byte> Data => new ReadOnlySpan<byte>();
+        public ReadOnlyMemory<byte> Data => new ReadOnlyMemory<byte>();
     }
 
     public class FramePayload : IPayload
     {
         private NetMQFrame _frame;
-        public ReadOnlySpan<byte> Data => new (_frame.Buffer,0,_frame.MessageSize);
+        public ReadOnlyMemory<byte> Data => new (_frame.Buffer,0,_frame.MessageSize);
         public NetMQFrame Frame => _frame;
 
         public FramePayload(NetMQFrame frame)
@@ -84,20 +86,20 @@ namespace PlayHouse.Communicator.Message
         {
         }
     }
-    public class RingBufferPayload : IPayload
+    public class PooledBytePayload : IPayload
     {
-        private RingBuffer _ringBuffer;
+        private PooledByteBuffer _pooledByteBuffer;
 
-        public ReadOnlySpan<byte> Data => new (_ringBuffer.Buffer(),0,_ringBuffer.Count);
+        public ReadOnlyMemory<byte> Data => _pooledByteBuffer.AsMemory();
 
-        public RingBufferPayload(RingBuffer ringBuffer)
+        public PooledBytePayload(PooledByteBuffer ringBuffer)
         {
-            _ringBuffer = ringBuffer;
+            _pooledByteBuffer = ringBuffer;
         }
 
         public void Dispose()
         {
-            _ringBuffer.Clear();
+            _pooledByteBuffer.Clear();
         }
     }
 }

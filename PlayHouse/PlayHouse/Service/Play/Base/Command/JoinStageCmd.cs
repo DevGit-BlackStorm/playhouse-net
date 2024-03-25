@@ -17,7 +17,7 @@ internal class JoinStageCmd : IBaseStageCmd
 
     public  async Task Execute(BaseStage baseStage, RoutePacket routePacket)
     {
-        var request = JoinStageReq.Parser.ParseFrom(routePacket.Data);
+        var request = JoinStageReq.Parser.ParseFrom(routePacket.Span);
         var accountId = routePacket.AccountId;
         var sessionEndpoint = request.SessionEndpoint;
         var sid = request.Sid;
@@ -30,7 +30,7 @@ internal class JoinStageCmd : IBaseStageCmd
         var stageIndex = joinResult.stageKey;
         var response = new JoinStageRes()
         {
-            Payload = ByteString.CopyFrom(joinResult.reply.Payload.Data),
+            Payload = ByteString.CopyFrom(joinResult.reply.Payload.DataSpan),
             PayloadId = outcome.MsgId,
             StageIdx = stageIndex,
         };

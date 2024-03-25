@@ -15,7 +15,7 @@ internal class CreateStageCmd : IBaseStageCmd
 
     public  async Task Execute(BaseStage baseStage, RoutePacket routePacket)
     {
-        var createStageReq = CreateStageReq.Parser.ParseFrom(routePacket.Data);
+        var createStageReq = CreateStageReq.Parser.ParseFrom(routePacket.Span);
         var packet = CPacket.Of(createStageReq.PayloadId, createStageReq.Payload);
         var stageType = createStageReq.StageType;
 
@@ -32,7 +32,7 @@ internal class CreateStageCmd : IBaseStageCmd
         {
             var res = new CreateStageRes()
             {
-                Payload = ByteString.CopyFrom(outcome.reply.Payload.Data),
+                Payload = ByteString.CopyFrom(outcome.reply.Payload.DataSpan),
                 PayloadId = outcome.reply.MsgId
             };
 

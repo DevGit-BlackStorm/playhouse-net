@@ -4,7 +4,6 @@ using NetMQ;
 using NetMQ.Sockets;
 using Playhouse.Protocol;
 using PlayHouse.Communicator.Message;
-using PlayHouse.Production;
 using System.Text;
 using PlayHouse.Utils;
 
@@ -13,7 +12,7 @@ internal class NetMQPlaySocket : IPlaySocket
 {
     private readonly RouterSocket _socket = new();
     private readonly string _bindEndpoint;
-    private readonly RingBuffer _buffer = new RingBuffer(ConstOption.MaxPacketSize);
+    private readonly PooledByteBuffer _buffer = new PooledByteBuffer(ConstOption.MaxPacketSize);
     private readonly LOG<NetMQPlaySocket> _log = new ();
 
     public NetMQPlaySocket(SocketConfig socketConfig,string bindEndpoint)
@@ -113,7 +112,7 @@ internal class NetMQPlaySocket : IPlaySocket
                 }
                 else
                 {
-                    _buffer.Write(payload.Data);    
+                    _buffer.Write(payload.DataSpan);    
                     frame = new NetMQFrame(_buffer.Buffer(), _buffer.Count);
                 }
                 

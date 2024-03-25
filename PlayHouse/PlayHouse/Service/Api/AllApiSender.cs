@@ -56,12 +56,12 @@ namespace PlayHouse.Service.Api
                 SessionEndpoint = this.SessionEndpoint,
                 Sid = this.Sid,
                 PayloadId = packet.MsgId,
-                Payload = ByteString.CopyFrom(packet.Payload.Data),
+                Payload = ByteString.CopyFrom(packet.Payload.DataSpan),
             };
 
             using RoutePacket reply = await RequestToBaseStage(playEndpoint, stageId, this.AccountId, RoutePacket.Of(req));
 
-            JoinStageRes res = JoinStageRes.Parser.ParseFrom(reply.Data);
+            JoinStageRes res = JoinStageRes.Parser.ParseFrom(reply.Span);
 
             return new JoinStageResult(reply.ErrorCode, res.StageIdx, CPacket.Of(res.PayloadId, res.Payload));
         }
@@ -76,16 +76,16 @@ namespace PlayHouse.Service.Api
             {
                 StageType = stageType,
                 CreatePayloadId = createPacket.MsgId,
-                CreatePayload = ByteString.CopyFrom(createPacket.Payload.Data),
+                CreatePayload = ByteString.CopyFrom(createPacket.Payload.DataSpan),
                 SessionEndpoint = this.SessionEndpoint,
                 Sid = this.Sid,
                 JoinPayloadId = joinPacket.MsgId,
-                JoinPayload = ByteString.CopyFrom(joinPacket.Payload.Data),
+                JoinPayload = ByteString.CopyFrom(joinPacket.Payload.DataSpan),
             };
 
             using var reply = await RequestToBaseStage(playEndpoint, stageId, this.AccountId, RoutePacket.Of(req));
 
-            var res = CreateJoinStageRes.Parser.ParseFrom(reply.Data);
+            var res = CreateJoinStageRes.Parser.ParseFrom(reply.Span);
 
             return new CreateJoinStageResult(
                     reply.ErrorCode,
