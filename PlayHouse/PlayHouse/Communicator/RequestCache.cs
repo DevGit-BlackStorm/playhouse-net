@@ -32,9 +32,10 @@ internal class ReplyObject
 
     public void Throw(ushort errorCode)
     {
-        _replyCallback?.Invoke(errorCode,new EmptyPacket());
-        _taskCompletionSource?.SetResult(RoutePacket.Of(errorCode));
-        
+        _taskCompletionSource?.SetException(new PlayHouseException($"request has exception - errorCode:{errorCode}",errorCode));
+        //_replyCallback?.Invoke(errorCode,new EmptyPacket());
+        //_taskCompletionSource?.SetResult(RoutePacket.Of(errorCode));
+
     }
 }
 internal class RequestCache
