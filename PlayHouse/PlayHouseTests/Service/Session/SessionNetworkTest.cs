@@ -103,13 +103,13 @@ namespace PlayHouse.Service.Session.Network
                 await Task.Delay(100);
                 serverListener.ResultValue.Should().Be("onConnect");
 
-                
 
-                var replyPacket = await connector.AuthenticateAsync(SESSION, new PlayHouseConnector.Packet(new TestMsg { TestMsg_ = "request" }));
+
+                IPacket replyPacket = await connector.AuthenticateAsync(SESSION, new PlayHouseConnector.Packet(new TestMsg { TestMsg_ = "request" }));
 
                 using (replyPacket)
                 {
-                    TestMsg.Parser.ParseFrom(replyPacket.Data).TestMsg_.Should().Be("request");
+                    TestMsg.Parser.ParseFrom(replyPacket.DataSpan).TestMsg_.Should().Be("request");
                 }
 
                 connector.Send(API, new PlayHouseConnector.Packet(new TestMsg { TestMsg_ = "test" }));
@@ -121,7 +121,7 @@ namespace PlayHouse.Service.Session.Network
 
                 using (replyPacket)
                 {
-                    TestMsg.Parser.ParseFrom(replyPacket.Data).TestMsg_.Should().Be("request");
+                    TestMsg.Parser.ParseFrom(replyPacket.DataSpan).TestMsg_.Should().Be("request");
                 }
 
                 connector.Disconnect();
