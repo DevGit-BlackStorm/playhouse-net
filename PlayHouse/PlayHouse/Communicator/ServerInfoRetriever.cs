@@ -39,7 +39,7 @@ internal class ServerInfoRetriever : IServerInfoRetriever
 
 
 
-        var res = await _xSender.RequestToBaseApi(endpoint, RoutePacket.Of(new UpdateServerInfoReq() { ServerInfo = serverInfo.ToMsg()}));
+        using var res = await _xSender.RequestToBaseApi(endpoint, RoutePacket.Of(new UpdateServerInfoReq() { ServerInfo = serverInfo.ToMsg()}));
 
         UpdateServerInfoRes updateRes = UpdateServerInfoRes.Parser.ParseFrom(res.Payload.DataSpan);
 
