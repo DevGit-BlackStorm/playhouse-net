@@ -11,8 +11,8 @@ namespace PlayHouse.Production.Shared
     {
         public int MsgId { get; }
         public IPayload Payload { get; }
-        public IPacket Copy();
-        public T Parse<T>();
+        //public IPacket Copy();
+        //public T Parse<T>();
 
     }
 

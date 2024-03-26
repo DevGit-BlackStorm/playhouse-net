@@ -58,20 +58,20 @@ internal class XPacket : IPacket
         return new XPacket(message.Descriptor.Index, new ProtoPayload(message), 0);
     }
 
-    public IPacket Copy()
-    {
-        throw new NotImplementedException();
-    }
-
     public void Dispose()
     {
         _payload.Dispose();
     }
 
-    public T Parse<T>()
-    {
-        throw new NotImplementedException();
-    }
+    //public IPacket Copy()
+    //{
+    //    throw new NotImplementedException();
+    //}
+    //public T Parse<T>()
+    //{
+    //    throw new NotImplementedException();
+    //}
+
 }
 
 internal class EmptyPacket : IPacket
@@ -82,19 +82,20 @@ internal class EmptyPacket : IPacket
     public int MsgSeq { get => 0; set => _msgSeq = value; }
     public IPayload Payload => _payload;
 
-    public IPacket Copy()
-    {
-        throw new NotImplementedException();
-    }
-
-    public T Parse<T>()
-    {
-        throw new NotImplementedException();
-    }
-
     public void Dispose()
     {
         _payload.Dispose();
     }
+
+    //public IPacket Copy()
+    //{
+    //    throw new NotImplementedException();
+    //}
+
+    //public T Parse<T>()
+    //{
+    //    throw new NotImplementedException();
+    //}
+
 }
 
