@@ -4,6 +4,7 @@ using PlayHouse.Communicator.PlaySocket;
 using PlayHouse.Production.Session;
 using PlayHouse.Production.Shared;
 using PlayHouse.Service.Shared;
+
 namespace PlayHouse.Service.Session;
 
 public class SessionServer : IServer
@@ -14,6 +15,10 @@ public class SessionServer : IServer
 
     public SessionServer(PlayhouseOption commonOption, SessionOption sessionOption)
     {
+        if(commonOption.PacketProducer == null)
+        {
+            commonOption.PacketProducer = (msgId, payload, msgSeq) => new EmptyPacket();
+        }
         _commonOption = commonOption;
         _sessionOption = sessionOption;
     }
@@ -29,7 +34,6 @@ public class SessionServer : IServer
                   .SetPacketProducer(_commonOption.PacketProducer)
                   .SetAddressServerEndpoints(_commonOption.AddressServerEndpoints)
                   .SetAddressServerServiceId(_commonOption.AddressServerServiceId)
-                  .SetPacketProducer((msgId,paload,msgSeq)=>new EmptyPacket())
                   .Build();
 
         PooledBuffer.Init(_commonOption.MaxBufferPoolSize);
