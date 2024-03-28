@@ -1,6 +1,7 @@
 ﻿using Playhouse.Protocol;
 using PlayHouse.Communicator;
 using PlayHouse.Communicator.Message;
+using PlayHouse.Production.Api;
 using PlayHouse.Production.Shared;
 using PlayHouse.Service.Api.Reflection;
 using PlayHouse.Service.Shared;
@@ -35,6 +36,9 @@ internal class ApiDispatcher
         _requestCache = requestCache;
         _clientCommunicator = clientCommunicator;
         _apiReflection = new ApiReflection(serviceProvider);
+
+        ControllerTester.Init(_apiReflection);
+
         _apiReflectionCallback = new ApiReflectionCallback(serviceProvider);
 
         _policy = new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes(5) };
