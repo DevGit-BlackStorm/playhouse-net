@@ -1,4 +1,5 @@
-﻿using Playhouse.Protocol;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Playhouse.Protocol;
 using PlayHouse.Communicator;
 using PlayHouse.Communicator.Message;
 using PlayHouse.Production.Api;
@@ -8,8 +9,6 @@ using PlayHouse.Service.Shared;
 using PlayHouse.Utils;
 using System.Collections.Specialized;
 using System.Runtime.Caching;
-using System.Security.Cryptography.Xml;
-using System.Security.Policy;
 
 namespace PlayHouse.Service.Api;
 
@@ -37,7 +36,15 @@ internal class ApiDispatcher
         _clientCommunicator = clientCommunicator;
         _apiReflection = new ApiReflection(serviceProvider);
 
-        ControllerTester.Init(_apiReflection);
+
+        ControllerTester? controllerTester = serviceProvider.GetService<ControllerTester>();
+        if(controllerTester != null ) 
+        { 
+            controllerTester.Init(_apiReflection);
+        }
+        
+
+        //ControllerTester.Init(_apiReflection);
 
         _apiReflectionCallback = new ApiReflectionCallback(serviceProvider);
 
@@ -116,6 +123,7 @@ internal class ApiDispatcher
             }
         }
     }
+
 
     internal int GetAccountCount()
     {
