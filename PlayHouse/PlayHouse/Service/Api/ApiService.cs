@@ -27,7 +27,7 @@ namespace PlayHouse.Service.Api
         )
         {
             _serviceId = serviceId;
-            _apiDispatcher = new ApiDispatcher(serviceId, requestCache, clientCommunicator, serviceProvider);
+            _apiDispatcher = new ApiDispatcher(serviceId, requestCache, clientCommunicator, serviceProvider,apiOption);
 
         }
 

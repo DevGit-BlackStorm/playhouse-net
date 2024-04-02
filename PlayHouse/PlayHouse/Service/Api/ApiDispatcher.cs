@@ -28,13 +28,14 @@ internal class ApiDispatcher
         ushort serviceId,
         RequestCache requestCache,
         IClientCommunicator clientCommunicator,
-        IServiceProvider serviceProvider
+        IServiceProvider serviceProvider,
+        ApiOption apiOption
         )
     {
         _serviceId = serviceId;
         _requestCache = requestCache;
         _clientCommunicator = clientCommunicator;
-        _apiReflection = new ApiReflection(serviceProvider);
+        _apiReflection = new ApiReflection(serviceProvider, apiOption.AspectifyManager);
 
 
         ControllerTester? controllerTester = serviceProvider.GetService<ControllerTester>();

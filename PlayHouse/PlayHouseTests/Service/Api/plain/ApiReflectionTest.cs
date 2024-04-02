@@ -26,11 +26,13 @@ namespace PlayHouseTests.Service.Api.plain
 
             PacketProducer.Init((int msgId, IPayload payload,ushort msgSeq) => new TestPacket(msgId, payload, msgSeq));
 
-            ApiControllAspectifyManager.Add(new TestGlobalAspectifyAttribute());
+            ApiControllAspectifyManager controllAspectifyManager = new ApiControllAspectifyManager();
+
+            controllAspectifyManager.Add(new TestGlobalAspectifyAttribute());
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddScoped<TestApiController>();
-            var apiReflections = new ApiReflection(serviceCollection.BuildServiceProvider());
+            var apiReflections = new ApiReflection(serviceCollection.BuildServiceProvider(), controllAspectifyManager);
 
             var apiSender = new Mock<IApiSender>().Object;
             bool isBackend = false;
@@ -76,7 +78,7 @@ namespace PlayHouseTests.Service.Api.plain
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddScoped<TestApiController>();
-            var apiReflections = new ApiReflection(serviceCollection.BuildServiceProvider());
+            var apiReflections = new ApiReflection(serviceCollection.BuildServiceProvider(), new());
 
             var apiSender = new Mock<IApiBackendSender>().Object;
             bool isBackend = false;

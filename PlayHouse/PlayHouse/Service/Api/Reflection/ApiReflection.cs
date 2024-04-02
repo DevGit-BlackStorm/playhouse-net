@@ -8,9 +8,9 @@ internal class ApiReflection
     private readonly ApiHandleReflectionInvoker _apiReflectionInvoker;
 
 
-    public ApiReflection(IServiceProvider serviceProvider)
+    public ApiReflection(IServiceProvider serviceProvider,ApiControllAspectifyManager controllAspectifyManager)
     {
-        _apiReflectionInvoker = new ApiHandleReflectionInvoker(serviceProvider,ApiControllAspectifyManager.Get());
+        _apiReflectionInvoker = new ApiHandleReflectionInvoker(serviceProvider, controllAspectifyManager.Get());
 
     }
 
