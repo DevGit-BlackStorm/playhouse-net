@@ -26,15 +26,22 @@ internal class ReplyObject
                 _replyCallback?.Invoke(routePacket.ErrorCode,CPacket.Of(routePacket));
             }
         }
-        
-        _taskCompletionSource?.SetResult(routePacket);
+
+
+        if (routePacket.ErrorCode == 0)
+        {
+            _taskCompletionSource?.SetResult(routePacket);
+        }
+        else
+        {
+            Throw(routePacket.ErrorCode);
+        }
+
     }
 
     public void Throw(ushort errorCode)
     {
         _taskCompletionSource?.SetException(new PlayHouseException($"request has exception - errorCode:{errorCode}",errorCode));
-        //_replyCallback?.Invoke(errorCode,new EmptyPacket());
-        //_taskCompletionSource?.SetResult(RoutePacket.Of(errorCode));
 
     }
 }
