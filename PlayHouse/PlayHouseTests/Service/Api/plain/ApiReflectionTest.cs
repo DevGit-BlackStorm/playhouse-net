@@ -77,7 +77,7 @@ namespace PlayHouseTests.Service.Api.plain
             PacketProducer.Init((int msgId, IPayload payload, ushort msgSeq) => new TestPacket(msgId, payload, msgSeq));
 
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddScoped<TestApiController>();
+            serviceCollection.AddScoped<TestBackendApiController>();
             var apiReflections = new ApiReflection(serviceCollection.BuildServiceProvider(), new());
 
             var apiSender = new Mock<IApiBackendSender>().Object;
@@ -87,7 +87,7 @@ namespace PlayHouseTests.Service.Api.plain
 
             await apiReflections.CallBackendMethodAsync(routePacket.ToContentsPacket(), apiSender);
 
-            ReflectionTestResult.ResultMap["TestApiController_Test3"].Should().Be("ApiBackendServiceCall_Test1");
+            ReflectionTestResult.ResultMap["TestBackendApiController_Test3"].Should().Be("ApiBackendServiceCall_Test1");
 
 
             ReflectionTestResult.ResultMap[$"TestBackendApiActionAttributeBefore_{ApiTestMsg1.Descriptor.Index}"].Should().Be("BeforeExecution");
@@ -100,7 +100,7 @@ namespace PlayHouseTests.Service.Api.plain
 
             await apiReflections.CallBackendMethodAsync(routePacket.ToContentsPacket(), apiSender);
 
-            ReflectionTestResult.ResultMap["TestApiController_Test4"].Should().Be("ApiBackendServiceCall_Test2");
+            ReflectionTestResult.ResultMap["TestBackendApiController_Test4"].Should().Be("ApiBackendServiceCall_Test2");
 
 
             ReflectionTestResult.ResultMap[$"TestBackendApiActionAttributeBefore_{ApiTestMsg2.Descriptor.Index}"].Should().Be("BeforeExecution");

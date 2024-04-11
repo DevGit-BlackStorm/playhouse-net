@@ -10,7 +10,7 @@ internal class ApiReflection
 
     public ApiReflection(IServiceProvider serviceProvider,ApiControllAspectifyManager controllAspectifyManager)
     {
-        _apiReflectionInvoker = new ApiHandleReflectionInvoker(serviceProvider, controllAspectifyManager.Get());
+        _apiReflectionInvoker = new ApiHandleReflectionInvoker(serviceProvider, controllAspectifyManager.Get(), controllAspectifyManager.GetBackend());
 
     }
 

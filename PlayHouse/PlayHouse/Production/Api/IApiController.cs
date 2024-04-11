@@ -19,5 +19,10 @@ public interface IBackendHandlerRegister
 
 public interface IApiController
 {
-    void Handles(IHandlerRegister handlerRegister, IBackendHandlerRegister backendHandlerRegister);
+    void Handles(IHandlerRegister handlerRegister);
+}
+
+public interface IBackendApiController
+{
+    void Handles(IBackendHandlerRegister backendHandlerRegister);
 }

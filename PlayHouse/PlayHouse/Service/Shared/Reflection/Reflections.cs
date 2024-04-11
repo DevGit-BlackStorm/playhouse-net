@@ -105,16 +105,28 @@ class ReflectionOperator
             .Where(type => type.IsClass && !type.IsAbstract && subTypes.Any(subType => subType.IsAssignableFrom(type)))
             .ToArray();
     }
-    public List<ReflectionInstance> GetInstanceBy(Type targetType)
+
+    public List<ReflectionInstance> GetInstanceBy(params Type[] targetTypes)
     {
         return _findTypes
-            .Where(type => type.IsClass && !type.IsAbstract && targetType.IsAssignableFrom(type))
+            .Where(type => type.IsClass && !type.IsAbstract && targetTypes.Any(targetType => targetType.IsAssignableFrom(type)))
             .Select(type =>
             {
                 IEnumerable<AspectifyAttribute> apiFilters = type.GetCustomAttributes(typeof(AspectifyAttribute), true).Select(e => (AspectifyAttribute)e);
                 return new ReflectionInstance(type, apiFilters, _serviceProvider);
             }).ToList();
     }
+
+    //public List<ReflectionInstance> GetInstanceBy(Type targetType)
+    //{
+    //    return _findTypes
+    //        .Where(type => type.IsClass && !type.IsAbstract && targetType.IsAssignableFrom(type))
+    //        .Select(type =>
+    //        {
+    //            IEnumerable<AspectifyAttribute> apiFilters = type.GetCustomAttributes(typeof(AspectifyAttribute), true).Select(e => (AspectifyAttribute)e);
+    //            return new ReflectionInstance(type, apiFilters, _serviceProvider);
+    //        }).ToList();
+    //}
 
     internal List<MethodInfo> GetMethodsBy(Type targetType)
     {

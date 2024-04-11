@@ -15,25 +15,30 @@ internal class ApiHandleReflectionInvoker
     private readonly Dictionary<int, string> _messageIndexChecker = new();
     private readonly Dictionary<int, string> _backendMessageIndexChecker = new();
     private readonly IEnumerable<AspectifyAttribute> _targetFilters;
+    private readonly IEnumerable<AspectifyAttribute> _backendTargetFilters;
 
-    public ApiHandleReflectionInvoker(IServiceProvider serviceProvider, IEnumerable<AspectifyAttribute> targetFilters)
+    public ApiHandleReflectionInvoker(
+        IServiceProvider serviceProvider, 
+        IEnumerable<AspectifyAttribute> targetFilters, 
+        IEnumerable<AspectifyAttribute> backendTargetFilters)
     {
         _targetFilters = targetFilters;
-        Type type = typeof(IApiController);
-        var reflections = new ReflectionOperator(serviceProvider, type);
-        _instances = reflections.GetInstanceBy(type).ToDictionary(e => e.Name);
+        _backendTargetFilters = backendTargetFilters;
+
+        var reflections = new ReflectionOperator(serviceProvider, typeof(IApiController),typeof(IBackendApiController));
+        _instances = reflections.GetInstanceBy(typeof(IApiController), typeof(IBackendApiController)).ToDictionary(e => e.Name);
         ExtractMethodInfo(reflections);
+        
     }
 
     public void ExtractMethodInfo(ReflectionOperator reflections)
     {
-        reflections.GetMethodsBySignature("Handles", typeof(void), typeof(IHandlerRegister), typeof(IBackendHandlerRegister)).ForEach(methodInfo =>
+        reflections.GetMethodsBySignature("Handles", typeof(void), typeof(IHandlerRegister)).ForEach(methodInfo =>
         {
             var className = methodInfo.DeclaringType!.FullName!;
             var systemInstance = _instances[className!]!;
             var handlerRegister = new HandlerRegister();
-            var backendHandlerRegister = new BackendHandlerRegister();
-            methodInfo.Invoke(systemInstance.Instance, new object[] { handlerRegister, backendHandlerRegister });
+            methodInfo.Invoke(systemInstance.Instance, new object[] { handlerRegister});
 
             foreach (var (key, value) in handlerRegister.Handles)
             {
@@ -44,6 +49,14 @@ internal class ApiHandleReflectionInvoker
                 _methods[key] = new ReflectionMethod(key, className, value.Method, _targetFilters, systemInstance.Filters);
                 _messageIndexChecker[key] = value.Method.Name;
             }
+        });
+
+        reflections.GetMethodsBySignature("Handles", typeof(void), typeof(IBackendHandlerRegister)).ForEach(methodInfo =>
+        {
+            var className = methodInfo.DeclaringType!.FullName!;
+            var systemInstance = _instances[className!]!;
+            var backendHandlerRegister = new BackendHandlerRegister();
+            methodInfo.Invoke(systemInstance.Instance, new object[] { backendHandlerRegister });
 
             foreach (var (key, value) in backendHandlerRegister.Handles)
             {
@@ -51,7 +64,7 @@ internal class ApiHandleReflectionInvoker
                 {
                     throw new Exception($"registered msgId is duplicated - [msgId:{key}, methods: {_messageIndexChecker[key]}, {value.Method.Name}]");
                 }
-                _backendMethods[key] = new ReflectionMethod(key, className, value.Method, _targetFilters, systemInstance.Filters);
+                _backendMethods[key] = new ReflectionMethod(key, className, value.Method, _backendTargetFilters, systemInstance.Filters);
                 _backendMessageIndexChecker[key] = value.Method.Name;
             }
         });
