@@ -55,7 +55,7 @@ internal class TestApiController : IApiController, IDisconnectCallback
 }
 
 [TestBackendAspectify]
-internal class TestBackendApiController : IBackendApiController
+internal class TestBackendApiController : IApiBackendController
 {
     public void Handles(IBackendHandlerRegister backendHandlerRegister)
     {

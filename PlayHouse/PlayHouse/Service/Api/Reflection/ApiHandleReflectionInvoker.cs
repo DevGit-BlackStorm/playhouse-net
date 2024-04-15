@@ -25,8 +25,8 @@ internal class ApiHandleReflectionInvoker
         _targetFilters = targetFilters;
         _backendTargetFilters = backendTargetFilters;
 
-        var reflections = new ReflectionOperator(serviceProvider, typeof(IApiController),typeof(IBackendApiController));
-        _instances = reflections.GetInstanceBy(typeof(IApiController), typeof(IBackendApiController)).ToDictionary(e => e.Name);
+        var reflections = new ReflectionOperator(serviceProvider, typeof(IApiController),typeof(IApiBackendController));
+        _instances = reflections.GetInstanceBy(typeof(IApiController), typeof(IApiBackendController)).ToDictionary(e => e.Name);
         ExtractMethodInfo(reflections);
         
     }

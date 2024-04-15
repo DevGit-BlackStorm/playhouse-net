@@ -22,7 +22,7 @@ public interface IApiController
     void Handles(IHandlerRegister handlerRegister);
 }
 
-public interface IBackendApiController
+public interface IApiBackendController
 {
     void Handles(IBackendHandlerRegister backendHandlerRegister);
 }
