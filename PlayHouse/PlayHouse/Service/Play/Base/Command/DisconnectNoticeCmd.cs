@@ -9,7 +9,7 @@ internal class DisconnectNoticeCmd : IBaseStageCmd
 
     public  async Task Execute(BaseStage baseStage, RoutePacket routePacket)
     {
-        var accountId = routePacket.AccountId;
+        long accountId = routePacket.AccountId;
         await baseStage.OnDisconnect(accountId);
     }
 }

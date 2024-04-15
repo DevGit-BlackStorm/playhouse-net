@@ -26,21 +26,9 @@
             return temp;
         }
 
-        public ushort GetMsgSeq()
-        {
-            return Header.MsgSeq;
-        }
-
-        public int GetMsgId()
-        {
-            return Header.MsgId;
-        }
-          
-
-        public ushort ServiceId()
-        {
-            return Header.ServiceId;
-        }
+        public ushort MsgSeq => Header.MsgSeq;
+        public string MsgId => Header.MsgId;
+        public ushort ServiceId => Header.ServiceId;  
 
         internal RoutePacket ToRoutePacket()
         {

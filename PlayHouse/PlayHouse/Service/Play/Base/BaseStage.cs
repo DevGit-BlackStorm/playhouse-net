@@ -12,7 +12,7 @@ namespace PlayHouse.Service.Play.Base;
 internal class BaseStage
 {
     private readonly LOG<BaseStage> _log = new ();
-    private readonly string _stageId;
+    private readonly long _stageId;
     private readonly PlayDispatcher _dispatcher;
     private readonly IServerInfoCenter _serverInfoCenter;
     private readonly XStageSender _stageSender;
@@ -26,7 +26,7 @@ internal class BaseStage
     private IStage?  _stage; 
     public bool IsCreated { get; private set; }
 
-    public BaseStage(string stageId,
+    public BaseStage(long stageId,
                      PlayDispatcher dispatcher, 
                      IClientCommunicator clientCommunicator,
                      RequestCache reqCache, 
@@ -41,12 +41,12 @@ internal class BaseStage
         _sessionUpdater = sessionUpdater;
 
 
-        _msgHandler.Register(CreateStageReq.Descriptor.Index, new CreateStageCmd(dispatcher));
-        _msgHandler.Register(JoinStageReq.Descriptor.Index, new JoinStageCmd(dispatcher));
-        _msgHandler.Register(CreateJoinStageReq.Descriptor.Index, new CreateJoinStageCmd(dispatcher));
-        _msgHandler.Register(StageTimer.Descriptor.Index, new StageTimerCmd());
-        _msgHandler.Register(DisconnectNoticeMsg.Descriptor.Index, new DisconnectNoticeCmd());
-        _msgHandler.Register(AsyncBlock.Descriptor.Index, new AsyncBlockCmd());
+        _msgHandler.Register(CreateStageReq.Descriptor.Name, new CreateStageCmd(dispatcher));
+        _msgHandler.Register(JoinStageReq.Descriptor.Name, new JoinStageCmd(dispatcher));
+        _msgHandler.Register(CreateJoinStageReq.Descriptor.Name, new CreateJoinStageCmd(dispatcher));
+        _msgHandler.Register(StageTimer.Descriptor.Name, new StageTimerCmd());
+        _msgHandler.Register(DisconnectNoticeMsg.Descriptor.Name, new DisconnectNoticeCmd());
+        _msgHandler.Register(AsyncBlock.Descriptor.Name, new AsyncBlockCmd());
     }
 
     private async Task Dispatch(RoutePacket routePacket)
@@ -60,7 +60,7 @@ internal class BaseStage
             }
             else
             {
-                string accountId = routePacket.AccountId;
+                long accountId = routePacket.AccountId;
                 var baseUser = _dispatcher.FindUser(accountId);
                 if (baseUser != null)
                 {
@@ -117,7 +117,7 @@ internal class BaseStage
     }
 
 
-    public async Task<(ushort errorCode,IPacket reply,int stageKey)> Join(string accountId, string sessionEndpoint, int sid, string apiEndpoint, IPacket packet)
+    public async Task<(ushort errorCode,IPacket reply)> Join(long accountId, string sessionEndpoint, int sid, string apiEndpoint, IPacket packet)
     {
         BaseActor? baseUser = _dispatcher.FindUser(accountId);
 
@@ -135,7 +135,6 @@ internal class BaseStage
         }
 
         var outcome = await _stage!.OnJoinStage(baseUser.Actor, packet);
-        int stageKey = 0;
 
         if (outcome.errorCode != (ushort)BaseErrorCode.Success)
         {
@@ -143,10 +142,10 @@ internal class BaseStage
         }
         else
         {
-            stageKey = await _sessionUpdater.UpdateStageInfo(sessionEndpoint, sid);
+            await _sessionUpdater.UpdateStageInfo(sessionEndpoint, sid);
         }
 
-        return  (outcome.errorCode, outcome.reply, stageKey);
+        return  (outcome.errorCode, outcome.reply);
     }
 
 
@@ -160,7 +159,7 @@ internal class BaseStage
         this._stageSender.Reply(packet);
     }
 
-    public void LeaveStage(string accountId, string sessionEndpoint, int sid)
+    public void LeaveStage(long accountId, string sessionEndpoint, int sid)
     {
         this._dispatcher.RemoveUser(accountId);
         var request = new LeaveStageMsg();
@@ -168,7 +167,7 @@ internal class BaseStage
         this._stageSender.SendToBaseSession(sessionEndpoint, sid,RoutePacket.Of(request));
     }
 
-    public string StageId => _stageSender.StageId;
+    public long StageId => _stageSender.StageId;
 
     public void CancelTimer(long timerId)
     {
@@ -192,7 +191,7 @@ internal class BaseStage
         }
     }
 
-    public async Task OnPostJoinRoom(string accountId)
+    public async Task OnPostJoinRoom(long accountId)
     {
         try
         {
@@ -214,7 +213,7 @@ internal class BaseStage
         }
     }
 
-    public async Task OnDisconnect(string accountId)
+    public async Task OnDisconnect(long accountId)
     {
         var baseUser = _dispatcher.FindUser(accountId);
 

@@ -1,34 +1,32 @@
 ﻿using CommonLib;
 using Google.Protobuf;
-using NetMQ;
 using Playhouse.Protocol;
 using PlayHouse.Production.Shared;
 using PlayHouse.Service.Shared;
-using System.Runtime.InteropServices;
 
 namespace PlayHouse.Communicator.Message
 {
     public class Header
     {
         public ushort ServiceId { get; set; } = 0;
-        public int MsgId { get; set; } = 0;
+        public string MsgId { get; set; } 
         public ushort MsgSeq { get; set; } = 0;
         public ushort ErrorCode { get; set; } = 0;
-        public byte  StageIndex { get; set; } = 0;
+        public long  StageId { get; set; } = 0;
 
-        public Header(ushort serviceId = 0,int msgId = 0, ushort msgSeq = 0,ushort errorCode = 0 ,byte stageIndex = 0)
+        public Header(ushort serviceId = 0,string msgId = "", ushort msgSeq = 0,ushort errorCode = 0 ,long stageId = 0)
         {
             ServiceId = serviceId;
             MsgId = msgId;
             ErrorCode = errorCode;
             MsgSeq = msgSeq;
-            StageIndex = stageIndex;
+            StageId = stageId;
 
         }
 
          public static Header Of(HeaderMsg headerMsg)
         {
-            return new Header((ushort)headerMsg.ServiceId, headerMsg.MsgId, (ushort)headerMsg.MsgSeq, (ushort)headerMsg.ErrorCode,(byte)headerMsg.StageIndex);
+            return new Header((ushort)headerMsg.ServiceId, headerMsg.MsgId, (ushort)headerMsg.MsgSeq, (ushort)headerMsg.ErrorCode,(byte)headerMsg.StageId);
         }
 
         public  HeaderMsg ToMsg()
@@ -39,12 +37,12 @@ namespace PlayHouse.Communicator.Message
                 MsgId = MsgId,
                 MsgSeq = MsgSeq,
                 ErrorCode = ErrorCode,
-                StageIndex = StageIndex
+                StageId = StageId
             };
         }
         public override string ToString()
         {
-            return $"Header(GetServiceId={ServiceId}, MsgId={MsgId}, MsgSeq={MsgSeq}, ErrorCode={ErrorCode}, StageIndex={StageIndex})";
+            return $"Header(GetServiceId={ServiceId}, MsgId={MsgId}, MsgSeq={MsgSeq}, ErrorCode={ErrorCode}, StageId={StageId})";
         }
     }
     public class RouteHeader
@@ -55,8 +53,8 @@ namespace PlayHouse.Communicator.Message
         public bool IsBase { get; set; } = false;
         public bool IsBackend { get; set; } = false;
         public bool IsReply { get; set; } = false;
-        public string AccountId { get; set; } = string.Empty;
-        public string StageId { get; set; } = string.Empty;
+        public long AccountId { get; set; } 
+        public long StageId { get; set; }
 
         public string From { get; set; } = "";
 
@@ -84,7 +82,7 @@ namespace PlayHouse.Communicator.Message
             return ToMsg().ToByteArray();
         }
 
-        public int MsgId => Header.MsgId;
+        public string MsgId => Header.MsgId;
 
         public RouteHeaderMsg ToMsg()
         {
@@ -110,7 +108,7 @@ namespace PlayHouse.Communicator.Message
             return new RouteHeader(header);
         }
 
-        public static RouteHeader TimerOf(string stageId, short msgId)
+        public static RouteHeader TimerOf(long stageId, string msgId)
         {
             return new RouteHeader(new Header(msgId: msgId))
             {
@@ -141,7 +139,7 @@ namespace PlayHouse.Communicator.Message
         }
 
 
-        public int MsgId => RouteHeader.MsgId;
+        public string MsgId => RouteHeader.MsgId;
         public ushort ServiceId() { return RouteHeader.Header.ServiceId; }
         public bool IsBackend() { return RouteHeader.IsBackend; }
 
@@ -164,7 +162,7 @@ namespace PlayHouse.Communicator.Message
             return RouteHeader.IsBase;
         }
 
-        public string AccountId => RouteHeader.AccountId;
+        public long AccountId => RouteHeader.AccountId;
 
         public void SetMsgSeq(ushort msgSeq)
         {
@@ -181,7 +179,7 @@ namespace PlayHouse.Communicator.Message
             return RouteHeader.IsReply;
         }
 
-        public string StageId => RouteHeader.StageId;
+        public long StageId => RouteHeader.StageId;
 
         public bool IsSystem => RouteHeader.IsSystem;
 
@@ -209,14 +207,14 @@ namespace PlayHouse.Communicator.Message
             return new RoutePacket(routeHeader, payload);
         }
 
-        internal static RoutePacket Of(int msgId, IPayload payload)
+        internal static RoutePacket Of(string msgId, IPayload payload)
         {
             return new RoutePacket(new RouteHeader(new Header() { MsgId = msgId }), payload);
         }
 
         internal static RoutePacket Of(IMessage message)
         {
-            return new RoutePacket(new RouteHeader(new Header() { MsgId = message.Descriptor.Index }), new ProtoPayload(message));
+            return new RoutePacket(new RouteHeader(new Header() { MsgId = message.Descriptor.Name }), new ProtoPayload(message));
         }
 
         internal static RoutePacket Of(IPacket packet)
@@ -253,9 +251,9 @@ namespace PlayHouse.Communicator.Message
             return new RoutePacket(routeHeader, packet.MovePayload());
         }
 
-        public static RoutePacket AddTimerOf(TimerMsg.Types.Type type, string stageId, long timerId, TimerCallbackTask timerCallback, TimeSpan initialDelay, TimeSpan period, int count = 0)
+        public static RoutePacket AddTimerOf(TimerMsg.Types.Type type, long stageId, long timerId, TimerCallbackTask timerCallback, TimeSpan initialDelay, TimeSpan period, int count = 0)
         {
-            Header header = new Header(msgId:(short)TimerMsg.Descriptor.Index);
+            Header header = new Header(msgId:TimerMsg.Descriptor.Name);
             RouteHeader routeHeader = RouteHeader.Of(header);
             routeHeader.StageId = stageId;
             routeHeader.IsBase = true;
@@ -275,9 +273,9 @@ namespace PlayHouse.Communicator.Message
             };
         }
 
-        public static RoutePacket StageTimerOf(string stageId, long timerId, TimerCallbackTask timerCallback, object? timerState)
+        public static RoutePacket StageTimerOf(long stageId, long timerId, TimerCallbackTask timerCallback, object? timerState)
         {
-            Header header = new Header(msgId: StageTimer.Descriptor.Index);
+            Header header = new Header(msgId: StageTimer.Descriptor.Name);
             RouteHeader routeHeader = RouteHeader.Of(header);
 
             return new RoutePacket(routeHeader, new EmptyPayload())
@@ -288,7 +286,7 @@ namespace PlayHouse.Communicator.Message
             };
         }
 
-        public static RoutePacket StageOf(string stageId, string accountId, RoutePacket packet, bool isBase, bool isBackend)
+        public static RoutePacket StageOf(long stageId, long accountId, RoutePacket packet, bool isBase, bool isBackend)
         {
             Header header = new Header(msgId: packet.MsgId);
             RouteHeader routeHeader = RouteHeader.Of(header);
@@ -318,7 +316,7 @@ namespace PlayHouse.Communicator.Message
         //}
         public static RoutePacket ReplyOf(ushort serviceId, RouteHeader sourceHeader,ushort errorCode,IPacket? reply)
         {
-            Header header = new(msgId: reply !=null ? reply.MsgId : 0)
+            Header header = new(msgId: reply !=null ? reply.MsgId : "")
             {
                 ServiceId = serviceId,
                 MsgSeq = sourceHeader.Header.MsgSeq
@@ -369,12 +367,16 @@ namespace PlayHouse.Communicator.Message
                 throw new Exception($"body size is over : {bodySize}");
             }
 
-            buffer.WriteInt16(XBitConverter.ToNetworkOrder((ushort)bodySize));
-            buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.ServiceId()));
-            buffer.WriteInt32(XBitConverter.ToNetworkOrder(clientPacket.GetMsgId()));
-            buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.GetMsgSeq()));
-            buffer.Write(clientPacket.Header.StageIndex);
-            buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.Header.ErrorCode));
+            int msgIdSize = clientPacket.MsgId.Length;
+
+            buffer.WriteInt16((ushort)(ConstOption.MinServerHeaderSize + msgIdSize));
+            buffer.WriteInt24(bodySize);
+            buffer.WriteInt16(clientPacket.ServiceId);
+            buffer.Write((byte)msgIdSize);
+            buffer.Write(clientPacket.MsgId);
+            buffer.WriteInt16(clientPacket.MsgSeq);
+            buffer.WriteInt64(clientPacket.Header.StageId);
+            buffer.WriteInt16(clientPacket.Header.ErrorCode);
             buffer.Write(clientPacket.Payload.DataSpan);
         
         }
@@ -424,9 +426,9 @@ namespace PlayHouse.Communicator.Message
             Result = result;
         }
 
-        public static RoutePacket Of(string stageId, AsyncPostCallback asyncPostCallback, Object result)
+        public static RoutePacket Of(long stageId, AsyncPostCallback asyncPostCallback, Object result)
         {
-            var header = new Header(msgId: AsyncBlock.Descriptor.Index);
+            var header = new Header(msgId: AsyncBlock.Descriptor.Name);
             var routeHeader = RouteHeader.Of(header);
             var packet = new AsyncBlockPacket(asyncPostCallback, result, routeHeader);
             packet.RouteHeader.StageId = stageId;

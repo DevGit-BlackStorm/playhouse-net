@@ -2,27 +2,17 @@
 
 package playhouse.protocol;
 
-/**
-client packet
-1byte header size + 2byte body size + header + body
-
-header
-2byte - bodysize
-2byte - serviceId
-2byte - msg_id
-2byte - msg_seq
-2byte - error_code
-
- */
-
-
-
- /*
-message PacketMsg {
-  HeaderMsg header_msg = 1;
-  bytes message = 2;
-}
-*/
+/*
+    *  2byte  header size
+    *  3byte  body size
+    *  2byte  serviceId
+    *  1byte  msgId size
+    *  n byte msgId string
+    *  2byte  msgSeq
+    *  8byte  stageId
+    *  2byte  errorCode [only from server]
+    *  From Header Size = 2+3+2+1+2+8+2+N = 20 + n
+* */
 
 
 enum BaseErrorCode

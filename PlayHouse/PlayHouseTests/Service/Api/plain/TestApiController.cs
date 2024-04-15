@@ -13,10 +13,10 @@ internal class TestApiController : IApiController, IDisconnectCallback
 {
     public void Handles(IHandlerRegister handlerRegister)
     {
-        handlerRegister.Add(ApiTestMsg1.Descriptor.Index, Test1);
-        handlerRegister.Add(ApiTestMsg2.Descriptor.Index, Test2);
-        handlerRegister.Add(ApiDefaultContentsExceptionTest.Descriptor.Index, TestApiDefaultContentsException);
-        handlerRegister.Add(ApiContentsExceptionTest.Descriptor.Index, TestApiContentsException);
+        handlerRegister.Add(ApiTestMsg1.Descriptor.Name, Test1);
+        handlerRegister.Add(ApiTestMsg2.Descriptor.Name, Test2);
+        handlerRegister.Add(ApiDefaultContentsExceptionTest.Descriptor.Name, TestApiDefaultContentsException);
+        handlerRegister.Add(ApiContentsExceptionTest.Descriptor.Name, TestApiContentsException);
 
     }
 
@@ -59,8 +59,8 @@ internal class TestBackendApiController : IBackendApiController
 {
     public void Handles(IBackendHandlerRegister backendHandlerRegister)
     {
-        backendHandlerRegister.Add(ApiTestMsg1.Descriptor.Index, Test3);
-        backendHandlerRegister.Add(ApiTestMsg2.Descriptor.Index, Test4);
+        backendHandlerRegister.Add(ApiTestMsg1.Descriptor.Name, Test3);
+        backendHandlerRegister.Add(ApiTestMsg2.Descriptor.Name, Test4);
     }
 
     
@@ -85,7 +85,7 @@ internal class TestSystemController : ISystemController, IUpdateServerInfoCallba
 {
     public void Handles(ISystemHandlerRegister handlerRegister)
     {
-        handlerRegister.Add(SystemHandlerTestMsg.Descriptor.Index, Test);
+        handlerRegister.Add(SystemHandlerTestMsg.Descriptor.Name, Test);
     }
 
     public async Task Test(IPacket packet, ISystemPanel panel, ISender sender)

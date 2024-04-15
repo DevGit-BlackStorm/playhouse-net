@@ -86,7 +86,7 @@ namespace PlayHouseTests.Communicator
             Thread.Sleep(200);
 
             apiListener.Results.Count.Should().Be(1);
-            apiListener.Results[0].MsgId.Should().Be((short)HeaderMsg.Descriptor.Index);
+            apiListener.Results[0].MsgId.Should().Be(HeaderMsg.Descriptor.Name);
 
             ////////// api to session ///////////////
 
@@ -95,7 +95,7 @@ namespace PlayHouseTests.Communicator
 
             Thread.Sleep(100);
 
-            short messagId = 100;
+            string messagId = "TestMsgId";
             apiClient.Send(sessionEndpoint, RoutePacket.ClientOf((ushort)ServiceType.API, 0, new TestPacket(messagId)));
 
             Thread.Sleep(200);

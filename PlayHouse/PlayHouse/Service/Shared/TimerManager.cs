@@ -15,7 +15,7 @@ internal class TimerManager
         _dispatcher = dispatcher;
     }
 
-    public long RegisterRepeatTimer(string stageId, long timerId, long initialDelay, long period, TimerCallbackTask timerCallback)
+    public long RegisterRepeatTimer(long stageId, long timerId, long initialDelay, long period, TimerCallbackTask timerCallback)
     {
         var timer = new Timer(timerState =>
         {
@@ -28,7 +28,7 @@ internal class TimerManager
         return timerId;
     }
 
-    public long RegisterCountTimer(string stageId, long timerId, long initialDelay, int count, long period, TimerCallbackTask timerCallback)
+    public long RegisterCountTimer(long stageId, long timerId, long initialDelay, int count, long period, TimerCallbackTask timerCallback)
     {
         int remainingCount = count;
 

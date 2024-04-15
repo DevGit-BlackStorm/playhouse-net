@@ -18,8 +18,8 @@ internal interface IPlayDispatcher
 internal class PlayDispatcher : IPlayDispatcher
 {
     private readonly LOG<PlayDispatcher> _log = new();
-    private readonly ConcurrentDictionary<string, BaseActor> _baseUsers = new();
-    private readonly ConcurrentDictionary<string, BaseStage> _baseRooms = new();
+    private readonly ConcurrentDictionary<long, BaseActor> _baseUsers = new();
+    private readonly ConcurrentDictionary<long, BaseStage> _baseRooms = new();
 
     private readonly ushort _serviceId;
     private readonly IClientCommunicator _clientCommunicator;
@@ -57,12 +57,12 @@ internal class PlayDispatcher : IPlayDispatcher
     public void Stop() { 
         _workerQueue.Stop(); 
     } 
-    public void RemoveRoom(string stageId)
+    public void RemoveRoom(long stageId)
     {
         _baseRooms.Remove(stageId, out _);
     }
 
-    public void RemoveUser(string accountId)
+    public void RemoveUser(long accountId)
     {
         _baseUsers.Remove(accountId, out _);
     }
@@ -73,7 +73,7 @@ internal class PlayDispatcher : IPlayDispatcher
     }
 
 
-    private BaseStage MakeBaseRoom(string stageId)
+    private BaseStage MakeBaseRoom(long stageId)
     {
         var stageSender = new XStageSender(_serviceId, stageId, this, _clientCommunicator, _requestCache);
         var sessionUpdator = new XSessionUpdater(Endpoint(), stageSender);
@@ -82,7 +82,7 @@ internal class PlayDispatcher : IPlayDispatcher
         return baseStage;
     }
 
-    public BaseActor? FindUser(string accountId)
+    public BaseActor? FindUser(long accountId)
     {
         if (_baseUsers.TryGetValue(accountId, out var user)) return user;
         return null;
@@ -94,12 +94,12 @@ internal class PlayDispatcher : IPlayDispatcher
         _baseUsers[baseActor.ActorSender.AccountId()] = baseActor;
     }
 
-    public BaseStage? FindRoom(string stageId)
+    public BaseStage? FindRoom(long stageId)
     {
         return _baseRooms[stageId];
     }
 
-    public void CancelTimer(string stageId, long timerId)
+    public void CancelTimer(long stageId, long timerId)
     {
         if (_baseRooms.TryGetValue(stageId, out var room))
         {
@@ -122,12 +122,12 @@ internal class PlayDispatcher : IPlayDispatcher
         return _playOption.PlayProducer.IsInvalidType(stageType);
     }
 
-    private async Task DoBaseRoomPacket(int msgId, RoutePacket routePacket, string stageId)
+    private async Task DoBaseRoomPacket(string msgId, RoutePacket routePacket, long stageId)
     {
 
-        if (msgId == CreateStageReq.Descriptor.Index)
+        if (msgId == CreateStageReq.Descriptor.Name)
         {
-            var newStageId = routePacket.StageId;
+            long newStageId = routePacket.StageId;
             if (_baseRooms.ContainsKey(newStageId))
             {
                 _sender.Reply((ushort)BaseErrorCode.AlreadyExistStage);
@@ -137,7 +137,7 @@ internal class PlayDispatcher : IPlayDispatcher
                 await MakeBaseRoom(newStageId).Send(routePacket);
             }
         }
-        else if (msgId == CreateJoinStageReq.Descriptor.Index)
+        else if (msgId == CreateJoinStageReq.Descriptor.Name)
         {
             _baseRooms.TryGetValue(stageId, out var room);
             if (room != null)
@@ -149,13 +149,13 @@ internal class PlayDispatcher : IPlayDispatcher
                 await MakeBaseRoom(stageId).Send(routePacket);
             }
         }
-        else if (msgId == TimerMsg.Descriptor.Index)
+        else if (msgId == TimerMsg.Descriptor.Name)
         {
             var timerId = routePacket.TimerId;
             var protoPayload = (routePacket.Payload as ProtoPayload)!;
             TimerProcess(stageId, timerId, (protoPayload.GetProto() as TimerMsg)!, routePacket.TimerCallback!);
         }
-        else if (msgId == DestroyStage.Descriptor.Index)
+        else if (msgId == DestroyStage.Descriptor.Name)
         {
             _baseRooms.Remove(stageId, out _);
         }
@@ -163,16 +163,16 @@ internal class PlayDispatcher : IPlayDispatcher
         {
             if (!_baseRooms.TryGetValue(stageId, out var room))
             {
-                if (msgId == StageTimer.Descriptor.Index) return;
+                if (msgId == StageTimer.Descriptor.Name) return;
                 _log.Error(() => $"Room is not exist : {stageId},{msgId}");
                 _sender.Reply((ushort)BaseErrorCode.StageIsNotExist);
                 return;
             }
 
-            if (msgId == JoinStageReq.Descriptor.Index ||
-                msgId == StageTimer.Descriptor.Index ||
-                msgId == DisconnectNoticeMsg.Descriptor.Index ||
-                msgId == AsyncBlock.Descriptor.Index)
+            if (msgId == JoinStageReq.Descriptor.Name ||
+                msgId == StageTimer.Descriptor.Name ||
+                msgId == DisconnectNoticeMsg.Descriptor.Name ||
+                msgId == AsyncBlock.Descriptor.Name)
             {
                 await room!.Send(routePacket);
             }
@@ -183,7 +183,7 @@ internal class PlayDispatcher : IPlayDispatcher
         }
     }
 
-    private void TimerProcess(string stageId, long timerId, TimerMsg timerMsg, TimerCallbackTask timerCallback)
+    private void TimerProcess(long stageId, long timerId, TimerMsg timerMsg, TimerCallbackTask timerCallback)
     {
         _baseRooms.TryGetValue(stageId, out var room);
 

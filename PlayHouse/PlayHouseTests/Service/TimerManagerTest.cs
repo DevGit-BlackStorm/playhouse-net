@@ -15,7 +15,7 @@ namespace PlayHouseTests.Service
             var processor = new Mock<IPlayDispatcher>();
             var timerManager = new TimerManager(processor.Object);
 
-            timerManager.RegisterRepeatTimer(string.Empty, 1, 100, 100, async () =>  { await Task.CompletedTask; });
+            timerManager.RegisterRepeatTimer(0, 1, 100, 100, async () =>  { await Task.CompletedTask; });
 
             Thread.Sleep(350);
 
@@ -28,7 +28,7 @@ namespace PlayHouseTests.Service
             var processor = new Mock<IPlayDispatcher>();
             var timerManager = new TimerManager(processor.Object);
 
-            timerManager.RegisterCountTimer(string.Empty, 2, 0, 3, 100, async () => { await Task.CompletedTask; });
+            timerManager.RegisterCountTimer(0, 2, 0, 3, 100, async () => { await Task.CompletedTask; });
 
             Thread.Sleep(500);
 
@@ -41,7 +41,7 @@ namespace PlayHouseTests.Service
             var processor = new Mock<IPlayDispatcher>();
             var timerManager = new TimerManager(processor.Object);
 
-            var timerId = timerManager.RegisterCountTimer(string.Empty, 1, 50, 3, 10, async () => { await Task.CompletedTask; });
+            var timerId = timerManager.RegisterCountTimer(0, 1, 50, 3, 10, async () => { await Task.CompletedTask; });
 
             timerManager.CancelTimer(timerId);
 

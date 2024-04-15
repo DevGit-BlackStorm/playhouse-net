@@ -56,8 +56,6 @@ internal class CreateJoinStageCmd : IBaseStageCmd
 
         response.JoinPayloadId = joinResult.reply.MsgId;
         response.JoinPayload = ByteString.CopyFrom(joinResult.reply.Payload.DataSpan);
-        response.StageIdx = joinResult.stageKey;
-
 
         if (joinResult.errorCode == (ushort)BaseErrorCode.Success)
         {

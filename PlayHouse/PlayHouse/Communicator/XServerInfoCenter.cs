@@ -102,7 +102,7 @@ namespace PlayHouse.Communicator
             return _serverInfoList;
         }
 
-        public XServerInfo FindServerByAccountId(ushort serviceId, string accountId)
+        public XServerInfo FindServerByAccountId(ushort serviceId, long accountId)
         {
             var list = _serverInfoList
                 .Where(info => info.GetState() == ServerState.RUNNING && info.GetServiceId() == serviceId)
@@ -113,7 +113,7 @@ namespace PlayHouse.Communicator
                 throw new CommunicatorException.NotExistServerInfo($"serviceId:{serviceId} , ServerInfo is not exist");
             }
 
-            int index = (int)(accountId.GetHashCode() % list.Count);
+            int index = (int)(accountId % list.Count);
             return list[index];
         }
 

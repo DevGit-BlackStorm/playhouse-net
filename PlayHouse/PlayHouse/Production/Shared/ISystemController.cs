@@ -4,7 +4,7 @@ public delegate Task SystemHandler(IPacket packet,ISystemPanel panel, ISender se
 
 public interface ISystemHandlerRegister
 {
-    void Add(int msgId, SystemHandler handler);
+    void Add(string msgId, SystemHandler handler);
 }
 
 public interface ISystemController

@@ -22,7 +22,7 @@ namespace PlayHouse.Service.Shared
         {
             return _serverInfoCenter.FindRoundRobinServer(serviceId);
         }
-        public IServerInfo GetServerInfoBy(ushort serviceId, string accountId)
+        public IServerInfo GetServerInfoBy(ushort serviceId, long accountId)
         {
             return _serverInfoCenter.FindServerByAccountId(serviceId, accountId);
         }

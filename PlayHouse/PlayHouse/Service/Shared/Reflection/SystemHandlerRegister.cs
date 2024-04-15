@@ -1,20 +1,14 @@
-﻿using PlayHouse.Production.Api;
-using PlayHouse.Production.Shared;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using PlayHouse.Production.Shared;
 
 namespace PlayHouse.Service.Shared.Reflection;
 
 internal class SystemHandlerRegister : ISystemHandlerRegister
 {
 
-    private readonly Dictionary<int, SystemHandler> _handles = new Dictionary<int, SystemHandler>();
-    public Dictionary<int, SystemHandler> Handles => _handles;
+    private readonly Dictionary<string, SystemHandler> _handles = new Dictionary<string, SystemHandler>();
+    public Dictionary<string, SystemHandler> Handles => _handles;
 
-    public void Add(int msgId, SystemHandler handler)
+    public void Add(string msgId, SystemHandler handler)
     {
         if (_handles.ContainsKey(msgId))
         {
@@ -26,7 +20,7 @@ internal class SystemHandlerRegister : ISystemHandlerRegister
         }
     }
 
-    public SystemHandler GetHandler(int msgId)
+    public SystemHandler GetHandler(string msgId)
     {
         if (_handles.TryGetValue(msgId, out var handler))
         {

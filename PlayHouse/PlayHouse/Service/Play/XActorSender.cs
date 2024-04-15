@@ -5,14 +5,14 @@ namespace PlayHouse.Service.Play
 {
     internal class XActorSender : IActorSender
     {
-        private readonly string _accountId;
+        private readonly long _accountId;
         private string _sessionEndpoint;
         private int _sid;
         private string _apiEndpoint;
         private readonly BaseStage _baseStage;
         private readonly IServerInfoCenter _serverInfoCenter;
 
-        public XActorSender(string accountId, string sessionEndpoint, int sid, string apiEndpoint, BaseStage baseStage, IServerInfoCenter serverInfoCenter)
+        public XActorSender(long accountId, string sessionEndpoint, int sid, string apiEndpoint, BaseStage baseStage, IServerInfoCenter serverInfoCenter)
         {
             _accountId = accountId;
             _sessionEndpoint = sessionEndpoint;
@@ -28,7 +28,7 @@ namespace PlayHouse.Service.Play
 
         public int Sid() => _sid;
 
-        public string AccountId() => _accountId;
+        public long AccountId() => _accountId;
 
         public void LeaveStage()
         {

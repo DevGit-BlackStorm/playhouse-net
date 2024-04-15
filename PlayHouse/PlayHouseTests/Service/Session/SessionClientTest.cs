@@ -53,11 +53,11 @@ namespace PlayHouseTests.Service.Session
         [Fact]
         public void PacketOnTheAuthList_ShouldBeDelivered()
         {
-            short messageId = 2;
+            string messageId = "AuthenticateReq";
             _urls.Add($"{_idApi}:{messageId}");
             
             var sessionClient = new SessionActor(_idSession, _sid, _serviceCenter, _session, _clientCommunicator, _urls, _reqCache);
-            var clientPacket = new ClientPacket(new Header(serviceId: _idApi,msgId:messageId), new EmptyPayload());
+            var clientPacket = new ClientPacket(new Header(serviceId: _idApi,msgId: messageId), new EmptyPayload());
             sessionClient.Dispatch(clientPacket);
 
             Mock.Get(_clientCommunicator).Verify(c => c.Send(It.IsAny<string>(),It.IsAny<RoutePacket>()),Times.Once());
@@ -67,8 +67,7 @@ namespace PlayHouseTests.Service.Session
         public async Task ReceiveAuthenticatePacket_SessionClientShouldBeAuthenticated()
         {
             // api 서버로부터 authenticate 패킷을 받을 경우 인증 확인 및 session info 정보 확인
-            //long accountId = 1000L;
-            string accountId = string.Empty;
+            long accountId = 1000L;
 
             var message = new AuthenticateMsg()
             {

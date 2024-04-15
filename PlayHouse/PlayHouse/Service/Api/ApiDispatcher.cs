@@ -75,7 +75,7 @@ internal class ApiDispatcher
         using (routePacket)
         {
 
-            if (routeHeader.AccountId != string.Empty)
+            if (routeHeader.AccountId != 0)
             {
                 var apiActor = (ApiActor?)_cache.Get($"{routeHeader.AccountId}");
                 if (apiActor == null)
@@ -99,7 +99,7 @@ internal class ApiDispatcher
                 var apiSender = new AllApiSender(_serviceId, _clientCommunicator, _requestCache);
                 apiSender.SetCurrentPacketHeader(routeHeader);
 
-                if (routeHeader.IsBase && routeHeader.MsgId == UpdateServerInfoReq.Descriptor.Index)
+                if (routeHeader.IsBase && routeHeader.MsgId == UpdateServerInfoReq.Descriptor.Name)
                 {
 
                     var updateServerInfoReq = UpdateServerInfoReq.Parser.ParseFrom(routePacket.Span);

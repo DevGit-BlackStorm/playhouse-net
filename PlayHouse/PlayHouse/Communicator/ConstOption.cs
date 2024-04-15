@@ -10,8 +10,10 @@
 
         public const int SessionBufferSize = 4 * 1024;
 
-        public const int MaxPacketSize = 65535;
-        public const int HeaderSize = 256;
+        public const int MaxPacketSize = 16777215;
+        //public const int HeaderSize = 256;
         public const int LengthFieldSize = 3;
+        public const int MinClientHeaderSize = 18;
+        public const int MinServerHeaderSize = 20;
     }
 }

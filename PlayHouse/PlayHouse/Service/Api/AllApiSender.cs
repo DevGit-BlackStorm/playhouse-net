@@ -25,12 +25,9 @@ namespace PlayHouse.Service.Api
         public string SessionEndpoint => CurrentHeader?.From ?? "";
         public int Sid => CurrentHeader?.Sid ?? 0;
 
-        public void Authenticate(string accountId)
+        public void Authenticate(long accountId)
         {
-            if(accountId == null || accountId == string.Empty) 
-            {
-                throw new InvalidDataException("accountId is null or empty");
-            }
+            
             var message = new AuthenticateMsg()
             {
                 ServiceId = (int)_serviceId,
@@ -49,7 +46,7 @@ namespace PlayHouse.Service.Api
 
   
 
-        public async Task<JoinStageResult> JoinStage(string playEndpoint, string stageId, IPacket packet)
+        public async Task<JoinStageResult> JoinStage(string playEndpoint, long stageId, IPacket packet)
         {
             var req = new JoinStageReq()
             {
@@ -63,12 +60,12 @@ namespace PlayHouse.Service.Api
 
             JoinStageRes res = JoinStageRes.Parser.ParseFrom(reply.Span);
 
-            return new JoinStageResult(reply.ErrorCode, res.StageIdx, CPacket.Of(res.PayloadId, res.Payload));
+            return new JoinStageResult(reply.ErrorCode,CPacket.Of(res.PayloadId, res.Payload));
         }
 
         public async Task<CreateJoinStageResult> CreateJoinStage(string playEndpoint,
                                                 string stageType,
-                                                string stageId,
+                                                long stageId,
                                                 IPacket createPacket,                
                                                 IPacket joinPacket)
         {
@@ -90,7 +87,6 @@ namespace PlayHouse.Service.Api
             return new CreateJoinStageResult(
                     reply.ErrorCode,
                     res.IsCreated,
-                    res.StageIdx,
                     CPacket.Of(res.CreatePayloadId, res.CreatePayload),
                     CPacket.Of(res.JoinPayloadId, res.JoinPayload)
             );

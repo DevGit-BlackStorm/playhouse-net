@@ -6,7 +6,7 @@ namespace PlayHouse.Production.Shared
     public interface ISystemPanel
     {
         IServerInfo GetServerInfoBy(ushort serviceId);
-        IServerInfo GetServerInfoBy(ushort serviceId,string accountId);
+        IServerInfo GetServerInfoBy(ushort serviceId, long accountId);
         IServerInfo GetServerInfoByEndpoint(string endpoint);
         IList<IServerInfo> GetServers();
         void Pause();
@@ -24,13 +24,13 @@ namespace PlayHouse.Production.Shared
 
         void SendToClient(string sessionEndpoint, int sid, IPacket packet);
         void SendToApi(string apiEndpoint, IPacket packet);
-        void SendToStage(string playEndpoint, string stageId, string accountId, IPacket packet);
+        void SendToStage(string playEndpoint, long stageId, long accountId, IPacket packet);
 
         void RequestToApi(string apiEndpoint, IPacket packet, ReplyCallback replyCallback);
-        void RequestToStage(string playEndpoint, string stageId, string accountId, IPacket packet, ReplyCallback replyCallback);
+        void RequestToStage(string playEndpoint, long stageId, long accountId, IPacket packet, ReplyCallback replyCallback);
         Task<IPacket> RequestToApi(string apiEndpoint, IPacket packet);
-        Task<IPacket> RequestToApi(string apiEndpoint,string accountId, IPacket packet);
-        Task<IPacket> RequestToStage(string playEndpoint, string stageId, string accountId, IPacket packet);
+        Task<IPacket> RequestToApi(string apiEndpoint, long accountId, IPacket packet);
+        Task<IPacket> RequestToStage(string playEndpoint, long stageId, long accountId, IPacket packet);
 
 
         void SendToSystem(string endpoint, IPacket packet);
@@ -42,24 +42,24 @@ namespace PlayHouse.Production.Shared
     public interface IApiCommonSender : ISender
     {
 
-        string AccountId { get; }
-        Task<CreateStageResult> CreateStage(string playEndpoint, string stageType, string stageId, IPacket packet);
+        long AccountId { get; }
+        Task<CreateStageResult> CreateStage(string playEndpoint, string stageType, long stageId, IPacket packet);
 
 
     }
     public interface IApiSender : IApiCommonSender
     {
-        void Authenticate(string accountId);
+        void Authenticate(long accountId);
         string SessionEndpoint { get; }
         int Sid { get; }
 
         Task<JoinStageResult> JoinStage(string playEndpoint,
-                    string stageId,
+                    long stageId,
                     IPacket packet
       );
         Task<CreateJoinStageResult> CreateJoinStage(string playEndpoint,
                             string stageType,
-                            string stageId,
+                            long stageId,
                             IPacket createPacket,
                             IPacket joinPacket
         );
@@ -80,7 +80,7 @@ namespace PlayHouse.Production.Shared
 
     public interface IStageSender : ISender
     {
-        public string StageId { get; }
+        public long StageId { get; }
         public string StageType { get; }
 
         long AddRepeatTimer(TimeSpan initialDelay, TimeSpan period, TimerCallbackTask timerCallback);

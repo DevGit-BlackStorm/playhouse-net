@@ -14,22 +14,22 @@ namespace PlayHouse.Service.Session
             this._clientCommunicator = clientCommunicator;
         }
 
-        public void RelayToStage(string playEndpoint, string stageId, int sid, string accountId, ClientPacket packet)
+        public void RelayToStage(string playEndpoint, long stageId, int sid, long accountId, ClientPacket packet)
         {
             var routePacket = RoutePacket.ApiOf(packet.ToRoutePacket(), false, false);
             routePacket.RouteHeader.StageId = stageId;
             routePacket.RouteHeader.AccountId = accountId;
-            routePacket.RouteHeader.Header.MsgSeq = packet.GetMsgSeq();
+            routePacket.RouteHeader.Header.MsgSeq = packet.MsgSeq;
             routePacket.RouteHeader.Sid = sid;
             routePacket.RouteHeader.IsToClient = false;
             _clientCommunicator.Send(playEndpoint, routePacket);
         }
 
-        public void RelayToApi(string apiEndpoint, int sid, string accountId, ClientPacket packet)
+        public void RelayToApi(string apiEndpoint, int sid, long accountId, ClientPacket packet)
         {
             var routePacket = RoutePacket.ApiOf( packet.ToRoutePacket(), false, false);
             routePacket.RouteHeader.Sid = sid;
-            routePacket.RouteHeader.Header.MsgSeq = packet.GetMsgSeq();
+            routePacket.RouteHeader.Header.MsgSeq = packet.MsgSeq;
             routePacket.RouteHeader.IsToClient = false;
             routePacket.RouteHeader.AccountId = accountId;
 

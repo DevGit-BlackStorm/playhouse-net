@@ -1,13 +1,12 @@
 ﻿using Google.Protobuf;
 using Playhouse.Protocol;
 using PlayHouse.Communicator.Message;
-using PlayHouse.Production;
 
 namespace PlayHouse.Service.Play.Base
 {
     public interface ISessionUpdater
     {
-        public Task<int> UpdateStageInfo(string sessionEndpoint, int sid);
+        public Task UpdateStageInfo(string sessionEndpoint, int sid);
     }
 
     internal class XSessionUpdater : ISessionUpdater
@@ -20,7 +19,7 @@ namespace PlayHouse.Service.Play.Base
             _playEndpoint = playEndpoint;
         }
 
-        public async Task<int> UpdateStageInfo(string sessionEndpoint, int sid)
+        public async Task UpdateStageInfo(string sessionEndpoint, int sid)
         {
             var joinStageInfoUpdateReq = new JoinStageInfoUpdateReq()
             {
@@ -30,7 +29,7 @@ namespace PlayHouse.Service.Play.Base
 
             using var res = await _stageSender.RequestToBaseSession(sessionEndpoint, sid, RoutePacket.Of(joinStageInfoUpdateReq));
             var result = JoinStageInfoUpdateRes.Parser.ParseFrom(res.Span);
-            return result.StageIdx;
+            //return result.StageId;
         }
     }
 }

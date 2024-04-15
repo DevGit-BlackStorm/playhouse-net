@@ -8,14 +8,14 @@ namespace PlayHouse.Service.Play
 {
     internal class XStageSender : XSender, IStageSender
     {
-        private readonly string _stageId;
+        private readonly long _stageId;
         private readonly IPlayDispatcher _dispatcher;
         private readonly HashSet<long> _timerIds = new();
         private string _stateType = "";
 
         public XStageSender(
             ushort serviceId, 
-            string stageId,
+            long stageId,
             IPlayDispatcher dispatcher,
             IClientCommunicator clientCommunicator, 
             RequestCache reqCache) : base(serviceId, clientCommunicator, reqCache)
@@ -24,7 +24,7 @@ namespace PlayHouse.Service.Play
             _dispatcher = dispatcher;
         }
 
-        public string StageId => _stageId;
+        public long StageId => _stageId;
         public string StageType => _stateType;
 
 
@@ -96,7 +96,7 @@ namespace PlayHouse.Service.Play
             }
             _timerIds.Clear();
 
-            var packet2 = RoutePacket.StageOf(_stageId, string.Empty, RoutePacket.Of(DestroyStage.Descriptor.Index,new EmptyPayload()), true, false);
+            var packet2 = RoutePacket.StageOf(_stageId, 0, RoutePacket.Of(DestroyStage.Descriptor.Name,new EmptyPayload()), true, false);
             _dispatcher.OnPost(packet2);
         }
 

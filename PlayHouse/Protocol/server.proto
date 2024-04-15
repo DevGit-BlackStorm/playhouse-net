@@ -6,10 +6,10 @@ import "common.proto";
 
 message HeaderMsg {
   int32 service_id = 1;
-  int32 msg_id = 2;
+  string msg_id = 2;
   int32 msg_seq = 3;
   int32 error_code = 4;
-  int32 stage_index = 5;
+  int64 stageId = 5;
 }
 message RouteHeaderMsg {
   HeaderMsg header_msg = 1;
@@ -18,8 +18,8 @@ message RouteHeaderMsg {
   bool is_reply = 4;
   bool is_base = 5;
   bool is_backend = 6;
-  string stage_id = 7;
-  string account_id = 8;
+  int64 stage_id = 7;
+  int64 account_id = 8;
 //  bool for_client = 9;
 }
 
@@ -40,7 +40,7 @@ message ServerInfoMsg{
 
 message AuthenticateMsg {
   int32 service_id = 1;
-  string account_id = 2;
+  int64 account_id = 2;
 }
 
 //message UpdateSessionInfoMsg {
@@ -60,9 +60,9 @@ message DisconnectNoticeMsg {
 
 message CreateJoinStageReq {
   string stageType = 1;
-  int32 create_payload_id = 2;
+  string create_payload_id = 2;
   bytes create_payload = 3;
-  int32 join_payload_id =4;
+  string join_payload_id =4;
   bytes join_payload = 5;
   string sessionEndpoint = 6;
   int32 sid = 7;
@@ -70,21 +70,21 @@ message CreateJoinStageReq {
 
 message CreateJoinStageRes {
   bool isCreated =1;
-  int32 create_payload_id = 2;
+  string create_payload_id = 2;
   bytes create_payload = 3;
-  int32 join_payload_id =4;
+  string join_payload_id =4;
   bytes join_payload = 5;
-  int32 stage_idx = 6;
+  //int64 stage_id = 6;
 }
 
 message CreateStageReq {
   string stage_type = 1;
-  int32 payload_id = 2;
+  string payload_id = 2;
   bytes payload = 3;
 }
 
 message CreateStageRes {
-  int32 payload_id = 1;
+  string payload_id = 1;
   bytes payload = 2;
 }
 
@@ -93,25 +93,25 @@ message JoinStageReq {
 //  int64 accountId = 2;
   string sessionEndpoint = 1;
   int32 sid = 2;
-  int32 payload_id = 3;
+  string payload_id = 3;
   bytes payload = 4;
 }
 
 message JoinStageRes {
-  int32 payload_id = 1;
+  string payload_id = 1;
   bytes payload = 2;
-  int32 stage_idx = 3;
+  //int64 stage_id = 3;
 }
 
 message JoinStageInfoUpdateReq{
   string playEndpoint = 1;
-  string stage_id = 2;
+  int64 stage_id = 2;
 }
 message JoinStageInfoUpdateRes{
-  int32 stage_idx = 1;
+  //int64 stage_id = 1;
 }
 message LeaveStageMsg {
-  string stage_id = 1;
+  int64 stage_id = 1;
 }
 
 //message LeaveStageRes {

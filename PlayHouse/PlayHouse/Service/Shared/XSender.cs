@@ -126,7 +126,7 @@ internal class XSender : ISender
     {
         return _reqCache.GetSequence();
     }
-    public void SendToApi(string apiEndpoint, string accountId, IPacket packet)
+    public void SendToApi(string apiEndpoint, long accountId, IPacket packet)
     {
         PacketContext.AsyncCore.Add(SendTarget.Api, 0, packet);
 
@@ -152,7 +152,7 @@ internal class XSender : ISender
         _clientCommunicator.Send(apiEndpoint, routePacket);
     }
 
-    public void SendToBaseApi(string apiEndpoint, string accountId, RoutePacket packet)
+    public void SendToBaseApi(string apiEndpoint, long accountId, RoutePacket packet)
     {
         RoutePacket routePacket = RoutePacket.ApiOf(packet, true, true);
         routePacket.RouteHeader.AccountId = accountId;
@@ -160,13 +160,13 @@ internal class XSender : ISender
         _clientCommunicator.Send(apiEndpoint, routePacket);
     }
 
-    public void SendToStage(string playEndpoint, string stageId, string accountId, IPacket packet)
+    public void SendToStage(string playEndpoint, long stageId, long accountId, IPacket packet)
     {
         RoutePacket routePacket = RoutePacket.StageOf(stageId, accountId, RoutePacket.Of(packet), false, true);
         _clientCommunicator.Send(playEndpoint, routePacket);
     }
 
-    public void SendToBaseStage(string playEndpoint, string stageId, string accountId, RoutePacket packet)
+    public void SendToBaseStage(string playEndpoint, long stageId, long accountId, RoutePacket packet)
     {
         RoutePacket routePacket = RoutePacket.StageOf(stageId, accountId, packet, true, true);
         _clientCommunicator.Send(playEndpoint, routePacket);
@@ -203,11 +203,11 @@ internal class XSender : ISender
 
         return CPacket.Of(replyPacket);    
     }
-    public async Task<IPacket> RequestToApi(string apiEndpoint, string accountId, IPacket packet)
+    public async Task<IPacket> RequestToApi(string apiEndpoint, long accountId, IPacket packet)
     {
         return await AsyncToApi(apiEndpoint, accountId, packet);
     }
-    public async Task<IPacket> AsyncToApi(string apiEndpoint, string accountId, IPacket packet)
+    public async Task<IPacket> AsyncToApi(string apiEndpoint, long accountId, IPacket packet)
     {
         PacketContext.AsyncCore.Add(SendTarget.Api, 0, packet);
 
@@ -238,7 +238,7 @@ internal class XSender : ISender
         return deferred;
     }
 
-    public void RequestToStage(string playEndpoint, string stageId, string accountId, IPacket packet, ReplyCallback replyCallback)
+    public void RequestToStage(string playEndpoint, long stageId, long accountId, IPacket packet, ReplyCallback replyCallback)
     {
         PacketContext.AsyncCore.Add(SendTarget.Play, 0, packet);
 
@@ -261,7 +261,7 @@ internal class XSender : ISender
     //    return future.Task.Result;
     //}
 
-    private TaskCompletionSource<RoutePacket> AsyncToStage(string playEndpoint, string stageId, string accountId, IPacket packet)
+    private TaskCompletionSource<RoutePacket> AsyncToStage(string playEndpoint, long stageId, long accountId, IPacket packet)
     {
         PacketContext.AsyncCore.Add(SendTarget.Play, 0, packet);
 
@@ -274,7 +274,7 @@ internal class XSender : ISender
         return deferred;
     }
 
-    public async Task<IPacket> RequestToStage(string playEndpoint, string stageId, string accountId, IPacket packet)
+    public async Task<IPacket> RequestToStage(string playEndpoint, long stageId, long accountId, IPacket packet)
     {
         RoutePacket replyPacket = await AsyncToStage(playEndpoint, stageId, accountId, packet).Task;
         //ServiceAsyncContext.AddReply(replyPacket);
@@ -282,7 +282,7 @@ internal class XSender : ISender
         return CPacket.Of(replyPacket);
     }
 
-    public async Task<RoutePacket> RequestToBaseStage(string playEndpoint, string stageId, string accountId, RoutePacket packet)
+    public async Task<RoutePacket> RequestToBaseStage(string playEndpoint, long stageId, long accountId, RoutePacket packet)
     {
         ushort seq = GetSequence();
         var deferred = new TaskCompletionSource<RoutePacket>();

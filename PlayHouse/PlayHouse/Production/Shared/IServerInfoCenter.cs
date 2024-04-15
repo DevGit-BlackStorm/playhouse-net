@@ -8,7 +8,7 @@ namespace PlayHouse.Production.Shared
         XServerInfo FindServer(string endpoint);
         XServerInfo FindRoundRobinServer(ushort serviceId);
         IList<XServerInfo> GetServerList();
-        XServerInfo FindServerByAccountId(ushort serviceId, string accountId);
+        XServerInfo FindServerByAccountId(ushort serviceId, long accountId);
         ServiceType FindServerType(ushort serviceId);
     }
 }
