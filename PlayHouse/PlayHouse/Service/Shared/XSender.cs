@@ -2,16 +2,14 @@
 using PlayHouse.Communicator;
 using Playhouse.Protocol;
 using PlayHouse.Utils;
-using PlayHouse.Service.Api;
-using System.Threading.Tasks;
 using PlayHouse.Production.Shared;
 
 namespace PlayHouse.Service.Shared;
 internal class XSender : ISender
 {
     private readonly LOG<XSender> _log = new();
-    private readonly ushort _serviceId;
-    private readonly IClientCommunicator _clientCommunicator;
+    protected readonly ushort _serviceId;
+    protected readonly IClientCommunicator _clientCommunicator;
     private readonly RequestCache _reqCache;
 
     protected RouteHeader? CurrentHeader;
@@ -93,7 +91,7 @@ internal class XSender : ISender
         }
     }
 
-    public void SendToClient(string sessionEndpoint, int sid, IPacket packet)
+    virtual public void SendToClient(string sessionEndpoint, int sid, IPacket packet)
     {
         PacketContext.AsyncCore.Add(SendTarget.Client, 0, packet);
 

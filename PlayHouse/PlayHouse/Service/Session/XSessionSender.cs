@@ -7,11 +7,9 @@ namespace PlayHouse.Service.Session
 {
     internal class XSessionSender : XSender, ISessionSender
     {
-        private IClientCommunicator _clientCommunicator;
 
         public XSessionSender(ushort serviceId, IClientCommunicator clientCommunicator, RequestCache reqCache):base(serviceId, clientCommunicator,reqCache)
         {
-            this._clientCommunicator = clientCommunicator;
         }
 
         public void RelayToStage(string playEndpoint, long stageId, int sid, long accountId, ClientPacket packet)

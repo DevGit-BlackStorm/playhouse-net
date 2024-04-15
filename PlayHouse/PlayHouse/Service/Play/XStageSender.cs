@@ -100,6 +100,14 @@ namespace PlayHouse.Service.Play
             _dispatcher.OnPost(packet2);
         }
 
+        override public void SendToClient(string sessionEndpoint, int sid, IPacket packet)
+        {
+            PacketContext.AsyncCore.Add(SendTarget.Client, 0, packet);
+
+            RoutePacket routePacket = RoutePacket.ClientOf(_serviceId, sid, packet,_stageId);
+            _clientCommunicator.Send(sessionEndpoint, routePacket);
+        }
+
         public void AsyncBlock(AsyncPreCallback preCallback, AsyncPostCallback? postCallback = null)
         {
             Task.Run(async () =>

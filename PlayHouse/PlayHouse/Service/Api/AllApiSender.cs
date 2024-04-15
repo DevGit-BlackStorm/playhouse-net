@@ -9,12 +9,10 @@ namespace PlayHouse.Service.Api
 {
     internal class AllApiSender : XApiCommonSender, IApiSender, IApiBackendSender
     {
-        private readonly ushort _serviceId;
 
         public AllApiSender(ushort serviceId, IClientCommunicator clientCommunicator, RequestCache reqCache)
             : base(serviceId, clientCommunicator, reqCache)
         {
-            this._serviceId = serviceId;
         }
 
         public string GetFromEndpoint()

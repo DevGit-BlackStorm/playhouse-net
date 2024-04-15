@@ -335,7 +335,7 @@ namespace PlayHouse.Communicator.Message
             return routePacket;
         }
 
-        public static RoutePacket ClientOf(ushort serviceId, int sid, IPacket packet)
+        public static RoutePacket ClientOf(ushort serviceId, int sid, IPacket packet,long stageId = 0)
         {
             Header header = new(msgId:packet.MsgId)
             {
@@ -345,6 +345,7 @@ namespace PlayHouse.Communicator.Message
             RouteHeader routeHeader = RouteHeader.Of(header);
             routeHeader.Sid = sid;
             routeHeader.IsToClient = true;
+            routeHeader.StageId = stageId;  
 
             return new RoutePacket(routeHeader, packet.Payload);
         }
