@@ -27,7 +27,7 @@
         }
 
         public ushort MsgSeq => Header.MsgSeq;
-        public string MsgId => Header.MsgId;
+        public int MsgId => Header.MsgId;
         public ushort ServiceId => Header.ServiceId;  
 
         internal RoutePacket ToRoutePacket()

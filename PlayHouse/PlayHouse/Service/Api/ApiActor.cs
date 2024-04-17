@@ -45,7 +45,7 @@ namespace PlayHouse.Service.Api
             {
                 if (routeHeader.IsBase)
                 {
-                    if (routeHeader.MsgId == DisconnectNoticeMsg.Descriptor.Name)
+                    if (routeHeader.MsgId == DisconnectNoticeMsg.Descriptor.Index)
                     {
                         try
                         {

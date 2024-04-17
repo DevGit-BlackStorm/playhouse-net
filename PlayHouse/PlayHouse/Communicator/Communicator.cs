@@ -15,7 +15,7 @@ public class CommunicatorOption
     public ushort AddressServerId { get; }
     public List<string> AddressServerEndpoints { get; }
 
-    public Func<string, IPayload, ushort, IPacket>? PacketProducer { get;}
+    public Func<int, IPayload, ushort, IPacket>? PacketProducer { get;}
 
     private CommunicatorOption(
         string bindEndpoint, 
@@ -24,7 +24,7 @@ public class CommunicatorOption
         int nodeId, 
         ushort addressServerId, 
         List<string> addressServerEndpoints,
-        Func<string, IPayload, ushort, IPacket> packetProducer
+        Func<int, IPayload, ushort, IPacket> packetProducer
         )
     {
         BindEndpoint = bindEndpoint;
@@ -45,7 +45,7 @@ public class CommunicatorOption
         private IServiceProvider? _serviceProvider;
         private ushort _addressServerId;
         private List<string> _addressServerEndpoints = new();
-        public Func<string, IPayload, ushort, IPacket>? _packetProducer;
+        public Func<int, IPayload, ushort, IPacket>? _packetProducer;
 
         public Builder SetIp(string ip )
         {
@@ -116,7 +116,7 @@ public class CommunicatorOption
             return this;
         }
 
-        public Builder SetPacketProducer(Func<string, IPayload, ushort, IPacket>? producer)
+        public Builder SetPacketProducer(Func<int, IPayload, ushort, IPacket>? producer)
         {
             _packetProducer = producer;
             return this;

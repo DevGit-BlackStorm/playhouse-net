@@ -96,7 +96,7 @@ namespace PlayHouseTests.Service.Play
         {
             // given
             PacketContext.AsyncCore.Init();
-            PacketProducer.Init((string msgId, IPayload payload, ushort msgSeq) => new TestPacket(msgId, payload, msgSeq));
+            PacketProducer.Init((int msgId, IPayload payload, ushort msgSeq) => new TestPacket(msgId, payload, msgSeq));
 
             List<RoutePacket> result = new List<RoutePacket>();
             _clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
@@ -108,10 +108,10 @@ namespace PlayHouseTests.Service.Play
             // then
             result[0].RouteHeader.Header.ErrorCode.Should().Be((ushort)BaseErrorCode.Success);
 
-            result[0].MsgId.Should().Be(CreateStageRes.Descriptor.Name);
+            result[0].MsgId.Should().Be(CreateStageRes.Descriptor.Index);
             var createStageRes = CreateStageRes.Parser.ParseFrom(result[0].Span);
 
-            createStageRes.PayloadId.Should().Be(TestMsg.Descriptor.Name);
+            createStageRes.PayloadId.Should().Be(TestMsg.Descriptor.Index);
 
             TestMsg.Parser.ParseFrom(createStageRes.Payload).TestMsg_.Should().Be("onCreate");
         }
@@ -137,7 +137,7 @@ namespace PlayHouseTests.Service.Play
         public async Task CreateJoinRoomInCreateState_ShouldBeSuccess()
         {
             PacketContext.AsyncCore.Init();
-            PacketProducer.Init((string msgId, IPayload payload, ushort msgSeq) => new TestPacket(msgId, payload, msgSeq));
+            PacketProducer.Init((int msgId, IPayload payload, ushort msgSeq) => new TestPacket(msgId, payload, msgSeq));
 
             List<RoutePacket> result = new List<RoutePacket>();
             _clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
@@ -147,12 +147,12 @@ namespace PlayHouseTests.Service.Play
             await _stage.Send(createJoinRoom);
 
 
-            result[0].MsgId.Should().Be(CreateJoinStageRes.Descriptor.Name);
+            result[0].MsgId.Should().Be(CreateJoinStageRes.Descriptor.Index);
             var createJoinStageRes = CreateJoinStageRes.Parser.ParseFrom(result[0].Span);
 
             createJoinStageRes.IsCreated.Should().BeTrue();
-            createJoinStageRes.CreatePayloadId.Should().Be(TestMsg.Descriptor.Name);
-            createJoinStageRes.JoinPayloadId.Should().Be(TestMsg.Descriptor.Name);
+            createJoinStageRes.CreatePayloadId.Should().Be(TestMsg.Descriptor.Index);
+            createJoinStageRes.JoinPayloadId.Should().Be(TestMsg.Descriptor.Index);
 
             TestMsg.Parser.ParseFrom(createJoinStageRes.CreatePayload).TestMsg_.Should().Be("onCreate");
             TestMsg.Parser.ParseFrom(createJoinStageRes.JoinPayload).TestMsg_.Should().Be("onJoinStage");
@@ -163,7 +163,7 @@ namespace PlayHouseTests.Service.Play
         {
             // Arrange
             PacketContext.AsyncCore.Init();
-            PacketProducer.Init((string msgId, IPayload payload, ushort msgSeq) => new TestPacket(msgId, payload, msgSeq));
+            PacketProducer.Init((int msgId, IPayload payload, ushort msgSeq) => new TestPacket(msgId, payload, msgSeq));
 
             await CreateRoomWithSuccess();
 
@@ -176,12 +176,12 @@ namespace PlayHouseTests.Service.Play
             await _stage.Send(createJoinRoom);
 
             // Assert
-            CreateJoinStageRes.Descriptor.Name.Should().Be(result[0].MsgId);
+            CreateJoinStageRes.Descriptor.Index.Should().Be(result[0].MsgId);
             var createJoinStageRes = CreateJoinStageRes.Parser.ParseFrom(result[0].Span);
 
             createJoinStageRes.IsCreated.Should().BeFalse();
-            createJoinStageRes.CreatePayloadId.Should().Be(string.Empty);
-            createJoinStageRes.JoinPayloadId.Should().Be(TestMsg.Descriptor.Name);
+            createJoinStageRes.CreatePayloadId.Should().Be(0);
+            createJoinStageRes.JoinPayloadId.Should().Be(TestMsg.Descriptor.Index);
         }
 
         [Fact]
@@ -210,7 +210,7 @@ namespace PlayHouseTests.Service.Play
             {
                 SessionEndpoint = _sessionEndpoint,
                 Sid = 1,
-                PayloadId = "1",
+                PayloadId = 1,
                 Payload = ByteString.Empty
             });
             var result = RoutePacket.StageOf(stageId, accountId, packet, true, true);
@@ -225,9 +225,9 @@ namespace PlayHouseTests.Service.Play
                 StageType = stageType,
                 SessionEndpoint = _sessionEndpoint,
                 Sid = 1,
-                CreatePayloadId = "1",
+                CreatePayloadId = 1,
                 CreatePayload = ByteString.Empty,
-                JoinPayloadId = "2",
+                JoinPayloadId = 2,
                 JoinPayload = ByteString.Empty
             };
             var packet = RoutePacket.Of(req);

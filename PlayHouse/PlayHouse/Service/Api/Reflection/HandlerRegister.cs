@@ -3,10 +3,10 @@
 namespace PlayHouse.Service.Api.Reflection;
 internal class HandlerRegister : IHandlerRegister
 {
-    private readonly Dictionary<string, ApiHandler> _handles = new Dictionary<string, ApiHandler>();
-    public Dictionary<string, ApiHandler> Handles => _handles;
+    private readonly Dictionary<int, ApiHandler> _handles = new ();
+    public Dictionary<int, ApiHandler> Handles => _handles;
 
-    public void Add(string msgId, ApiHandler handler)
+    public void Add(int msgId, ApiHandler handler)
     {
         if (_handles.ContainsKey(msgId))
         {
@@ -18,7 +18,7 @@ internal class HandlerRegister : IHandlerRegister
         }
     }
 
-    public ApiHandler GetHandler(string msgId)
+    public ApiHandler GetHandler(int msgId)
     {
         if (_handles.TryGetValue(msgId, out var handler))
         {
@@ -33,10 +33,10 @@ internal class HandlerRegister : IHandlerRegister
 
 internal class BackendHandlerRegister : IBackendHandlerRegister
 {
-    private readonly Dictionary<string, Delegate> _handles = new Dictionary<string, Delegate>();
-    public Dictionary<string, Delegate> Handles => _handles;
+    private readonly Dictionary<int, Delegate> _handles = new();
+    public Dictionary<int, Delegate> Handles => _handles;
 
-    public void Add(string msgId, ApiBackendHandler handler)
+    public void Add(int msgId, ApiBackendHandler handler)
     {
         if (Handles.ContainsKey(msgId))
         {
@@ -48,7 +48,7 @@ internal class BackendHandlerRegister : IBackendHandlerRegister
         }
     }
 
-    public ApiBackendHandler GetHandler(string msgId)
+    public ApiBackendHandler GetHandler(int msgId)
     {
         if (_handles.TryGetValue(msgId, out var handler))
         {

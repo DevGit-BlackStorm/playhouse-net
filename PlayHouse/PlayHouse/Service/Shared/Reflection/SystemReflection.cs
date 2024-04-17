@@ -16,7 +16,7 @@ namespace PlayHouse.Service.Shared.Reflection
         public async Task CallMethodAsync( IPacket packet,ISystemPanel panenl, ISender sender)
         {
             
-            string msgId = packet.MsgId;                
+            int msgId = packet.MsgId;                
             await _reflectionInvoker.InvokeMethods(msgId, new object[] {packet,panenl,sender });
     }
     }

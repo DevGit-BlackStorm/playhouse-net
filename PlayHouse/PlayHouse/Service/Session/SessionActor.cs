@@ -149,17 +149,17 @@ internal class SessionActor
             _log.Trace(() => $"recvFrom:client - [accountId:{_accountId},packetInfo:{clientPacket.Header}]");
 
             ushort serviceId = clientPacket.ServiceId;
-            string msgId = clientPacket.MsgId;
+            int msgId = clientPacket.MsgId;
 
             UpdateHeartBeatTime();
 
-            if (msgId == "-1") //heartbeat
+            if (msgId == -1) //heartbeat
             {
                 SendHeartBeat(clientPacket);
                 return;
             }
 
-            if(msgId == "-2") //debug mode
+            if(msgId == -2) //debug mode
             {
                 _log.Debug(() => $"session is debug mode - [sid:{_sid}]");
                 _debugMode = true;
@@ -287,24 +287,24 @@ internal class SessionActor
 
     public async Task DispatchAsync(RoutePacket packet)
     {
-        string msgId = packet.MsgId;
+        int msgId = packet.MsgId;
         bool isBase = packet.IsBase();
 
         if (isBase)
         {
-            if(msgId == AuthenticateMsg.Descriptor.Name) 
+            if(msgId == AuthenticateMsg.Descriptor.Index) 
             {
                 AuthenticateMsg authenticateMsg = AuthenticateMsg.Parser.ParseFrom(packet.Span);
                 var apiEndpoint = packet.RouteHeader.From;
                 Authenticate((ushort)authenticateMsg.ServiceId, apiEndpoint, authenticateMsg.AccountId);
                 _log.Debug(()=>$"session authenticated - [accountId:{_accountId}]");
             }
-            else if(msgId == SessionCloseMsg.Descriptor.Name)
+            else if(msgId == SessionCloseMsg.Descriptor.Index)
             {
                 _session.ClientDisconnect();
                 _log.Debug(()=>$"force session close - [accountId:{_accountId}]");
             }
-            else if(msgId == JoinStageInfoUpdateReq.Descriptor.Name)
+            else if(msgId == JoinStageInfoUpdateReq.Descriptor.Index)
             {
                 JoinStageInfoUpdateReq joinStageMsg = JoinStageInfoUpdateReq.Parser.ParseFrom(packet.Span);
                 string playEndpoint = joinStageMsg.PlayEndpoint;
@@ -315,7 +315,7 @@ internal class SessionActor
 
                 _log.Debug(()=>$"stageInfo updated - [accountId:{_accountId},playEndpoint:{playEndpoint},stageId:{stageId}");
             }
-            else if (msgId == LeaveStageMsg.Descriptor.Name)
+            else if (msgId == LeaveStageMsg.Descriptor.Index)
             {
                 long stageId = LeaveStageMsg.Parser.ParseFrom(packet.Span).StageId;
                 ClearRoomInfo(stageId);

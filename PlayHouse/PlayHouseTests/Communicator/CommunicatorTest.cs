@@ -8,6 +8,8 @@ using FluentAssertions;
 using CommonLib;
 using PlayHouse.Production;
 using PlayHouse.Service;
+using Xunit.Sdk;
+using Org.Ulalax.Playhouse.Protocol;
 
 namespace PlayHouseTests.Communicator
 {
@@ -86,7 +88,7 @@ namespace PlayHouseTests.Communicator
             Thread.Sleep(200);
 
             apiListener.Results.Count.Should().Be(1);
-            apiListener.Results[0].MsgId.Should().Be(HeaderMsg.Descriptor.Name);
+            apiListener.Results[0].MsgId.Should().Be(HeaderMsg.Descriptor.Index);
 
             ////////// api to session ///////////////
 
@@ -95,13 +97,14 @@ namespace PlayHouseTests.Communicator
 
             Thread.Sleep(100);
 
-            string messagId = "TestMsgId";
-            apiClient.Send(sessionEndpoint, RoutePacket.ClientOf((ushort)ServiceType.API, 0, new TestPacket(messagId)));
+            //string messageId = "TestMsgId";
+            int messageId = TestMsg.Descriptor.Index;
+            apiClient.Send(sessionEndpoint, RoutePacket.ClientOf((ushort)ServiceType.API, 0, new TestPacket(messageId)));
 
             Thread.Sleep(200);
 
             sessionListener.Results.Count.Should().Be(1);
-            sessionListener.Results[0].MsgId.Should().Be(messagId);
+            sessionListener.Results[0].MsgId.Should().Be(messageId);
 
         }
     }

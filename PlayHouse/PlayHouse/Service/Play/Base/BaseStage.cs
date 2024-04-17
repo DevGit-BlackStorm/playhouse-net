@@ -41,12 +41,12 @@ internal class BaseStage
         _sessionUpdater = sessionUpdater;
 
 
-        _msgHandler.Register(CreateStageReq.Descriptor.Name, new CreateStageCmd(dispatcher));
-        _msgHandler.Register(JoinStageReq.Descriptor.Name, new JoinStageCmd(dispatcher));
-        _msgHandler.Register(CreateJoinStageReq.Descriptor.Name, new CreateJoinStageCmd(dispatcher));
-        _msgHandler.Register(StageTimer.Descriptor.Name, new StageTimerCmd());
-        _msgHandler.Register(DisconnectNoticeMsg.Descriptor.Name, new DisconnectNoticeCmd());
-        _msgHandler.Register(AsyncBlock.Descriptor.Name, new AsyncBlockCmd());
+        _msgHandler.Register(CreateStageReq.Descriptor.Index, new CreateStageCmd(dispatcher));
+        _msgHandler.Register(JoinStageReq.Descriptor.Index, new JoinStageCmd(dispatcher));
+        _msgHandler.Register(CreateJoinStageReq.Descriptor.Index, new CreateJoinStageCmd(dispatcher));
+        _msgHandler.Register(StageTimer.Descriptor.Index, new StageTimerCmd());
+        _msgHandler.Register(DisconnectNoticeMsg.Descriptor.Index, new DisconnectNoticeCmd());
+        _msgHandler.Register(AsyncBlock.Descriptor.Index, new AsyncBlockCmd());
     }
 
     private async Task Dispatch(RoutePacket routePacket)

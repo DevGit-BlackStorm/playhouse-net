@@ -53,7 +53,8 @@ namespace PlayHouseTests.Service.Session
         [Fact]
         public void PacketOnTheAuthList_ShouldBeDelivered()
         {
-            string messageId = "AuthenticateReq";
+            //string messageId = "AuthenticateReq";
+            int messageId = 1;
             _urls.Add($"{_idApi}:{messageId}");
             
             var sessionClient = new SessionActor(_idSession, _sid, _serviceCenter, _session, _clientCommunicator, _urls, _reqCache);

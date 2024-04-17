@@ -75,7 +75,7 @@ namespace PlayHouse.Communicator.Socket.Tests
                 ErrorCode = 10,
                 MsgSeq = 1,
                 ServiceId = (short)ServiceType.SESSION,
-                MsgId = TestMsg.Descriptor.Name
+                MsgId = TestMsg.Descriptor.Index
             };
 
             var routeHeader = RouteHeader.Of(header);

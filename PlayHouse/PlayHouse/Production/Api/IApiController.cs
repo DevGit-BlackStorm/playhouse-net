@@ -9,12 +9,12 @@ public delegate Task ApiBackendHandler(IPacket packet, IApiBackendSender apiSend
 
 public interface IHandlerRegister 
 {
-    void Add(string msgId, ApiHandler handler);
+    void Add(int msgId, ApiHandler handler);
 }
 
 public interface IBackendHandlerRegister 
 {
-    void Add(string msgId, ApiBackendHandler handler);
+    void Add(int msgId, ApiBackendHandler handler);
 }
 
 public interface IApiController

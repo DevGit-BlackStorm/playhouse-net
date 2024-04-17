@@ -38,7 +38,7 @@ namespace PlayHouse.Service.Session.Network
                 NetMQFrame frame = new NetMQFrame(Buffer.Buffer(), Buffer.Count);
                 clientPacket.Payload = new FramePayload(frame);
 
-                
+
 
                 _session!.Send(clientPacket);
             }
@@ -89,19 +89,20 @@ namespace PlayHouse.Service.Session.Network
 
                 var localIp = IpFinder.FindLocalIp();
                 var connector = new Connector();
-                connector.Init(new ConnectorConfig() { RequestTimeoutMs = 0 ,Host = localIp,Port = port, HeartBeatIntervalMs = 0});
-                
+                connector.Init(new ConnectorConfig() { RequestTimeoutMs = 0, Host = localIp, Port = port });
+
 
                 Timer timer = new Timer((task) =>
                 {
-                    connector.MainThreadAction();    
+                    connector.MainThreadAction();
                 }, null, 0, 10);
-                
-                
+
+
                 connector.Connect();
 
                 await Task.Delay(100);
                 serverListener.ResultValue.Should().Be("onConnect");
+
 
 
                 IPacket replyPacket = await connector.AuthenticateAsync(SESSION, new PlayHouseConnector.Packet(new TestMsg { TestMsg_ = "request" }));
@@ -135,5 +136,5 @@ namespace PlayHouse.Service.Session.Network
         }
     }
 
-  
+
 }

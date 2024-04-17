@@ -10,15 +10,15 @@ public delegate void ReplyCallback(ushort errorCode, IPacket reply);
 internal class CPacket
 {
 
-    public static IPacket Of(string msgId, ByteString message)
+    public static IPacket Of(int msgId, ByteString message)
     {
         return PacketProducer.CreatePacket(msgId, new ByteStringPayload(message), 0);
     }
     public static IPacket Of(IMessage message)
     {
-        return PacketProducer.CreatePacket(message.Descriptor.Name, new ProtoPayload(message), 0);
+        return PacketProducer.CreatePacket(message.Descriptor.Index, new ProtoPayload(message), 0);
     }
-    public static IPacket Of(string msgId, IPayload payload)
+    public static IPacket Of(int msgId, IPayload payload)
     {
         return PacketProducer.CreatePacket(msgId, payload, 0);
     }
@@ -37,24 +37,24 @@ internal class CPacket
 
 internal class XPacket : IPacket
 {
-    private string _msgId;
+    private int _msgId;
     private IPayload _payload;
     private int _msgSeq;
 
-    private XPacket(string msgId, IPayload paylaod, int msgSeq)
+    private XPacket(int msgId, IPayload paylaod, int msgSeq)
     {
         _msgId = msgId;
         _payload = paylaod;
         _msgSeq = msgSeq;
     }
-    public string MsgId => _msgId;
+    public int MsgId => _msgId;
 
     public IPayload Payload => _payload;
     public int MsgSeq { get => _msgSeq; set => _msgSeq = value; }
 
     public static XPacket Of(IMessage message)
     {
-        return new XPacket(message.Descriptor.Name, new ProtoPayload(message), 0);
+        return new XPacket(message.Descriptor.Index, new ProtoPayload(message), 0);
     }
 
     public void Dispose()
@@ -76,7 +76,7 @@ internal class XPacket : IPacket
 internal class EmptyPacket : IPacket
 {
     private IPayload _payload = new EmptyPayload();
-    public string MsgId => string.Empty;
+    public int MsgId => 0;
     private int _msgSeq;
     public int MsgSeq { get => 0; set => _msgSeq = value; }
     public IPayload Payload => _payload;

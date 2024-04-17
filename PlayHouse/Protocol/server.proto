@@ -6,7 +6,7 @@ import "common.proto";
 
 message HeaderMsg {
   int32 service_id = 1;
-  string msg_id = 2;
+  int32 msg_id = 2;
   int32 msg_seq = 3;
   int32 error_code = 4;
   int64 stageId = 5;
@@ -60,9 +60,9 @@ message DisconnectNoticeMsg {
 
 message CreateJoinStageReq {
   string stageType = 1;
-  string create_payload_id = 2;
+  int32 create_payload_id = 2;
   bytes create_payload = 3;
-  string join_payload_id =4;
+  int32 join_payload_id =4;
   bytes join_payload = 5;
   string sessionEndpoint = 6;
   int32 sid = 7;
@@ -70,21 +70,21 @@ message CreateJoinStageReq {
 
 message CreateJoinStageRes {
   bool isCreated =1;
-  string create_payload_id = 2;
+  int32 create_payload_id = 2;
   bytes create_payload = 3;
-  string join_payload_id =4;
+  int32 join_payload_id =4;
   bytes join_payload = 5;
   //int64 stage_id = 6;
 }
 
 message CreateStageReq {
   string stage_type = 1;
-  string payload_id = 2;
+  int32 payload_id = 2;
   bytes payload = 3;
 }
 
 message CreateStageRes {
-  string payload_id = 1;
+  int32 payload_id = 1;
   bytes payload = 2;
 }
 
@@ -93,12 +93,12 @@ message JoinStageReq {
 //  int64 accountId = 2;
   string sessionEndpoint = 1;
   int32 sid = 2;
-  string payload_id = 3;
+  int32 payload_id = 3;
   bytes payload = 4;
 }
 
 message JoinStageRes {
-  string payload_id = 1;
+  int32 payload_id = 1;
   bytes payload = 2;
   //int64 stage_id = 3;
 }

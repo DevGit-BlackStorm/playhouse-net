@@ -96,7 +96,7 @@ namespace PlayHouse.Service.Play
             }
             _timerIds.Clear();
 
-            var packet2 = RoutePacket.StageOf(_stageId, 0, RoutePacket.Of(DestroyStage.Descriptor.Name,new EmptyPayload()), true, false);
+            var packet2 = RoutePacket.StageOf(_stageId, 0, RoutePacket.Of(DestroyStage.Descriptor.Index,new EmptyPayload()), true, false);
             _dispatcher.OnPost(packet2);
         }
 

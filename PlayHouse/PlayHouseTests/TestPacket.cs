@@ -6,29 +6,29 @@ namespace PlayHouseTests
 {
     internal class TestPacket : IPacket
     {
-        private string _msgId;
+        private int _msgId;
         private IPayload _payload;
         private ushort _msgSeq;
 
         public TestPacket(IMessage message)
         {
-            _msgId = message.Descriptor.Name;
+            _msgId = message.Descriptor.Index;
             _payload = new ProtoPayload(message);
         }
 
-        public TestPacket(string msgId)
+        public TestPacket(int msgId)
         {
             _msgId = msgId;
             _payload = new EmptyPayload();
         }
 
-        public TestPacket(string msgId, IPayload payload, ushort msgSeq) : this(msgId)
+        public TestPacket(int msgId, IPayload payload, ushort msgSeq) : this(msgId)
         {
             _payload = payload;
             _msgSeq = msgSeq;
         }
 
-        public string MsgId => _msgId;
+        public int MsgId => _msgId;
 
         public IPayload Payload => _payload;
         public bool IsRequest => _msgSeq > 0;
