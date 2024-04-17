@@ -368,7 +368,7 @@ namespace PlayHouse.Communicator.Message
                 throw new Exception($"body size is over : {bodySize}");
             }
 
-            buffer.WriteInt16(XBitConverter.ToNetworkOrder((ushort)bodySize));
+            buffer.WriteInt32(XBitConverter.ToNetworkOrder(bodySize));
             buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.ServiceId));
             buffer.WriteInt32(XBitConverter.ToNetworkOrder(clientPacket.MsgId));
             buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.MsgSeq));

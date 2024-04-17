@@ -10,7 +10,7 @@ internal sealed class PacketParser
 {
 
     private readonly LOG<PacketParser> _log = new();
-    private const int HeaderSize = 11;
+    private const int HeaderSize = 12;
 
     public PacketParser() { }
 
@@ -24,7 +24,7 @@ internal sealed class PacketParser
         {
             try
             {
-                int bodySize = XBitConverter.ToHostOrder(buffer.PeekInt16(buffer.ReaderIndex));
+                int bodySize = XBitConverter.ToHostOrder(buffer.PeekInt32(buffer.ReaderIndex));
 
                 // If the remaining buffer is smaller than the expected packet size, wait for more data
                 if (buffer.Count < bodySize + HeaderSize)
@@ -32,7 +32,7 @@ internal sealed class PacketParser
                     return packets;
                 }
 
-                buffer.Clear(2);
+                buffer.Clear(4);
 
                 ushort serviceId = XBitConverter.ToHostOrder(buffer.ReadInt16());
                 int msgId = XBitConverter.ToHostOrder(buffer.ReadInt32());
