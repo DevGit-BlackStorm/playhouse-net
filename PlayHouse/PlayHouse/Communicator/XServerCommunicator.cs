@@ -1,4 +1,6 @@
-﻿using PlayHouse.Communicator.PlaySocket;
+﻿using PlayHouse.Communicator.Message;
+using Playhouse.Protocol;
+using PlayHouse.Communicator.PlaySocket;
 using PlayHouse.Utils;
 
 namespace PlayHouse.Communicator
@@ -32,7 +34,11 @@ namespace PlayHouse.Communicator
                 {
                     try
                     {
-                        _log.Trace(() => $"recvFrom:{packet.RouteHeader.From} - [packetInfo:${packet.RouteHeader}]");
+                        if (packet.MsgId != UpdateServerInfoReq.Descriptor.Index && packet.MsgId != UpdateServerInfoRes.Descriptor.Index)
+                        {
+                            _log.Trace(() => $"recvFrom:{packet.RouteHeader.From} - [packetInfo:${packet.RouteHeader}]");
+                        }
+                         
                         _listener!.OnReceive(packet);
                     }
                     catch (Exception e)

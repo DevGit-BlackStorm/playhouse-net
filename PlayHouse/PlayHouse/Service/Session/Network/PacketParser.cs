@@ -6,11 +6,21 @@ using PlayHouse.Utils;
 namespace PlayHouse.Service.Session.Network;
 
 
+/*
+ * 4byte - bodysize
+ * 2byte - serviceId
+ * 4byte - msgId
+ * 2byte - msgSeq
+ * 8byte - stageId
+ * 
+ * 20byte
+ * */
+
 internal sealed class PacketParser
 {
 
     private readonly LOG<PacketParser> _log = new();
-    private const int HeaderSize = 12;
+    private const int HeaderSize = 20;
 
     public PacketParser() { }
 

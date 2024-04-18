@@ -1,4 +1,5 @@
-﻿using PlayHouse.Communicator.Message;
+﻿using Playhouse.Protocol;
+using PlayHouse.Communicator.Message;
 using PlayHouse.Communicator.PlaySocket;
 using PlayHouse.Production;
 using PlayHouse.Utils;
@@ -82,7 +83,11 @@ internal class XClientCommunicator : IClientCommunicator
             {
                 using (routePacket)
                 {
-                    _log.Trace(() => $"sendTo:{endpoint} - [packetInfo:{routePacket.RouteHeader}]");
+                    if( routePacket.MsgId != UpdateServerInfoReq.Descriptor.Index && routePacket.MsgId != UpdateServerInfoRes.Descriptor.Index)
+                    {
+                        _log.Trace(() => $"sendTo:{endpoint} - [packetInfo:{routePacket.RouteHeader}]");
+                    }
+                    
                     _playSocket.Send(endpoint, routePacket);
                 }
             }

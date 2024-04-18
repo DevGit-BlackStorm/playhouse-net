@@ -23,7 +23,9 @@ namespace PlayHouse.Production.Shared
         void Reply(IPacket reply);
 
         void SendToClient(string sessionEndpoint, int sid, IPacket packet);
+
         void SendToApi(string apiEndpoint, IPacket packet);
+        void SendToApi(string apiEndpoint, long accountId,IPacket packet);
         void SendToStage(string playEndpoint, long stageId, long accountId, IPacket packet);
 
         void RequestToApi(string apiEndpoint, IPacket packet, ReplyCallback replyCallback);
