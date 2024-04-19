@@ -13,7 +13,7 @@ namespace PlayHouse.Communicator
         private long _lastUpdate;
         private int _actorCount;
 
-        public string GetBindEndpoint() => _bindEndpoint;
+        public string GetBindEndpoint() =>  _bindEndpoint;
         public ServiceType GetServiceType() => _serviceType;
         public ushort GetServiceId() => _serviceId;
         public ServerState GetState() => _serverState;

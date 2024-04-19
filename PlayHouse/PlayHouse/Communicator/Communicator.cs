@@ -184,7 +184,7 @@ internal class Communicator : ICommunicateListener
         _performanceTester = new PerformanceTester(_option.ShowQps);
         _messageLoop = new MessageLoop(_serverCommunicator, _clientCommunicator);
         _sender = new XSender(_serviceId, _clientCommunicator, _requestCache);
-        _systemPanel = new XSystemPanel(_serverInfoCenter, _clientCommunicator, _option.NodeId);
+        _systemPanel = new XSystemPanel(_serverInfoCenter, _clientCommunicator, _option.NodeId, _option.BindEndpoint);
         _serverRetriever = new ServerInfoRetriever(option.AddressServerId, option.AddressServerEndpoints, _sender);
         _addressResolver = new ServerAddressResolver(
                                 _option.BindEndpoint,

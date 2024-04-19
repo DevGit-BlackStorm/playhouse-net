@@ -1,5 +1,6 @@
 ﻿using PlayHouse.Communicator;
 using PlayHouse.Production.Shared;
+using System.Net;
 
 namespace PlayHouse.Service.Shared
 {
@@ -8,14 +9,20 @@ namespace PlayHouse.Service.Shared
         private readonly IServerInfoCenter _serverInfoCenter;
         private readonly IClientCommunicator _clientCommunicator;
         private readonly UniqueIdGenerator _uniqueIdGenerator;
+        private readonly string _bindEndpoint;
 
         public Communicator.Communicator? Communicator { get; set; }
 
-        public XSystemPanel(IServerInfoCenter serverInfoCenter, IClientCommunicator clientCommunicator, int NodeId)
+        public XSystemPanel(
+            IServerInfoCenter serverInfoCenter, 
+            IClientCommunicator clientCommunicator, 
+            int NodeId, 
+            string bindEndpoint)
         {
             _serverInfoCenter = serverInfoCenter;
             _clientCommunicator = clientCommunicator;
             _uniqueIdGenerator = new UniqueIdGenerator(NodeId);
+            _bindEndpoint = bindEndpoint;
         }
 
         public IServerInfo GetServerInfoBy(ushort serviceId)
@@ -62,6 +69,9 @@ namespace PlayHouse.Service.Shared
             return _uniqueIdGenerator.NextId();
         }
 
-        
+        public IServerInfo GetServerInfo()
+        {
+            return _serverInfoCenter.FindServer(_bindEndpoint);
+        }
     }
 }

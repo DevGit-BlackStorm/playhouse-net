@@ -1,6 +1,7 @@
 ﻿using PlayHouse.Production.Shared;
 using PlayHouse.Service.Shared;
 using PlayHouse.Utils;
+using System.Security.Cryptography.Xml;
 
 namespace PlayHouse.Communicator;
 class ServerAddressResolver
@@ -30,20 +31,23 @@ class ServerAddressResolver
 
         _timer = new Timer( async _ =>
         {
+            
+
             try
             {
-                
-                //ServiceAsyncContext.Init();
+                XServerInfo myServerInfo = new XServerInfo(
+                                    _bindEndpoint,
+                                    _service.GetServiceType(),
+                                    _service.ServiceId,
+                                    _service.GetServerState(),
+                                    _service.GetActorCount(),
+                                    DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                                );
 
-                
-                IList<XServerInfo> serverInfoList = await _serverRetriever.UpdateServerListAsync(new XServerInfo(
-                    _bindEndpoint,
-                    _service.GetServiceType(),
-                    _service.ServiceId,
-                    _service.GetServerState(),
-                    _service.GetActorCount(),
-                    DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-                ));
+                //자신의 정보먼저  update
+                _serverInfoCenter.Update(new List<XServerInfo>() { myServerInfo });
+
+                IList<XServerInfo> serverInfoList = await _serverRetriever.UpdateServerListAsync(myServerInfo);
 
                 IList<XServerInfo> updateList = _serverInfoCenter.Update(serverInfoList);
 
@@ -62,7 +66,7 @@ class ServerAddressResolver
             }
             catch (Exception e)
             {
-                _log.Error(()=>e.Message);
+                _log.Error(()=> e.Message);
             }finally
             {
                 ///ServiceAsyncContext.Clear();
