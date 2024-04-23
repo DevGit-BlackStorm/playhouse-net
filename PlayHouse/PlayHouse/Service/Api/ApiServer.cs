@@ -17,13 +17,9 @@ public class ApiServer : IServer
     {
         _commonOption = commonOption;
         _apiOption = apiOption;
-    }
-
-    public void Start()
-    {
 
         var communicatorOption = new CommunicatorOption.Builder()
-                .SetIp( _commonOption.Ip )
+                .SetIp(_commonOption.Ip)
                 .SetPort(_commonOption.Port)
                 .SetServiceProvider(_commonOption.ServiceProvider)
                 .SetShowQps(_commonOption.ShowQps)
@@ -36,15 +32,15 @@ public class ApiServer : IServer
         var bindEndpoint = communicatorOption.BindEndpoint;
         var serviceId = _commonOption.ServiceId;
 
-        
+
         PooledBuffer.Init(_commonOption.MaxBufferPoolSize);
 
         var requestCache = new RequestCache(_commonOption.RequestTimeoutSec);
         var serverInfoCenter = new XServerInfoCenter();
-        
+
         var communicateClient = new XClientCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(), bindEndpoint));
 
-        var service = new ApiService(serviceId, _apiOption,  requestCache, communicateClient,  communicatorOption.ServiceProvider);
+        var service = new ApiService(serviceId, _apiOption, requestCache, communicateClient, communicatorOption.ServiceProvider);
 
         _communicator = new Communicator.Communicator(
             communicatorOption,
@@ -53,6 +49,10 @@ public class ApiServer : IServer
             service,
             communicateClient
         );
+    }
+
+    public void Start()
+    {
 
         _communicator!.Start();
     }

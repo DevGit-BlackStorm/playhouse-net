@@ -9,7 +9,7 @@ namespace PlayHouse.Service.Session;
 
 public class SessionServer : IServer
 {
-    private Communicator.Communicator? _communicator;
+    private Communicator.Communicator _communicator;
     private readonly PlayhouseOption _commonOption;
     private readonly SessionOption _sessionOption;
 
@@ -21,11 +21,8 @@ public class SessionServer : IServer
         }
         _commonOption = commonOption;
         _sessionOption = sessionOption;
-    }
 
-    public void Start()
-    {
-        var communicatorOption = new CommunicatorOption.Builder()
+         var communicatorOption = new CommunicatorOption.Builder()
                   .SetIp(_commonOption.Ip)
                   .SetPort(_commonOption.Port)
                   .SetServiceProvider(_commonOption.ServiceProvider)
@@ -63,6 +60,10 @@ public class SessionServer : IServer
             sessionService,
             communicateClient
         );
+    }
+
+    public void Start()
+    {
         _communicator.Start();
     }
 

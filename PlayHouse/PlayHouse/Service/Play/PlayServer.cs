@@ -2,7 +2,6 @@
 using PlayHouse.Communicator;
 using PlayHouse.Production.Play;
 using CommonLib;
-using PlayHouse.Service.Shared;
 using PlayHouse.Production.Shared;
 
 namespace PlayHouse.Service.Play
@@ -11,26 +10,23 @@ namespace PlayHouse.Service.Play
     {
         private readonly PlayhouseOption _commonOption;
         private readonly PlayOption _playOption;
-        private Communicator.Communicator? _communicator;
+        private Communicator.Communicator _communicator;
 
         public PlayServer(PlayhouseOption commonOption, PlayOption playOption)
         {
             _commonOption = commonOption;
             _playOption = playOption;
-        }
 
-        public void Start()
-        {
             var communicatorOption = new CommunicatorOption.Builder()
-                .SetIp(_commonOption.Ip)
-                .SetPort(_commonOption.Port)
-                .SetServiceProvider(_commonOption.ServiceProvider)
-                .SetShowQps(_commonOption.ShowQps)
-                .SetNodeId(_commonOption.NodeId)
-                .SetPacketProducer(_commonOption.PacketProducer)
-                .SetAddressServerEndpoints(_commonOption.AddressServerEndpoints)
-                .SetAddressServerServiceId(_commonOption.AddressServerServiceId)
-                .Build();
+              .SetIp(_commonOption.Ip)
+              .SetPort(_commonOption.Port)
+              .SetServiceProvider(_commonOption.ServiceProvider)
+              .SetShowQps(_commonOption.ShowQps)
+              .SetNodeId(_commonOption.NodeId)
+              .SetPacketProducer(_commonOption.PacketProducer)
+              .SetAddressServerEndpoints(_commonOption.AddressServerEndpoints)
+              .SetAddressServerServiceId(_commonOption.AddressServerServiceId)
+              .Build();
 
             var bindEndpoint = communicatorOption.BindEndpoint;
             var serviceId = _commonOption.ServiceId;
@@ -50,6 +46,11 @@ namespace PlayHouse.Service.Play
                 playService,
                 communicateClient
             );
+        }
+
+        public void Start()
+        {
+          
 
             _communicator.Start();
         }
