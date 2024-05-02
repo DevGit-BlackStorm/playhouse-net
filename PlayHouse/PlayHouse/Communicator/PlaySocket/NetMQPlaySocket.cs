@@ -36,11 +36,13 @@ internal class NetMQPlaySocket : IPlaySocket
 
     public void Bind()
     {
-        if(_bindEndpoint.ToLower().Contains("test") == false)
+        if (TestOption.IsUnitTest)
         {
-            _socket.Bind(_bindEndpoint);
-            _log.Info(() => $"socket bind {_bindEndpoint}");
+            return;
         }
+
+        _socket.Bind(_bindEndpoint);
+        _log.Info(() => $"socket bind {_bindEndpoint}");
     }
 
     public void Close()
@@ -50,7 +52,7 @@ internal class NetMQPlaySocket : IPlaySocket
 
     public void Connect(string endpoint)
     {
-        if (endpoint.Contains("test"))
+        if (TestOption.IsUnitTest)
         {
             return;
         }
@@ -60,7 +62,7 @@ internal class NetMQPlaySocket : IPlaySocket
 
     public void Disconnect(string endpoint)
     {
-        if (endpoint.Contains("test"))
+        if (TestOption.IsUnitTest)
         {
             return;
         }
@@ -102,7 +104,7 @@ internal class NetMQPlaySocket : IPlaySocket
 
     public void Send(string endpoint, RoutePacket routePacket)
     {
-        if (endpoint.Contains("test"))
+        if (TestOption.IsUnitTest)
         {
             return;
         }
