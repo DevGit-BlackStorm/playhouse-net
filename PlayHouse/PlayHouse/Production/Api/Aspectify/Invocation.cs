@@ -9,20 +9,26 @@ public class Invocation
     private readonly object[] _arguments;
     private readonly List<AspectifyAttribute> _interceptors;
     private int _currentInterceptorIndex = -1;
-
+    private IServiceProvider _serviceProvider;
     public dynamic? ReturnValue { get; private set; }
 
-    public Invocation(object target, MethodInfo method, object[] arguments, List<AspectifyAttribute> interceptors)
+    public Invocation(
+        object target, 
+        MethodInfo method, 
+        object[] arguments, 
+        List<AspectifyAttribute> interceptors, 
+        IServiceProvider serviceProvider)
     {
         _target = target;
         _method = method;
         _arguments = arguments;
         _interceptors = interceptors;
+        _serviceProvider = serviceProvider;
     }
 
     public MethodInfo Method => _method;
     public object[] Arguments => _arguments;
-
+    public IServiceProvider ServiceProvider => _serviceProvider;
     public async Task Proceed()
     {
         _currentInterceptorIndex++;

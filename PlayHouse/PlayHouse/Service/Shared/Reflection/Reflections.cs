@@ -57,7 +57,7 @@ public class ReflectionInstance
         using (var scope = ServiceProvider.CreateAsyncScope())
         {
             var targetInstance = scope.ServiceProvider.GetRequiredService(Type);
-            Invocation invocation = new Invocation(targetInstance, targetMethod.Method, arguements, targetMethod.Filters);
+            Invocation invocation = new Invocation(targetInstance, targetMethod.Method, arguements, targetMethod.Filters, ServiceProvider);
             await invocation.Proceed();
         }
     }
@@ -67,7 +67,7 @@ public class ReflectionInstance
         using (var scope = ServiceProvider.CreateAsyncScope())
         {
             var targetInstance = scope.ServiceProvider.GetRequiredService(Type);
-            Invocation invocation = new Invocation(targetInstance, targetMethod.Method, arguements, targetMethod.Filters);
+            Invocation invocation = new Invocation(targetInstance, targetMethod.Method, arguements, targetMethod.Filters, ServiceProvider);
             await invocation.Proceed();
             return invocation.ReturnValue!;
         }
