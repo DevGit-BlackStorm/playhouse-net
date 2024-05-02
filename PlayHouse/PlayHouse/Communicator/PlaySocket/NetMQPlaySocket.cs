@@ -50,11 +50,20 @@ internal class NetMQPlaySocket : IPlaySocket
 
     public void Connect(string endpoint)
     {
+        if (endpoint.Contains("test"))
+        {
+            return;
+        }
+
         _socket.Connect(endpoint);
     }
 
     public void Disconnect(string endpoint)
     {
+        if (endpoint.Contains("test"))
+        {
+            return;
+        }
         _socket.Disconnect(endpoint);
     }
 
@@ -93,7 +102,11 @@ internal class NetMQPlaySocket : IPlaySocket
 
     public void Send(string endpoint, RoutePacket routePacket)
     {
-        
+        if (endpoint.Contains("test"))
+        {
+            return;
+        }
+
         using (routePacket)
         {
             NetMQMessage message = new NetMQMessage();
