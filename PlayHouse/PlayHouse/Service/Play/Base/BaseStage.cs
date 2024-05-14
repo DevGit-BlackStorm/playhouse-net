@@ -80,12 +80,13 @@ internal class BaseStage
 
     }
 
-    public async Task Send(RoutePacket routePacket)
+    public void Post(RoutePacket routePacket)
     {
         _msgQueue.Enqueue(routePacket);
         if (_isUsing.CompareAndSet(false, true))
         {
-         
+            Task.Run(async () =>
+            {
                 while (_msgQueue.TryDequeue(out var item))
                 {
                     try
@@ -98,11 +99,12 @@ internal class BaseStage
                     catch (Exception e)
                     {
                         _stageSender.Reply((ushort)BaseErrorCode.UncheckedContentsError);
-                        _log.Error(()=>e.ToString());
+                        _log.Error(() => e.ToString());
                     }
                 }
-         
+
                 _isUsing.Set(false);
+            });
          
         }
     }

@@ -6,7 +6,7 @@
         public int SessionPort { get; set; }
         public bool UseWebSocket { get; set; }
 
-        public int ClientIdleTimeoutMSec = 0; //  0인경우 idle확인 안함
+        public int ClientIdleTimeoutMSec = 0; //5000  0인경우 idle확인 안함
 
         public SessionOption()
         {

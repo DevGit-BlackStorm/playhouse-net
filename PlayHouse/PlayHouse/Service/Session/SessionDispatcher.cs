@@ -20,7 +20,7 @@ internal class SessionDispatcher : ISessionListener
     private readonly SessionNetwork _sessionNetwork;
     private readonly ConcurrentDictionary<int, SessionActor> _sessionActors = new();
     private readonly Timer _timer;
-    private readonly PacketWorkerQueue _packetWorkerQueue;
+    //private readonly PacketWorkerQueue _packetWorkerQueue;
 
     public SessionDispatcher(
         ushort serviceId, 
@@ -38,19 +38,19 @@ internal class SessionDispatcher : ISessionListener
         _sessionNetwork = new SessionNetwork(sessionOption, this);
 
         _timer = new Timer(TimerCallback, this, 1000, 1000);
-        _packetWorkerQueue = new PacketWorkerQueue(DispatchAsync);
+      //  _packetWorkerQueue = new PacketWorkerQueue(DispatchAsync);
     }
 
     public void Start()  
     {
-        _packetWorkerQueue.Start();
+        //_packetWorkerQueue.Start();
         _sessionNetwork.Start();
     }
 
     public void Stop()
     {
         _sessionNetwork.Stop();
-        _packetWorkerQueue.Stop();
+        //_packetWorkerQueue.Stop();
         _timer.Dispose();
     }
 
@@ -75,25 +75,6 @@ internal class SessionDispatcher : ISessionListener
         }
     }
 
-
-    public async Task DispatchAsync(RoutePacket routePacket)
-    {
-        using(routePacket)
-        {
-            var sessionId = routePacket.RouteHeader.Sid;
-            if (!_sessionActors.TryGetValue(sessionId, out var sessionClient))
-            {
-                var result = routePacket;
-                _log.Error(() => $"sessionId is already disconnected - [sessionId:{sessionId},packetInfo:{result.RouteHeader}]");
-            }
-            else
-            {
-                await sessionClient.PostAsync(RoutePacket.MoveOf(routePacket));
-            }
-
-            await Task.CompletedTask;
-        }
-    }
 
     private void Dispatch(int sessionId, ClientPacket clientPacket) 
     {
@@ -155,6 +136,22 @@ internal class SessionDispatcher : ISessionListener
 
     internal void OnPost(RoutePacket routePacket)
     {
-        _packetWorkerQueue.Post(routePacket);   
+
+        using (routePacket)
+        {
+            var sessionId = routePacket.RouteHeader.Sid;
+            if (!_sessionActors.TryGetValue(sessionId, out var sessionClient))
+            {
+                var result = routePacket;
+                _log.Error(() => $"sessionId is already disconnected - [sessionId:{sessionId},packetInfo:{result.RouteHeader}]");
+            }
+            else
+            {
+                sessionClient.Post(RoutePacket.MoveOf(routePacket));
+            }
+        }
+        //_packetWorkerQueue.Post(routePacket);   
+
+
     }
 }

@@ -258,12 +258,13 @@ internal class SessionActor
         }
     }
 
-    public async Task PostAsync(RoutePacket routePacket)
+    public void  Post(RoutePacket routePacket)
     {
         _msgQueue.Enqueue(routePacket);
         if (_isUsing.CompareAndSet(false, true))
         {
-            
+            Task.Run(async () =>
+            {
                 while (_msgQueue.TryDequeue(out var item))
                 {
                     try
@@ -277,10 +278,11 @@ internal class SessionActor
                     catch (Exception e)
                     {
                         _sessionSender.Reply((ushort)BaseErrorCode.SystemError);
-                        _log.Error(()=>e.ToString());
+                        _log.Error(() => e.ToString());
                     }
                 }
                 _isUsing.Set(false);
+            });
         }
     }
 

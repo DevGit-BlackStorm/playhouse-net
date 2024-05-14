@@ -22,7 +22,7 @@ internal class ApiDispatcher
     private readonly ApiReflectionCallback _apiReflectionCallback;
     private readonly CacheItemPolicy _policy;
     private readonly MemoryCache _cache;
-    private readonly PacketWorkerQueue _workerQueue;
+    //private readonly PacketWorkerQueue _workerQueue;
 
     public ApiDispatcher(
         ushort serviceId,
@@ -56,24 +56,88 @@ internal class ApiDispatcher
                 { "PhysicalMemoryLimitPercentage", "1" }
             };
         _cache = new MemoryCache("ApiService", cacheSettings);
-        _workerQueue = new PacketWorkerQueue(DispatchAsync);
+        //_workerQueue = new PacketWorkerQueue(DispatchAsync);
     }
 
     public void Start()
     {
-        _workerQueue.Start();
+        //_workerQueue.Start();
     }
     public void Stop() 
     { 
-        _workerQueue.Stop();
+        //_workerQueue.Stop();
     }
 
-    public async Task DispatchAsync(RoutePacket routePacket)
+    //public async Task DispatchAsync(RoutePacket routePacket)
+    //{
+    //    var routeHeader = routePacket.RouteHeader;
+
+    //    using (routePacket)
+    //    {
+
+    //        if (routeHeader.AccountId != 0)
+    //        {
+    //            var apiActor = (ApiActor?)_cache.Get($"{routeHeader.AccountId}");
+    //            if (apiActor == null)
+    //            {
+    //                apiActor = new ApiActor
+    //                (
+    //                    _serviceId,
+    //                    _requestCache,
+    //                    _clientCommunicator,
+    //                    _apiReflection,
+    //                    _apiReflectionCallback
+    //                );
+
+    //                _cache.Add(new CacheItem(routeHeader.AccountId.ToString(), apiActor), _policy);
+    //            }
+
+    //            await apiActor.Post(RoutePacket.MoveOf(routePacket));
+    //        }
+    //        else
+    //        {
+    //            var apiSender = new AllApiSender(_serviceId, _clientCommunicator, _requestCache);
+    //            apiSender.SetCurrentPacketHeader(routeHeader);
+
+    //            if (routeHeader.IsBase && routeHeader.MsgId == UpdateServerInfoReq.Descriptor.Index)
+    //            {
+
+    //                var updateServerInfoReq = UpdateServerInfoReq.Parser.ParseFrom(routePacket.Span);
+
+    //                _clientCommunicator.Connect(updateServerInfoReq.ServerInfo.Endpoint);
+    //                List<IServerInfo> serverInfoList = await _apiReflectionCallback.UpdateServerInfoAsync(XServerInfo.Of(updateServerInfoReq.ServerInfo));
+    //                UpdateServerInfoRes updateServerInfoRes = new();
+    //                updateServerInfoRes.ServerInfos.AddRange(serverInfoList.Select(e=>XServerInfo.Of(e).ToMsg()));
+    //                apiSender.Reply(XPacket.Of(updateServerInfoRes));
+
+    //                return;
+    //            }
+
+    //            if (routePacket.IsBackend())
+    //            {
+    //                await _apiReflection.CallBackendMethodAsync(routePacket.ToContentsPacket(), apiSender);
+    //            }
+    //            else
+    //            {
+    //                await _apiReflection.CallMethodAsync(routePacket.ToContentsPacket(), apiSender);
+    //            }
+    //        }
+    //    }
+    //}
+
+
+    internal int GetAccountCount()
     {
-        var routeHeader = routePacket.RouteHeader;
+        return _cache.Count();
+    }
+
+    internal void OnPost(RoutePacket routePacket)
+    {
+        //_workerQueue.Post(routePacket);
 
         using (routePacket)
         {
+            var routeHeader = routePacket.RouteHeader;
 
             if (routeHeader.AccountId != 0)
             {
@@ -92,47 +156,42 @@ internal class ApiDispatcher
                     _cache.Add(new CacheItem(routeHeader.AccountId.ToString(), apiActor), _policy);
                 }
 
-                await apiActor.PostAsync(RoutePacket.MoveOf(routePacket));
+                apiActor.Post(RoutePacket.MoveOf(routePacket));
             }
             else
             {
-                var apiSender = new AllApiSender(_serviceId, _clientCommunicator, _requestCache);
-                apiSender.SetCurrentPacketHeader(routeHeader);
-
-                if (routeHeader.IsBase && routeHeader.MsgId == UpdateServerInfoReq.Descriptor.Index)
-                {
-
-                    var updateServerInfoReq = UpdateServerInfoReq.Parser.ParseFrom(routePacket.Span);
-
-                    _clientCommunicator.Connect(updateServerInfoReq.ServerInfo.Endpoint);
-                    List<IServerInfo> serverInfoList = await _apiReflectionCallback.UpdateServerInfoAsync(XServerInfo.Of(updateServerInfoReq.ServerInfo));
-                    UpdateServerInfoRes updateServerInfoRes = new();
-                    updateServerInfoRes.ServerInfos.AddRange(serverInfoList.Select(e=>XServerInfo.Of(e).ToMsg()));
-                    apiSender.Reply(XPacket.Of(updateServerInfoRes));
-
-                    return;
-                }
-
-                if (routePacket.IsBackend())
-                {
-                    await _apiReflection.CallBackendMethodAsync(routePacket.ToContentsPacket(), apiSender);
-                }
-                else
-                {
-                    await _apiReflection.CallMethodAsync(routePacket.ToContentsPacket(), apiSender);
-                }
+                Task.Run(async () => { await DispatchAsync(RoutePacket.MoveOf(routePacket)); });
             }
         }
     }
 
-
-    internal int GetAccountCount()
+    private async Task DispatchAsync(RoutePacket routePacket)
     {
-        return _cache.Count();
-    }
+        var routeHeader = routePacket.RouteHeader;
+        var apiSender = new AllApiSender(_serviceId, _clientCommunicator, _requestCache);
+        apiSender.SetCurrentPacketHeader(routeHeader);
 
-    internal void OnPost(RoutePacket routePacket)
-    {
-        _workerQueue.Post(routePacket);
+        if (routeHeader.IsBase && routeHeader.MsgId == UpdateServerInfoReq.Descriptor.Index)
+        {
+
+            var updateServerInfoReq = UpdateServerInfoReq.Parser.ParseFrom(routePacket.Span);
+
+            _clientCommunicator.Connect(updateServerInfoReq.ServerInfo.Endpoint);
+            List<IServerInfo> serverInfoList = await _apiReflectionCallback.UpdateServerInfoAsync(XServerInfo.Of(updateServerInfoReq.ServerInfo));
+            UpdateServerInfoRes updateServerInfoRes = new();
+            updateServerInfoRes.ServerInfos.AddRange(serverInfoList.Select(e => XServerInfo.Of(e).ToMsg()));
+            apiSender.Reply(XPacket.Of(updateServerInfoRes));
+
+            return;
+        }
+
+        if (routePacket.IsBackend())
+        {
+            await _apiReflection.CallBackendMethodAsync(routePacket.ToContentsPacket(), apiSender);
+        }
+        else
+        {
+            await _apiReflection.CallMethodAsync(routePacket.ToContentsPacket(), apiSender);
+        }
     }
 }
