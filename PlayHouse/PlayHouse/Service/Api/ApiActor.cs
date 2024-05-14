@@ -120,21 +120,24 @@ namespace PlayHouse.Service.Api
             }
         }
 
-        public async Task PostAsync(RoutePacket packet)
+        public void Post(RoutePacket packet)
         {
             _msgQueue.Enqueue(packet);
 
             if (_isUsing.CompareAndSet(false, true))
             {
-             
-                while (_msgQueue.TryDequeue(out var routePacket))
+                Task.Run(async () =>
                 {
-                    using(routePacket)
+                    while (_msgQueue.TryDequeue(out var routePacket))
                     {
-                        await DispatchAsync(routePacket);
+                        using (routePacket)
+                        {
+                            await DispatchAsync(routePacket);
+                        }
                     }
-                }
-                _isUsing.Set(false);
+                    _isUsing.Set(false);
+                });
+             
             }
         }
     }
