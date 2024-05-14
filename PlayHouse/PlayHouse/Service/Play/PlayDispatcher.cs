@@ -29,7 +29,7 @@ internal class PlayDispatcher : IPlayDispatcher
     private readonly TimerManager _timerManager;
     private readonly XSender _sender;
     private readonly PlayOption _playOption;
-    private readonly PacketWorkerQueue _workerQueue;
+    //private readonly PacketWorkerQueue _workerQueue;
 
     public PlayDispatcher(
         ushort serviceId, 
@@ -48,14 +48,14 @@ internal class PlayDispatcher : IPlayDispatcher
         _timerManager = new TimerManager(this);
         _sender = new XSender(serviceId, clientCommunicator, requestCache);
         _playOption = playOption;
-        _workerQueue = new PacketWorkerQueue(DispatchAsync);
+        //_workerQueue = new PacketWorkerQueue(DispatchAsync);
     }
     public void Start()
     {
-        _workerQueue.Start();
+        //_workerQueue.Start();
     }
     public void Stop() { 
-        _workerQueue.Stop(); 
+        //_workerQueue.Stop(); 
     } 
     public void RemoveRoom(long stageId)
     {
@@ -84,8 +84,7 @@ internal class PlayDispatcher : IPlayDispatcher
 
     public BaseActor? FindUser(long accountId)
     {
-        if (_baseUsers.TryGetValue(accountId, out var user)) return user;
-        return null;
+        return _baseUsers.GetValueOrDefault(accountId);
     }
 
     public void AddUser(BaseActor baseActor)
@@ -122,7 +121,7 @@ internal class PlayDispatcher : IPlayDispatcher
         return _playOption.PlayProducer.IsInvalidType(stageType);
     }
 
-    private async Task DoBaseRoomPacket(int msgId, RoutePacket routePacket, long stageId)
+    private void DoBaseRoomPacket(int msgId, RoutePacket routePacket, long stageId)
     {
 
         if (msgId == CreateStageReq.Descriptor.Index)
@@ -134,7 +133,7 @@ internal class PlayDispatcher : IPlayDispatcher
             }
             else
             {
-                await MakeBaseRoom(newStageId).Send(routePacket);
+                MakeBaseRoom(newStageId).Post(RoutePacket.MoveOf(routePacket));
             }
         }
         else if (msgId == CreateJoinStageReq.Descriptor.Index)
@@ -142,11 +141,11 @@ internal class PlayDispatcher : IPlayDispatcher
             _baseRooms.TryGetValue(stageId, out var room);
             if (room != null)
             {
-                await room!.Send(routePacket);
+                room!.Post(RoutePacket.MoveOf(routePacket));
             }
             else
             {
-                await MakeBaseRoom(stageId).Send(routePacket);
+                MakeBaseRoom(stageId).Post(RoutePacket.MoveOf(routePacket));
             }
         }
         else if (msgId == TimerMsg.Descriptor.Index)
@@ -174,7 +173,7 @@ internal class PlayDispatcher : IPlayDispatcher
                 msgId == DisconnectNoticeMsg.Descriptor.Index ||
                 msgId == AsyncBlock.Descriptor.Index)
             {
-                await room!.Send(routePacket);
+                room!.Post(RoutePacket.MoveOf(routePacket));
             }
             else
             {
@@ -225,13 +224,16 @@ internal class PlayDispatcher : IPlayDispatcher
         }
     }
 
-    //public void OnPost(RoutePacket routePacket)
-    //{
-    //    Task.Run(async () => await DispatchAsync(routePacket));
-    //}
-
-    public async Task  DispatchAsync(RoutePacket routePacket)
+   
+    internal int GetActorCount()
     {
+        return _baseUsers.Count;
+    }
+
+    public void OnPost(RoutePacket routePacket)
+    {
+        //_workerQueue.Post(routePacket);
+
         using (routePacket)
         {
             var msgId = routePacket.MsgId;
@@ -245,39 +247,22 @@ internal class PlayDispatcher : IPlayDispatcher
             }
             if (isBase)
             {
-                
-                await DoBaseRoomPacket(msgId, roomPacket, stageId);
-                
+                DoBaseRoomPacket(msgId, roomPacket, stageId);
             }
             else
             {
-                
                 _baseRooms.TryGetValue(stageId, out var baseStage);
                 if (baseStage != null)
                 {
-                    //PacketContext.AsyncCore.Init();
-                    //ServiceAsyncContext.Init();
-                    await baseStage.Send(roomPacket);
-                    //PacketContext.AsyncCore.Clear();
-                    //ServiceAsyncContext.Clear();
-
+                    baseStage.Post(RoutePacket.MoveOf(roomPacket));
                 }
                 else
                 {
                     _log.Error(() => $"stage is not exist - [stageId:{stageId},msgName:{msgId}]");
                 }
-                
+
             }
         }
-    }
-
-    internal int GetActorCount()
-    {
-        return _baseUsers.Count;
-    }
-
-    public void OnPost(RoutePacket routePacket)
-    {
-        _workerQueue.Post(routePacket);
+        
     }
 }

@@ -92,7 +92,7 @@ namespace PlayHouseTests.Service.Play
         }
 
         [Fact]
-        public async Task CreateRoom_ShouldSucceed()
+        public void CreateRoom_ShouldSucceed()
         {
             // given
             PacketContext.AsyncCore.Init();
@@ -103,7 +103,7 @@ namespace PlayHouseTests.Service.Play
             .Callback<string,RoutePacket>((sid,packet) => result.Add(packet));
 
             // when
-            await _stage.Send(CreateRoomPacket(_stageType));
+            _stage.Post(CreateRoomPacket(_stageType));
 
             // then
             result[0].RouteHeader.Header.ErrorCode.Should().Be((ushort)BaseErrorCode.Success);
@@ -127,14 +127,15 @@ namespace PlayHouseTests.Service.Play
             .Callback<string, RoutePacket>((sid, packet) => result.Add(packet));
 
             // when
-            await _stage.Send(CreateRoomPacket("invalid type"));
+             _stage.Post(CreateRoomPacket("invalid type"));
 
             // then
             result[0].RouteHeader.Header.ErrorCode.Should().Be((ushort)BaseErrorCode.StageTypeIsInvalid);
+            await Task.CompletedTask;
         }
 
         [Fact]
-        public async Task CreateJoinRoomInCreateState_ShouldBeSuccess()
+        public void CreateJoinRoomInCreateState_ShouldBeSuccess()
         {
             PacketContext.AsyncCore.Init();
             PacketProducer.Init((int msgId, IPayload payload, ushort msgSeq) => new TestPacket(msgId, payload, msgSeq));
@@ -144,7 +145,7 @@ namespace PlayHouseTests.Service.Play
             .Callback<string, RoutePacket>((sid, packet) => result.Add(packet));
 
             var createJoinRoom = CreateJoinRoomPacket(_stageType, _stageId, _accountId);
-            await _stage.Send(createJoinRoom);
+            _stage.Post(createJoinRoom);
 
 
             result[0].MsgId.Should().Be(CreateJoinStageRes.Descriptor.Index);
@@ -159,13 +160,13 @@ namespace PlayHouseTests.Service.Play
         }
 
         [Fact]
-        public async Task TestCreateJoinRoomInJoinState()
+        public void TestCreateJoinRoomInJoinState()
         {
             // Arrange
             PacketContext.AsyncCore.Init();
             PacketProducer.Init((int msgId, IPayload payload, ushort msgSeq) => new TestPacket(msgId, payload, msgSeq));
 
-            await CreateRoomWithSuccess();
+            CreateRoomWithSuccess();
 
             List<RoutePacket> result = new List<RoutePacket>();
             _clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
@@ -173,7 +174,7 @@ namespace PlayHouseTests.Service.Play
 
             var createJoinRoom = CreateJoinRoomPacket(_stageType, _stageId, _accountId);
             // Act
-            await _stage.Send(createJoinRoom);
+            _stage.Post(createJoinRoom);
 
             // Assert
             CreateJoinStageRes.Descriptor.Index.Should().Be(result[0].MsgId);
@@ -185,10 +186,10 @@ namespace PlayHouseTests.Service.Play
         }
 
         [Fact]
-        public async Task AsyncBlock_ShouldRunBlocking()
+        public void AsyncBlock_ShouldRunBlocking()
         {
             string result = "";
-            await _stage.Send(AsyncBlockPacket.Of(_stageId, async arg => { result = (string)arg; await Task.CompletedTask; }, "test async block"));
+            _stage.Post(AsyncBlockPacket.Of(_stageId, async arg => { result = (string)arg; await Task.CompletedTask; }, "test async block"));
             Assert.Equal("test async block", result);
         }
 
@@ -236,13 +237,13 @@ namespace PlayHouseTests.Service.Play
             return result;
         }
 
-        private async Task CreateRoomWithSuccess()
+        private void CreateRoomWithSuccess()
         {
             var result = new List<RoutePacket>();
             _clientCommunicator.Setup(c => c.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
             .Callback<string, RoutePacket>((sid, packet) => result.Add(packet));
 
-            await _stage.Send(CreateRoomPacket(_stageType));
+            _stage.Post(CreateRoomPacket(_stageType));
 
 
             result[0].RouteHeader.Header.ErrorCode.Should().Be((ushort)BaseErrorCode.Success);
