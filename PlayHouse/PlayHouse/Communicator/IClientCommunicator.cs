@@ -1,6 +1,7 @@
 ﻿using PlayHouse.Communicator.Message;
 
 namespace PlayHouse.Communicator;
+
 internal interface IClientCommunicator
 {
     void Connect(string endpoint);
@@ -9,4 +10,3 @@ internal interface IClientCommunicator
     void Disconnect(string endpoint);
     void Stop();
 }
-

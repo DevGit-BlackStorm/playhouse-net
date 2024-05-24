@@ -1,10 +1,8 @@
 ﻿using PlayHouse.Communicator.Message;
 
+namespace PlayHouse.Service.Play.Base;
 
-namespace PlayHouse.Service.Play.Base
+internal interface IBaseStageCmd
 {
-    internal interface IBaseStageCmd
-    {
-        public Task Execute(BaseStage baseStage, RoutePacket routePacket);
-    }
+    public Task Execute(BaseStage baseStage, RoutePacket routePacket);
 }

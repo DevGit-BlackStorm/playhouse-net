@@ -1,6 +1,6 @@
 ﻿namespace PlayHouse.Production.Shared;
 
-public delegate Task SystemHandler(IPacket packet,ISystemPanel panel, ISender sender);
+public delegate Task SystemHandler(IPacket packet, ISystemPanel panel, ISender sender);
 
 public interface ISystemHandlerRegister
 {
@@ -11,4 +11,3 @@ public interface ISystemController
 {
     void Handles(ISystemHandlerRegister handlerRegister);
 }
-

@@ -1,77 +1,67 @@
 ﻿using PlayHouse.Communicator;
 using PlayHouse.Production.Shared;
-using System.Net;
 
-namespace PlayHouse.Service.Shared
+namespace PlayHouse.Service.Shared;
+
+internal class XSystemPanel(
+    IServerInfoCenter serverInfoCenter,
+    IClientCommunicator clientCommunicator,
+    int NodeId,
+    string bindEndpoint)
+    : ISystemPanel
 {
-    internal class XSystemPanel : ISystemPanel
+    private readonly IClientCommunicator _clientCommunicator = clientCommunicator;
+    private readonly UniqueIdGenerator _uniqueIdGenerator = new(NodeId);
+
+    public Communicator.Communicator? Communicator { get; set; }
+
+    public IServerInfo GetServerInfoBy(ushort serviceId)
     {
-        private readonly IServerInfoCenter _serverInfoCenter;
-        private readonly IClientCommunicator _clientCommunicator;
-        private readonly UniqueIdGenerator _uniqueIdGenerator;
-        private readonly string _bindEndpoint;
+        return serverInfoCenter.FindRoundRobinServer(serviceId);
+    }
 
-        public Communicator.Communicator? Communicator { get; set; }
+    public IServerInfo GetServerInfoBy(ushort serviceId, long accountId)
+    {
+        return serverInfoCenter.FindServerByAccountId(serviceId, accountId);
+    }
 
-        public XSystemPanel(
-            IServerInfoCenter serverInfoCenter, 
-            IClientCommunicator clientCommunicator, 
-            int NodeId, 
-            string bindEndpoint)
-        {
-            _serverInfoCenter = serverInfoCenter;
-            _clientCommunicator = clientCommunicator;
-            _uniqueIdGenerator = new UniqueIdGenerator(NodeId);
-            _bindEndpoint = bindEndpoint;
-        }
+    public IServerInfo GetServerInfoByEndpoint(string endpoint)
+    {
+        return serverInfoCenter.FindServer(endpoint);
+    }
 
-        public IServerInfo GetServerInfoBy(ushort serviceId)
-        {
-            return _serverInfoCenter.FindRoundRobinServer(serviceId);
-        }
-        public IServerInfo GetServerInfoBy(ushort serviceId, long accountId)
-        {
-            return _serverInfoCenter.FindServerByAccountId(serviceId, accountId);
-        }
+    public IList<IServerInfo> GetServers()
+    {
+        return serverInfoCenter.GetServerList().Cast<IServerInfo>().ToList();
+    }
 
-        public IServerInfo GetServerInfoByEndpoint(string endpoint)
-        {
-            return _serverInfoCenter.FindServer(endpoint);
-        }
+    public void Pause()
+    {
+        Communicator!.Pause();
+    }
 
-        public IList<IServerInfo> GetServers()
-        {
-            return _serverInfoCenter.GetServerList().Cast<IServerInfo>().ToList();
-        }
+    public void Resume()
+    {
+        Communicator!.Resume();
+    }
 
-        public void Pause()
-        {
-            Communicator!.Pause();
-        }
+    public async Task ShutdownASync()
+    {
+        await Communicator!.StopAsync();
+    }
 
-        public void Resume()
-        {
-            Communicator!.Resume();
-        }
+    public ServerState GetServerState()
+    {
+        return Communicator!.GetServerState();
+    }
 
-        public async Task ShutdownASync()
-        {
-            await Communicator!.StopAsync();
-        }
+    public long GenerateUUID()
+    {
+        return _uniqueIdGenerator.NextId();
+    }
 
-        public ServerState GetServerState()
-        {
-            return Communicator!.GetServerState();
-        }
-
-        public long GenerateUUID()
-        {
-            return _uniqueIdGenerator.NextId();
-        }
-
-        public IServerInfo GetServerInfo()
-        {
-            return _serverInfoCenter.FindServer(_bindEndpoint);
-        }
+    public IServerInfo GetServerInfo()
+    {
+        return serverInfoCenter.FindServer(bindEndpoint);
     }
 }

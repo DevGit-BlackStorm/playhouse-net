@@ -1,10 +1,9 @@
 ﻿using PlayHouse.Communicator.Message;
 
-namespace PlayHouse.Service.Session.Network
+namespace PlayHouse.Service.Session.Network;
+
+internal interface ISession
 {
-    internal interface ISession
-    {
-        void ClientDisconnect();
-        void Send(ClientPacket packet);
-    }
+    void ClientDisconnect();
+    void Send(ClientPacket packet);
 }

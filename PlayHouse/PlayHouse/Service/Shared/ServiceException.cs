@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PlayHouse.Service.Shared;
+﻿namespace PlayHouse.Service.Shared;
 
 internal class ServiceException : Exception
 {
@@ -16,32 +10,11 @@ internal class ServiceException : Exception
     {
     }
 
-    public class DuplicatedMessageIndex : ServiceException
-    {
-        public DuplicatedMessageIndex(string message) : base(message)
-        {
-        }
-    }
+    public class DuplicatedMessageIndex(string message) : ServiceException(message);
 
-    public class NotRegisterMethod : ServiceException
-    {
-        public NotRegisterMethod(string message) : base(message)
-        {
-        }
-    }
+    public class NotRegisterMethod(string message) : ServiceException(message);
 
-    public class NotRegisterInstance : ServiceException
-    {
-        public NotRegisterInstance(string message) : base(message)
-        {
-        }
-    }
+    public class NotRegisterInstance(string message) : ServiceException(message);
 
-    public class NotExistApiHeaderInfoException : ServiceException
-    {
-        public NotExistApiHeaderInfoException() : base("target request header is not exist")
-        {
-        }
-    }
+    public class NotExistApiHeaderInfoException() : ServiceException("target request header is not exist");
 }
-

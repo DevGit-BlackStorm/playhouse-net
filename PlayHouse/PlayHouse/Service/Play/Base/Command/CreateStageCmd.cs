@@ -4,22 +4,16 @@ using Playhouse.Protocol;
 using PlayHouse.Service.Shared;
 
 namespace PlayHouse.Service.Play.Base.Command;
-internal class CreateStageCmd : IBaseStageCmd
+
+internal class CreateStageCmd(PlayDispatcher dispatcher) : IBaseStageCmd
 {
-    private readonly PlayDispatcher _dispatcher;
-
-    public CreateStageCmd(PlayDispatcher dispatcher)
-    {
-        _dispatcher = dispatcher;
-    }
-
-    public  async Task Execute(BaseStage baseStage, RoutePacket routePacket)
+    public async Task Execute(BaseStage baseStage, RoutePacket routePacket)
     {
         var createStageReq = CreateStageReq.Parser.ParseFrom(routePacket.Span);
         var packet = CPacket.Of(createStageReq.PayloadId, createStageReq.Payload);
         var stageType = createStageReq.StageType;
 
-        if (!_dispatcher.IsValidType(stageType))
+        if (!dispatcher.IsValidType(stageType))
         {
             baseStage.Reply((ushort)BaseErrorCode.StageTypeIsInvalid);
             return;
@@ -30,7 +24,7 @@ internal class CreateStageCmd : IBaseStageCmd
 
         if (outcome.errorCode == (ushort)BaseErrorCode.Success)
         {
-            var res = new CreateStageRes()
+            var res = new CreateStageRes
             {
                 Payload = ByteString.CopyFrom(outcome.reply.Payload.DataSpan),
                 PayloadId = outcome.reply.MsgId
@@ -41,8 +35,7 @@ internal class CreateStageCmd : IBaseStageCmd
         }
         else
         {
-
-            this._dispatcher.RemoveRoom(stageId);
+            dispatcher.RemoveRoom(stageId);
             baseStage.Reply(outcome.errorCode);
         }
     }

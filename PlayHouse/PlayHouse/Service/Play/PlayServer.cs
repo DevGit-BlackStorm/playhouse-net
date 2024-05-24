@@ -1,69 +1,64 @@
-﻿using PlayHouse.Communicator.PlaySocket;
+﻿using CommonLib;
 using PlayHouse.Communicator;
+using PlayHouse.Communicator.PlaySocket;
 using PlayHouse.Production.Play;
-using CommonLib;
 using PlayHouse.Production.Shared;
 
-namespace PlayHouse.Service.Play
+namespace PlayHouse.Service.Play;
+
+public class PlayServer : IServer
 {
-    public class PlayServer : IServer
+    private readonly Communicator.Communicator _communicator;
+
+    public PlayServer(PlayhouseOption commonOption, PlayOption playOption)
     {
-        private readonly PlayhouseOption _commonOption;
-        private readonly PlayOption _playOption;
-        private Communicator.Communicator _communicator;
+        var commonOption1 = commonOption;
 
-        public PlayServer(PlayhouseOption commonOption, PlayOption playOption)
-        {
-            _commonOption = commonOption;
-            _playOption = playOption;
+        var communicatorOption = new CommunicatorOption.Builder()
+            .SetIp(commonOption1.Ip)
+            .SetPort(commonOption1.Port)
+            .SetServiceProvider(commonOption1.ServiceProvider)
+            .SetShowQps(commonOption1.ShowQps)
+            .SetNodeId(commonOption1.NodeId)
+            .SetPacketProducer(commonOption1.PacketProducer)
+            .SetAddressServerEndpoints(commonOption1.AddressServerEndpoints)
+            .SetAddressServerServiceId(commonOption1.AddressServerServiceId)
+            .Build();
 
-            var communicatorOption = new CommunicatorOption.Builder()
-              .SetIp(_commonOption.Ip)
-              .SetPort(_commonOption.Port)
-              .SetServiceProvider(_commonOption.ServiceProvider)
-              .SetShowQps(_commonOption.ShowQps)
-              .SetNodeId(_commonOption.NodeId)
-              .SetPacketProducer(_commonOption.PacketProducer)
-              .SetAddressServerEndpoints(_commonOption.AddressServerEndpoints)
-              .SetAddressServerServiceId(_commonOption.AddressServerServiceId)
-              .Build();
+        var bindEndpoint = communicatorOption.BindEndpoint;
+        var serviceId = commonOption1.ServiceId;
 
-            var bindEndpoint = communicatorOption.BindEndpoint;
-            var serviceId = _commonOption.ServiceId;
+        PooledBuffer.Init(commonOption1.MaxBufferPoolSize);
 
-            PooledBuffer.Init(_commonOption.MaxBufferPoolSize);
+        var communicateClient =
+            new XClientCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(), bindEndpoint));
 
-            var communicateClient = new XClientCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(), bindEndpoint));
+        var requestCache = new RequestCache(commonOption1.RequestTimeoutSec);
+        var serverInfoCenter = new XServerInfoCenter();
+        var playService = new PlayService(serviceId, bindEndpoint, playOption, communicateClient, requestCache,
+            serverInfoCenter);
 
-            var requestCache = new RequestCache(_commonOption.RequestTimeoutSec);
-            var serverInfoCenter = new XServerInfoCenter();
-            var playService = new PlayService(serviceId, bindEndpoint, _playOption, communicateClient, requestCache, serverInfoCenter);
-
-            _communicator = new Communicator.Communicator(
-                communicatorOption,
-                requestCache,
-                serverInfoCenter,
-                playService,
-                communicateClient
-            );
-        }
-
-        public void Start()
-        {
-          
-
-            _communicator.Start();
-        }
-
-        public async Task StopAsync()
-        {
-            await _communicator!.StopAsync();
-        }
-
-        public void AwaitTermination()
-        {
-            _communicator!.AwaitTermination();
-        }
+        _communicator = new Communicator.Communicator(
+            communicatorOption,
+            requestCache,
+            serverInfoCenter,
+            playService,
+            communicateClient
+        );
     }
 
+    public void Start()
+    {
+        _communicator.Start();
+    }
+
+    public async Task StopAsync()
+    {
+        await _communicator!.StopAsync();
+    }
+
+    public void AwaitTermination()
+    {
+        _communicator!.AwaitTermination();
+    }
 }

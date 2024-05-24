@@ -4,6 +4,5 @@ namespace PlayHouse.Production.Api;
 
 public class ApiOption
 {
-    private ApiControllAspectifyManager _apiControllAspectifyManager = new();
-    public ApiControllAspectifyManager AspectifyManager => _apiControllAspectifyManager;
+    public ApiControllAspectifyManager AspectifyManager { get; } = new();
 }

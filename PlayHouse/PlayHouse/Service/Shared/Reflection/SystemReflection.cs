@@ -1,23 +1,15 @@
-﻿using PlayHouse.Communicator.Message;
-using PlayHouse.Production.Api.Aspectify;
+﻿using PlayHouse.Production.Api.Aspectify;
 using PlayHouse.Production.Shared;
 
-namespace PlayHouse.Service.Shared.Reflection
+namespace PlayHouse.Service.Shared.Reflection;
+
+internal class SystemReflection(IServiceProvider serviceProvider)
 {
-    internal class SystemReflection
+    private readonly SystemHandleReflectionInvoker _reflectionInvoker = new(serviceProvider, new List<AspectifyAttribute>());
+
+    public async Task CallMethodAsync(IPacket packet, ISystemPanel panel, ISender sender)
     {
-        private readonly SystemHandleReflectionInvoker _reflectionInvoker;
-
-        public SystemReflection(IServiceProvider serviceProvider)
-        {
-            _reflectionInvoker = new SystemHandleReflectionInvoker(serviceProvider,new List<AspectifyAttribute>());
-        }
-
-        public async Task CallMethodAsync( IPacket packet,ISystemPanel panenl, ISender sender)
-        {
-            
-            int msgId = packet.MsgId;                
-            await _reflectionInvoker.InvokeMethods(msgId, new object[] {packet,panenl,sender });
-    }
+        var msgId = packet.MsgId;
+        await _reflectionInvoker.InvokeMethods(msgId, new object[] { packet, panel, sender });
     }
 }

@@ -1,18 +1,17 @@
-﻿
-using PlayHouse.Production.Shared;
+﻿using PlayHouse.Production.Shared;
 
 namespace PlayHouse.Production.Api;
 
 public delegate Task ApiHandler(IPacket packet, IApiSender apiSender);
+
 public delegate Task ApiBackendHandler(IPacket packet, IApiBackendSender apiSender);
 
-
-public interface IHandlerRegister 
+public interface IHandlerRegister
 {
     void Add(int msgId, ApiHandler handler);
 }
 
-public interface IBackendHandlerRegister 
+public interface IBackendHandlerRegister
 {
     void Add(int msgId, ApiBackendHandler handler);
 }

@@ -1,32 +1,30 @@
-﻿using PlayHouse.Communicator;
+﻿using System.Collections.Concurrent;
+using PlayHouse.Communicator;
 using PlayHouse.Communicator.Message;
 using PlayHouse.Production.Session;
 using PlayHouse.Production.Shared;
 using PlayHouse.Service.Session.Network;
-using PlayHouse.Service.Shared;
 using PlayHouse.Utils;
-using System.Collections.Concurrent;
 
 namespace PlayHouse.Service.Session;
 
 internal class SessionDispatcher : ISessionListener
 {
-    private readonly LOG<SessionDispatcher> _log = new();
-    private readonly ushort _serviceId;
-    private readonly SessionOption _sessionOption;
-    private readonly IServerInfoCenter _serverInfoCenter;
     private readonly IClientCommunicator _clientCommunicator;
+    private readonly LOG<SessionDispatcher> _log = new();
     private readonly RequestCache _requestCache;
-    private readonly SessionNetwork _sessionNetwork;
+    private readonly IServerInfoCenter _serverInfoCenter;
+    private readonly ushort _serviceId;
     private readonly ConcurrentDictionary<int, SessionActor> _sessionActors = new();
+    private readonly SessionNetwork _sessionNetwork;
+    private readonly SessionOption _sessionOption;
     private readonly Timer _timer;
-    //private readonly PacketWorkerQueue _packetWorkerQueue;
 
     public SessionDispatcher(
-        ushort serviceId, 
-        SessionOption sessionOption, 
-        IServerInfoCenter serverInfoCenter, 
-        IClientCommunicator clientCommunicator, 
+        ushort serviceId,
+        SessionOption sessionOption,
+        IServerInfoCenter serverInfoCenter,
+        IClientCommunicator clientCommunicator,
         RequestCache requestCache)
     {
         _serviceId = serviceId;
@@ -38,57 +36,6 @@ internal class SessionDispatcher : ISessionListener
         _sessionNetwork = new SessionNetwork(sessionOption, this);
 
         _timer = new Timer(TimerCallback, this, 1000, 1000);
-      //  _packetWorkerQueue = new PacketWorkerQueue(DispatchAsync);
-    }
-
-    public void Start()  
-    {
-        //_packetWorkerQueue.Start();
-        _sessionNetwork.Start();
-    }
-
-    public void Stop()
-    {
-        _sessionNetwork.Stop();
-        //_packetWorkerQueue.Stop();
-        _timer.Dispose();
-    }
-
-
-     private static void TimerCallback(Object? o)
-    {
-        SessionDispatcher dispacher = (SessionDispatcher)o!;
-        // 여기에 타이머 만료 시 실행할 코드 작성
-        var keysToRemove =
-            dispacher._sessionActors.Where(k => k.Value.IsIdleState(dispacher._sessionOption.ClientIdleTimeoutMSec)).Select(k => k.Key);
-
-        foreach (var key in keysToRemove)
-        {
-            SessionActor? client;
-            dispacher._sessionActors.Remove(key, out client);
-            if (client != null)
-            {
-
-                dispacher._log.Debug(() => $"idle client disconnect - [sid:{client.Sid},accountId:{client.AccountId},idleTime:{client.IdleTime()}]");
-                client.ClientDisconnect();
-            }
-        }
-    }
-
-
-    private void Dispatch(int sessionId, ClientPacket clientPacket) 
-    {
-        using(clientPacket)
-        {
-            if (!_sessionActors.TryGetValue(sessionId, out var sessionClient))
-            {
-                _log.Debug(() => $"sessionId is not exist - [sessionId:{sessionId},packetInfo:{clientPacket.Header}]");
-            }
-            else
-            {
-                sessionClient.Dispatch(clientPacket);
-            }
-        }
     }
 
     public void OnConnect(int sid, ISession session)
@@ -99,7 +46,7 @@ internal class SessionDispatcher : ISessionListener
                 _serviceId,
                 sid,
                 _serverInfoCenter,
-            session,
+                session,
                 _clientCommunicator,
                 _sessionOption.Urls,
                 _requestCache);
@@ -126,7 +73,55 @@ internal class SessionDispatcher : ISessionListener
     public void OnReceive(int sid, ClientPacket clientPacket)
     {
         Dispatch(sid, clientPacket);
-        //Task.Run(async () => { await Dispatch(sid, clientPacket); });
+    }
+
+    public void Start()
+    {
+        _sessionNetwork.Start();
+    }
+
+    public void Stop()
+    {
+        _sessionNetwork.Stop();
+        _timer.Dispose();
+    }
+
+
+    private static void TimerCallback(object? o)
+    {
+        var dispacher = (SessionDispatcher)o!;
+        // 여기에 타이머 만료 시 실행할 코드 작성
+        var keysToRemove =
+            dispacher._sessionActors.Where(k => k.Value.IsIdleState(dispacher._sessionOption.ClientIdleTimeoutMSec))
+                .Select(k => k.Key);
+
+        foreach (var key in keysToRemove)
+        {
+            SessionActor? client;
+            dispacher._sessionActors.Remove(key, out client);
+            if (client != null)
+            {
+                dispacher._log.Debug(() =>
+                    $"idle client disconnect - [sid:{client.Sid},accountId:{client.AccountId},idleTime:{client.IdleTime()}]");
+                client.ClientDisconnect();
+            }
+        }
+    }
+
+
+    private void Dispatch(int sessionId, ClientPacket clientPacket)
+    {
+        using (clientPacket)
+        {
+            if (!_sessionActors.TryGetValue(sessionId, out var sessionClient))
+            {
+                _log.Debug(() => $"sessionId is not exist - [sessionId:{sessionId},packetInfo:{clientPacket.Header}]");
+            }
+            else
+            {
+                sessionClient.Dispatch(clientPacket);
+            }
+        }
     }
 
     internal int GetActorCount()
@@ -136,22 +131,19 @@ internal class SessionDispatcher : ISessionListener
 
     internal void OnPost(RoutePacket routePacket)
     {
-
         using (routePacket)
         {
             var sessionId = routePacket.RouteHeader.Sid;
             if (!_sessionActors.TryGetValue(sessionId, out var sessionClient))
             {
                 var result = routePacket;
-                _log.Error(() => $"sessionId is already disconnected - [sessionId:{sessionId},packetInfo:{result.RouteHeader}]");
+                _log.Error(() =>
+                    $"sessionId is already disconnected - [sessionId:{sessionId},packetInfo:{result.RouteHeader}]");
             }
             else
             {
                 sessionClient.Post(RoutePacket.MoveOf(routePacket));
             }
         }
-        //_packetWorkerQueue.Post(routePacket);   
-
-
     }
 }

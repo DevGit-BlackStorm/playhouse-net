@@ -1,19 +1,10 @@
-﻿namespace PlayHouse.Production.Session
+﻿namespace PlayHouse.Production.Session;
+
+public class SessionOption
 {
-    public class SessionOption
-    {
-        public List<string> Urls { get; set; }
-        public int SessionPort { get; set; }
-        public bool UseWebSocket { get; set; }
+    public int ClientIdleTimeoutMSec = 0; //5000  0인경우 idle확인 안함
 
-        public int ClientIdleTimeoutMSec = 0; //5000  0인경우 idle확인 안함
-
-        public SessionOption()
-        {
-            Urls = new List<string>();
-            SessionPort = 0;
-            UseWebSocket = false;
-        }
-
-    }
+    public List<string> Urls { get; set; } = new();
+    public int SessionPort { get; set; } = 0;
+    public bool UseWebSocket { get; set; } = false;
 }

@@ -1,9 +1,7 @@
-﻿namespace PlayHouse.Service.Session.Network
+﻿namespace PlayHouse.Service.Session.Network;
+
+internal interface ISessionNetwork
 {
-    internal interface ISessionNetwork
-    {
-        void Start();
-        void Stop();
-    }
-        
+    void Start();
+    void Stop();
 }

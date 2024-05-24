@@ -1,14 +1,15 @@
-﻿using System.Net.Sockets;
-using System.Net;
+﻿using System.Net;
+using System.Net.Sockets;
 
 namespace PlayHouse.Communicator;
+
 public static class IpFinder
 {
     public static string FindLocalIp()
     {
         try
         {
-            using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+            using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
             {
                 socket.Connect(new IPEndPoint(Dns.GetHostAddresses("google.com")[0], 80));
                 return ((IPEndPoint)socket.LocalEndPoint!).Address.ToString();
@@ -22,7 +23,7 @@ public static class IpFinder
 
     public static string FindPublicIp()
     {
-        List<string> urlList = new List<string>
+        var urlList = new List<string>
         {
             "http://checkip.amazonaws.com/",
             "https://ipv4.icanhazip.com/",
@@ -30,10 +31,10 @@ public static class IpFinder
             "http://ipecho.net/plain"
         };
 
-        foreach (string urlString in urlList)
+        foreach (var urlString in urlList)
         {
-            string checkPublicIp = CheckPublicIp(urlString);
-            if (IPAddress.TryParse(checkPublicIp, out IPAddress? ip) && ip.AddressFamily == AddressFamily.InterNetwork)
+            var checkPublicIp = CheckPublicIp(urlString);
+            if (IPAddress.TryParse(checkPublicIp, out var ip) && ip.AddressFamily == AddressFamily.InterNetwork)
             {
                 return checkPublicIp;
             }
@@ -44,11 +45,11 @@ public static class IpFinder
 
     public static int FindFreePort()
     {
-        using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+        using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
         {
             socket.Bind(new IPEndPoint(IPAddress.Any, 0));
             socket.Listen(1);
-            int port = ((IPEndPoint)socket.LocalEndPoint!).Port;
+            var port = ((IPEndPoint)socket.LocalEndPoint!).Port;
             socket.Close();
             return port;
         }
@@ -56,16 +57,16 @@ public static class IpFinder
 
     private static string CheckPublicIp(string urlString)
     {
-        using (HttpClient client = new HttpClient())
+        using (var client = new HttpClient())
         {
             client.Timeout = TimeSpan.FromSeconds(5);
 
             try
             {
-                HttpResponseMessage response = client.GetAsync(urlString).Result;
+                var response = client.GetAsync(urlString).Result;
                 response.EnsureSuccessStatusCode();
 
-                string content = response.Content.ReadAsStringAsync().Result;
+                var content = response.Content.ReadAsStringAsync().Result;
                 return content;
             }
             catch (HttpRequestException ex)

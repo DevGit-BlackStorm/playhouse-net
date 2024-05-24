@@ -2,6 +2,7 @@
 using PlayHouse.Production.Shared;
 
 namespace PlayHouse.Communicator;
+
 public enum ServiceType
 {
     SESSION,

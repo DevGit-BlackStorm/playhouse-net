@@ -5,28 +5,24 @@ using PlayHouse.Utils;
 
 namespace PlayHouse.Service.Session.Network;
 
-
 /*
  * 4byte - bodysize
  * 2byte - serviceId
  * 4byte - msgId
  * 2byte - msgSeq
  * 8byte - stageId
- * 
+ *
  * 20byte
  * */
 
 internal sealed class PacketParser
 {
-
-    private readonly LOG<PacketParser> _log = new();
     private const int HeaderSize = 20;
 
-    public PacketParser() { }
+    private readonly LOG<PacketParser> _log = new();
 
     public List<ClientPacket> Parse(RingBuffer buffer)
     {
-
         var packets = new List<ClientPacket>();
 
 
@@ -34,7 +30,7 @@ internal sealed class PacketParser
         {
             try
             {
-                int bodySize = XBitConverter.ToHostOrder(buffer.PeekInt32(buffer.ReaderIndex));
+                var bodySize = XBitConverter.ToHostOrder(buffer.PeekInt32(buffer.ReaderIndex));
 
                 // If the remaining buffer is smaller than the expected packet size, wait for more data
                 if (buffer.Count < bodySize + HeaderSize)
@@ -44,10 +40,10 @@ internal sealed class PacketParser
 
                 buffer.Clear(4);
 
-                ushort serviceId = XBitConverter.ToHostOrder(buffer.ReadInt16());
-                int msgId = XBitConverter.ToHostOrder(buffer.ReadInt32());
-                ushort msgSeq = XBitConverter.ToHostOrder(buffer.ReadInt16());
-                long stageId = XBitConverter.ToHostOrder(buffer.ReadInt64());
+                var serviceId = XBitConverter.ToHostOrder(buffer.ReadInt16());
+                var msgId = XBitConverter.ToHostOrder(buffer.ReadInt32());
+                var msgSeq = XBitConverter.ToHostOrder(buffer.ReadInt16());
+                var stageId = XBitConverter.ToHostOrder(buffer.ReadInt64());
 
                 var body = new NetMQFrame(bodySize);
 
@@ -55,9 +51,9 @@ internal sealed class PacketParser
 
                 buffer.Read(body.Buffer, 0, bodySize);
 
-                var clientPacket = new ClientPacket(new Header(serviceId, msgId, msgSeq, 0, stageId), new FramePayload(body));
+                var clientPacket = new ClientPacket(new Header(serviceId, msgId, msgSeq, 0, stageId),
+                    new FramePayload(body));
                 packets.Add(clientPacket);
-
             }
             catch (Exception e)
             {
@@ -94,7 +90,6 @@ internal sealed class PacketParser
 
 //        var packets = new List<ClientPacket>();
 
-
 //        while (buffer.Count >= MIN_SIZE)
 //        {
 //            try
@@ -125,7 +120,7 @@ internal sealed class PacketParser
 //                var body = new NetMQFrame(bodySize);
 
 //                //var body = new PooledBuffer(bodySize);
-                                    
+
 //                buffer.Read(body.Buffer,0, bodySize);
 
 //                var clientPacket = new ClientPacket(new Header(serviceId, msgId, msgSeq,0, stageId), new FramePayload(body));

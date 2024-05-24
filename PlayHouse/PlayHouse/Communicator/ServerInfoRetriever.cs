@@ -1,5 +1,5 @@
-﻿using Playhouse.Protocol;
-using PlayHouse.Communicator.Message;
+﻿using PlayHouse.Communicator.Message;
+using Playhouse.Protocol;
 using PlayHouse.Service.Shared;
 using PlayHouse.Utils;
 
@@ -10,46 +10,38 @@ internal interface IServerInfoRetriever
     Task<List<XServerInfo>> UpdateServerListAsync(XServerInfo serverInfo);
 }
 
-
-internal class ServerInfoRetriever : IServerInfoRetriever
+internal class ServerInfoRetriever(
+    ushort apiServiceId,
+    List<string> apiEndpoints,
+    XSender sender)
+    : IServerInfoRetriever
 {
-    private LOG<ServerInfoRetriever> _log = new();
-    private readonly ushort _apiServiceId;
-    private List<string> _apiEndpoints;
-    private readonly XSender _xSender;
     private int _index;
-    public ServerInfoRetriever(
-        ushort apiServiceId,
-        List<string> apiEndpoints, 
-        XSender sender)
-    {
-        _apiServiceId = apiServiceId;
-        _apiEndpoints = apiEndpoints;
-        _xSender = sender;
-    }
+    private LOG<ServerInfoRetriever> _log = new();
 
     public async Task<List<XServerInfo>> UpdateServerListAsync(XServerInfo serverInfo)
     {
-        if(_index <= _apiEndpoints.Count) 
+        if (_index <= apiEndpoints.Count)
         {
             _index = 0;
         }
 
-        var endpoint = _apiEndpoints[_index++];
+        var endpoint = apiEndpoints[_index++];
 
 
+        using var res = await sender.RequestToBaseApi(endpoint,
+            RoutePacket.Of(new UpdateServerInfoReq { ServerInfo = serverInfo.ToMsg() }));
 
-        using var res = await _xSender.RequestToBaseApi(endpoint, RoutePacket.Of(new UpdateServerInfoReq() { ServerInfo = serverInfo.ToMsg()}));
-
-        UpdateServerInfoRes updateRes = UpdateServerInfoRes.Parser.ParseFrom(res.Payload.DataSpan);
+        var updateRes = UpdateServerInfoRes.Parser.ParseFrom(res.Payload.DataSpan);
 
         //_log.Info(() => $"update - [target endpoint:{endpoint},server count:{updateRes.ServerInfos.Count}]");
 
-        var endpoints = (updateRes.ServerInfos.Where(e => e.ServiceId == _apiServiceId).Select(e => e.Endpoint).ToList());
-        if(endpoints.Count > 0)
+        var endpoints = updateRes.ServerInfos.Where(e => e.ServiceId == apiServiceId).Select(e => e.Endpoint).ToList();
+        if (endpoints.Count > 0)
         {
-            _apiEndpoints  = endpoints;
+            apiEndpoints = endpoints;
         }
+
         return updateRes.ServerInfos.Select(e => XServerInfo.Of(e)).ToList();
         //return updateRes.ServerInfos.Where(e=>e.Endpoint != serverInfo.GetBindEndpoint()).Select(e=>XServerInfo.Of(e)).ToList();
     }

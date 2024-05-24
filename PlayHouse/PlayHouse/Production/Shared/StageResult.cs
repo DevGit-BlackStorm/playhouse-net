@@ -1,50 +1,31 @@
 ﻿using Playhouse.Protocol;
 
-namespace PlayHouse.Production.Shared
+namespace PlayHouse.Production.Shared;
+
+public class StageResult(ushort errorCode)
 {
-    public class StageResult
+    public ushort ErrorCode { get; } = errorCode;
+
+    public bool IsSuccess()
     {
-        public ushort ErrorCode { get; }
-
-        public StageResult(ushort errorCode)
-        {
-            ErrorCode = errorCode;
-        }
-
-        public bool IsSuccess() => ErrorCode == (short)BaseErrorCode.Success;
+        return ErrorCode == (short)BaseErrorCode.Success;
     }
+}
 
-    public class CreateStageResult : StageResult
-    {
-        public IPacket CreateStageRes { get; }
+public class CreateStageResult(ushort errorCode, IPacket createStageRes) : StageResult(errorCode)
+{
+    public IPacket CreateStageRes { get; } = createStageRes;
+}
 
-        public CreateStageResult(ushort errorCode, IPacket createStageRes) : base(errorCode)
-        {
-            CreateStageRes = createStageRes;
-        }
-    }
+public class JoinStageResult(ushort errorCode, IPacket joinStageRes) : StageResult(errorCode)
+{
+    public IPacket JoinStageRes { get; } = joinStageRes;
+}
 
-    public class JoinStageResult : StageResult
-    {
-        public IPacket JoinStageRes { get; }
-
-        public JoinStageResult(ushort errorCode,  IPacket joinStageRes) : base(errorCode)
-        {
-            JoinStageRes = joinStageRes;
-        }
-    }
-
-    public class CreateJoinStageResult : StageResult
-    {
-        public bool IsCreate { get; }
-        public IPacket CreateStageRes { get; }
-        public IPacket JoinStageRes { get; }
-
-        public CreateJoinStageResult(ushort errorCode, bool isCreate,  IPacket createStageRes, IPacket joinStageRes) : base(errorCode)
-        {
-            IsCreate = isCreate;
-            CreateStageRes = createStageRes;
-            JoinStageRes = joinStageRes;
-        }
-    }
+public class CreateJoinStageResult(ushort errorCode, bool isCreate, IPacket createStageRes, IPacket joinStageRes)
+    : StageResult(errorCode)
+{
+    public bool IsCreate { get; } = isCreate;
+    public IPacket CreateStageRes { get; } = createStageRes;
+    public IPacket JoinStageRes { get; } = joinStageRes;
 }

@@ -1,18 +1,19 @@
 ﻿namespace PlayHouse.Service.Shared;
 
-using System;
 public class UniqueIdGenerator
 {
-    private readonly long _nodeId;
-    private static readonly long _nodeIdBits = 12L;
-    private static readonly long _sequenceBits = 10L;
-    private static readonly long _nodeIdShift = 10L;
-    private static readonly long _timestampLeftShift = _nodeIdBits + _sequenceBits;
+    private const long NodeIdBits = 12L;
+    private const long SequenceBits = 10L;
+    private const long NodeIdShift = 10L;
+    private const long TimestampLeftShift = NodeIdBits + SequenceBits;
 
-    private long _sequence = 0L;
+    private static readonly long
+        Epoch = new DateTimeOffset(2020, 1, 1, 0, 0, 0, TimeSpan.Zero).ToUnixTimeMilliseconds();
+
+    private readonly long _nodeId;
     private long _lastTimestamp = -1L;
 
-    private static readonly long Epoch = new DateTimeOffset(2020, 1, 1, 0, 0, 0, TimeSpan.Zero).ToUnixTimeMilliseconds();
+    private long _sequence;
 
     public UniqueIdGenerator(int nodeId)
     {
@@ -28,7 +29,7 @@ public class UniqueIdGenerator
     {
         lock (this)
         {
-            long timestamp = GetCurrentTimestamp();
+            var timestamp = GetCurrentTimestamp();
 
             if (timestamp < _lastTimestamp)
             {
@@ -37,7 +38,7 @@ public class UniqueIdGenerator
 
             if (timestamp == _lastTimestamp)
             {
-                _sequence = _sequence + 1 & (1L << (int)_sequenceBits) - 1;
+                _sequence = (_sequence + 1) & ((1L << (int)SequenceBits) - 1);
 
                 if (_sequence == 0)
                 {
@@ -51,8 +52,8 @@ public class UniqueIdGenerator
 
             _lastTimestamp = timestamp;
 
-            return timestamp - Epoch << (int)_timestampLeftShift |
-                   _nodeId << (int)_nodeIdShift |
+            return ((timestamp - Epoch) << (int)TimestampLeftShift) |
+                   (_nodeId << (int)NodeIdShift) |
                    _sequence;
         }
     }
@@ -64,12 +65,12 @@ public class UniqueIdGenerator
 
     private long WaitForNextTimestamp(long currentTimestamp)
     {
-        long timestamp = GetCurrentTimestamp();
+        var timestamp = GetCurrentTimestamp();
         while (timestamp <= currentTimestamp)
         {
             timestamp = GetCurrentTimestamp();
         }
+
         return timestamp;
     }
 }
-

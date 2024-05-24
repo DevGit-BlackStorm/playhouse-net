@@ -1,133 +1,128 @@
-﻿using PlayHouse.Communicator.Message;
-using Playhouse.Protocol;
-using PlayHouse.Communicator;
-using PlayHouse.Service.Shared;
+﻿using PlayHouse.Communicator;
+using PlayHouse.Communicator.Message;
 using PlayHouse.Production.Shared;
+using Playhouse.Protocol;
+using PlayHouse.Service.Shared;
 
-namespace PlayHouse.Service.Play
+namespace PlayHouse.Service.Play;
+
+internal class XStageSender(
+    ushort serviceId,
+    long stageId,
+    IPlayDispatcher dispatcher,
+    IClientCommunicator clientCommunicator,
+    RequestCache reqCache)
+    : XSender(serviceId, clientCommunicator, reqCache), IStageSender
 {
-    internal class XStageSender : XSender, IStageSender
+    private readonly HashSet<long> _timerIds = new();
+
+    public long StageId { get; } = stageId;
+
+    public string StageType { get; private set; } = "";
+
+    public long AddRepeatTimer(TimeSpan initialDelay, TimeSpan period, TimerCallbackTask timerCallback)
     {
-        private readonly long _stageId;
-        private readonly IPlayDispatcher _dispatcher;
-        private readonly HashSet<long> _timerIds = new();
-        private string _stateType = "";
+        var timerId = MakeTimerId();
+        var packet = RoutePacket.AddTimerOf(
+            TimerMsg.Types.Type.Repeat,
+            StageId,
+            timerId,
+            timerCallback,
+            initialDelay,
+            period
+        );
+        dispatcher.OnPost(packet);
+        _timerIds.Add(timerId);
+        return timerId;
+    }
 
-        public XStageSender(
-            ushort serviceId, 
-            long stageId,
-            IPlayDispatcher dispatcher,
-            IClientCommunicator clientCommunicator, 
-            RequestCache reqCache) : base(serviceId, clientCommunicator, reqCache)
-        {
-            _stageId = stageId;
-            _dispatcher = dispatcher;
-        }
+    public long AddCountTimer(TimeSpan initialDelay, int count, TimeSpan period, TimerCallbackTask timerCallback)
+    {
+        var timerId = MakeTimerId();
+        var packet = RoutePacket.AddTimerOf(
+            TimerMsg.Types.Type.Count,
+            StageId,
+            timerId,
+            timerCallback,
+            initialDelay,
+            period,
+            count
+        );
+        dispatcher.OnPost(packet);
+        _timerIds.Add(timerId);
+        return timerId;
+    }
 
-        public long StageId => _stageId;
-        public string StageType => _stateType;
+    public void CancelTimer(long timerId)
+    {
+        var packet = RoutePacket.AddTimerOf(
+            TimerMsg.Types.Type.Cancel,
+            StageId,
+            timerId,
+            () => Task.CompletedTask,
+            TimeSpan.Zero,
+            TimeSpan.Zero
+        );
+        dispatcher.OnPost(packet);
+        _timerIds.Remove(timerId);
+    }
 
-
-        private long MakeTimerId()
-        {
-            return TimerIdMaker.MakeId();
-        }
-
-        public long AddRepeatTimer(TimeSpan initialDelay, TimeSpan period, TimerCallbackTask timerCallback)
-        {
-            var timerId = MakeTimerId();
-            var packet = RoutePacket.AddTimerOf(
-                TimerMsg.Types.Type.Repeat,
-                _stageId,
-                timerId,
-                timerCallback,
-                initialDelay,
-                period
-            );
-            _dispatcher.OnPost(packet);
-            _timerIds.Add(timerId);
-            return timerId;
-        }
-
-        public long AddCountTimer(TimeSpan initialDelay, int count, TimeSpan period, TimerCallbackTask timerCallback)
-        {
-            var timerId = MakeTimerId();
-            var packet = RoutePacket.AddTimerOf(
-                TimerMsg.Types.Type.Count,
-                _stageId,
-                timerId,
-                timerCallback,
-                initialDelay,
-                period,
-                count
-            );
-            _dispatcher.OnPost(packet);
-            _timerIds.Add(timerId);
-            return timerId;
-        }
-
-        public void CancelTimer(long timerId)
+    public void CloseStage()
+    {
+        foreach (var timerId in _timerIds)
         {
             var packet = RoutePacket.AddTimerOf(
                 TimerMsg.Types.Type.Cancel,
-                _stageId,
+                StageId,
                 timerId,
-                () => { return Task.CompletedTask; },
+                () => Task.CompletedTask,
                 TimeSpan.Zero,
                 TimeSpan.Zero
             );
-            _dispatcher.OnPost(packet);
-            _timerIds.Remove(timerId);
+            dispatcher.OnPost(packet);
         }
 
-        public void CloseStage()
-        {
-            foreach (var timerId in _timerIds)
-            {
-                var packet = RoutePacket.AddTimerOf(
-                    TimerMsg.Types.Type.Cancel,
-                    _stageId,
-                    timerId,
-                    () => { return Task.CompletedTask; },
-                    TimeSpan.Zero,
-                    TimeSpan.Zero
-                );
-                _dispatcher.OnPost(packet);
-            }
-            _timerIds.Clear();
+        _timerIds.Clear();
 
-            var packet2 = RoutePacket.StageOf(_stageId, 0, RoutePacket.Of(DestroyStage.Descriptor.Index,new EmptyPayload()), true, false);
-            _dispatcher.OnPost(packet2);
-        }
-
-        override public void SendToClient(string sessionEndpoint, int sid, IPacket packet)
-        {
-            PacketContext.AsyncCore.Add(SendTarget.Client, 0, packet);
-
-            RoutePacket routePacket = RoutePacket.ClientOf(_serviceId, sid, packet,_stageId);
-            _clientCommunicator.Send(sessionEndpoint, routePacket);
-        }
-
-        public void AsyncBlock(AsyncPreCallback preCallback, AsyncPostCallback? postCallback = null)
-        {
-            Task.Run(async () =>
-            {
-                var result = await preCallback.Invoke();
-                if (postCallback != null)
-                {
-                    var packet = AsyncBlockPacket.Of(_stageId,  postCallback, result!);
-                    _dispatcher.OnPost(packet);
-                }
-            });
-            
-        }
-
-        public bool HasTimer(long timerId) => _timerIds.Contains(timerId);
-
-        public  void SetStageType(string stageType)
-        {
-            _stateType = stageType;
-        }
+        var packet2 = RoutePacket.StageOf(StageId, 0, RoutePacket.Of(DestroyStage.Descriptor.Index, new EmptyPayload()),
+            true, false);
+        dispatcher.OnPost(packet2);
     }
 
+    public override void SendToClient(string sessionEndpoint, int sid, IPacket packet)
+    {
+        PacketContext.AsyncCore.Add(SendTarget.Client, 0, packet);
+
+        var routePacket = RoutePacket.ClientOf(ServiceId, sid, packet, StageId);
+        ClientCommunicator.Send(sessionEndpoint, routePacket);
+    }
+
+    public void AsyncBlock(AsyncPreCallback preCallback, AsyncPostCallback? postCallback = null)
+    {
+        Task.Run(async () =>
+        {
+            var result = await preCallback.Invoke();
+            if (postCallback != null)
+            {
+                var packet = AsyncBlockPacket.Of(StageId, postCallback, result!);
+                dispatcher.OnPost(packet);
+            }
+        });
+    }
+
+
+    private long MakeTimerId()
+    {
+        return TimerIdMaker.MakeId();
+    }
+
+    public bool HasTimer(long timerId)
+    {
+        return _timerIds.Contains(timerId);
+    }
+
+    public void SetStageType(string stageType)
+    {
+        StageType = stageType;
+    }
 }

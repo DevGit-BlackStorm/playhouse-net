@@ -1,21 +1,21 @@
-﻿using CommonLib;
+﻿using System.Text;
 using Google.Protobuf;
 using NetMQ;
 using NetMQ.Sockets;
-using Playhouse.Protocol;
 using PlayHouse.Communicator.Message;
-using System.Text;
+using Playhouse.Protocol;
 using PlayHouse.Utils;
 
 namespace PlayHouse.Communicator.PlaySocket;
-internal class NetMQPlaySocket : IPlaySocket
-{
-    private readonly RouterSocket _socket = new();
-    private readonly string _bindEndpoint;
-    private readonly PooledByteBuffer _buffer = new PooledByteBuffer(ConstOption.MaxPacketSize);
-    private readonly LOG<NetMQPlaySocket> _log = new ();
 
-    public NetMQPlaySocket(SocketConfig socketConfig,string bindEndpoint)
+internal class NetMqPlaySocket : IPlaySocket
+{
+    private readonly string _bindEndpoint;
+    private readonly PooledByteBuffer _buffer = new(ConstOption.MaxPacketSize);
+    private readonly LOG<NetMqPlaySocket> _log = new();
+    private readonly RouterSocket _socket = new();
+
+    public NetMqPlaySocket(SocketConfig socketConfig, string bindEndpoint)
     {
         _bindEndpoint = bindEndpoint;
 
@@ -30,8 +30,6 @@ internal class NetMQPlaySocket : IPlaySocket
         _socket.Options.ReceiveHighWatermark = socketConfig.ReceiveHighWatermark;
         _socket.Options.SendHighWatermark = socketConfig.SendHighWatermark;
         _socket.Options.RouterMandatory = true;
-
-        
     }
 
     public void Bind()
@@ -66,6 +64,7 @@ internal class NetMQPlaySocket : IPlaySocket
         {
             return;
         }
+
         _socket.Disconnect(endpoint);
     }
 
@@ -81,24 +80,25 @@ internal class NetMQPlaySocket : IPlaySocket
 
     public RoutePacket? Receive()
     {
-        NetMQMessage? message = new NetMQMessage();
-        if(_socket.TryReceiveMultipartMessage(ref message))
+        var message = new NetMQMessage();
+        if (_socket.TryReceiveMultipartMessage(ref message))
         {
-            if(message.Count() < 3)
+            if (message.Count() < 3)
             {
-                _log.Error(()=>$"message size is invalid : {message.Count()}");
+                _log.Error(() => $"message size is invalid : {message.Count()}");
                 return null;
             }
 
-            String target = Encoding.UTF8.GetString(message[0].Buffer);
-            RouteHeaderMsg header = RouteHeaderMsg.Parser.ParseFrom(message[1].Buffer);
+            var target = Encoding.UTF8.GetString(message[0].Buffer);
+            var header = RouteHeaderMsg.Parser.ParseFrom(message[1].Buffer);
             //PooledBufferPayload payload = new(new (message[2].Buffer));
-            FramePayload payload = new FramePayload(message[2]); 
+            var payload = new FramePayload(message[2]);
 
-            var routePacket = RoutePacket.Of(new RouteHeader(header),payload);
+            var routePacket = RoutePacket.Of(new RouteHeader(header), payload);
             routePacket.RouteHeader.From = target;
             return routePacket;
         }
+
         return null;
     }
 
@@ -111,11 +111,11 @@ internal class NetMQPlaySocket : IPlaySocket
 
         using (routePacket)
         {
-            NetMQMessage message = new NetMQMessage();
-            IPayload payload = routePacket.Payload;
+            var message = new NetMQMessage();
+            var payload = routePacket.Payload;
 
             NetMQFrame frame;
-            
+
             _buffer.Clear();
             if (routePacket.IsToClient())
             {
@@ -124,19 +124,18 @@ internal class NetMQPlaySocket : IPlaySocket
             }
             else
             {
-                if (payload is FramePayload)
+                if (payload is FramePayload framePayload)
                 {
-                    frame = ((FramePayload)payload).Frame;
+                    frame = framePayload.Frame;
                 }
                 else
                 {
-                    _buffer.Write(payload.DataSpan);    
+                    _buffer.Write(payload.DataSpan);
                     frame = new NetMQFrame(_buffer.Buffer(), _buffer.Count);
                 }
-                
             }
-                  
-          
+
+
             message.Append(new NetMQFrame(Encoding.UTF8.GetBytes(endpoint)));
             var routerHeaderMsg = routePacket.RouteHeader.ToMsg();
 
@@ -149,7 +148,7 @@ internal class NetMQPlaySocket : IPlaySocket
 
             if (!_socket.TrySendMultipartMessage(message))
             {
-                _log.Error(()=>$"PostAsync fail to {endpoint}, MsgName:{routePacket.MsgId}");
+                _log.Error(() => $"PostAsync fail to {endpoint}, MsgName:{routePacket.MsgId}");
             }
         }
     }

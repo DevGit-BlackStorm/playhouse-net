@@ -5,23 +5,20 @@ using PlayHouse.Utils;
 
 namespace PlayHouse.Service.Api.Reflection;
 
-internal class ApiReflectionCallback
+internal class ApiReflectionCallback(IServiceProvider serviceProvider)
 {
-    private readonly CallbackReflectionInvoker _invoker;
+    private readonly CallbackReflectionInvoker _invoker = new(serviceProvider,
+        new[] { typeof(IDisconnectCallback), typeof(IUpdateServerInfoCallback) });
     private readonly LOG<ApiReflectionCallback> _log = new();
-
-    public ApiReflectionCallback(IServiceProvider serviceProvider)
-    {
-        _invoker = new CallbackReflectionInvoker(serviceProvider,new Type[] { typeof(IDisconnectCallback), typeof(IUpdateServerInfoCallback) });
-    }
 
     public async Task OnDisconnectAsync(IApiSender sender)
     {
-        await _invoker.InvokeMethods("OnDisconnectAsync", new object[] { sender });
+        await _invoker.InvokeMethods("OnDisconnectAsync", [sender]);
     }
 
     public async Task<List<IServerInfo>> UpdateServerInfoAsync(IServerInfo serverInfo)
     {
-        return (List<IServerInfo>) (await _invoker.InvokeMethodsWithReturn("UpdateServerInfoAsync", new object[] {serverInfo }))!;
+        return (List<IServerInfo>)(await _invoker.InvokeMethodsWithReturn("UpdateServerInfoAsync",
+            [serverInfo]))!;
     }
 }

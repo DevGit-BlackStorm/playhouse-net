@@ -1,9 +1,8 @@
 ﻿using PlayHouse.Production.Shared;
 
-namespace PlayHouse.Production.Api
+namespace PlayHouse.Production.Api;
+
+public interface IDisconnectCallback
 {
-    public interface IDisconnectCallback
-    {
-        Task OnDisconnectAsync(IApiSender apiSender);
-    }
+    Task OnDisconnectAsync(IApiSender apiSender);
 }

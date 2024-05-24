@@ -1,22 +1,20 @@
 ﻿using PlayHouse.Communicator.Message;
 using PlayHouse.Production.Shared;
 
-namespace PlayHouse.Service.Shared
+namespace PlayHouse.Service.Shared;
+
+internal static class PacketProducer
 {
-    internal static class PacketProducer
+    private static Func<int, IPayload, ushort, IPacket>? CreateFunc { get; set; } //msgId,
+
+
+    public static void Init(Func<int, IPayload, ushort, IPacket> createFunc) //int msgId, payload,msgSeq return IPacket
     {
+        PacketProducer.CreateFunc = createFunc;
+    }
 
-        private static Func<int, IPayload, ushort, IPacket>? _createFunc { get; set; } //msgId,
-
-
-        public static void Init(Func<int, IPayload, ushort, IPacket> CreateFunc)//int msgId, payload,msgSeq return IPacket
-        {
-            _createFunc = CreateFunc;
-        }
-
-        public static IPacket CreatePacket(int msgId, IPayload payload, ushort msgSeq)
-        {
-            return _createFunc!.Invoke(msgId, payload, msgSeq);
-        }
+    public static IPacket CreatePacket(int msgId, IPayload payload, ushort msgSeq)
+    {
+        return CreateFunc!.Invoke(msgId, payload, msgSeq);
     }
 }

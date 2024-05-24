@@ -1,9 +1,8 @@
 ﻿using PlayHouse.Communicator.Message;
 
-namespace PlayHouse.Communicator
+namespace PlayHouse.Communicator;
+
+internal interface ICommunicateListener
 {
-    interface ICommunicateListener
-    {
-        public void OnReceive(RoutePacket routePacket);
-     }
+    public void OnReceive(RoutePacket routePacket);
 }

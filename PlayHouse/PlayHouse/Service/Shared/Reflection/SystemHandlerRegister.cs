@@ -4,32 +4,23 @@ namespace PlayHouse.Service.Shared.Reflection;
 
 internal class SystemHandlerRegister : ISystemHandlerRegister
 {
-
-    private readonly Dictionary<int, SystemHandler> _handles = new ();
-    public Dictionary<int, SystemHandler> Handles => _handles;
+    public Dictionary<int, SystemHandler> Handles { get; } = new();
 
     public void Add(int msgId, SystemHandler handler)
     {
-        if (_handles.ContainsKey(msgId))
+        if (!Handles.TryAdd(msgId, handler))
         {
             throw new InvalidOperationException($"Already exists message ID: {msgId}");
-        }
-        else
-        {
-            _handles[msgId] = handler;
         }
     }
 
     public SystemHandler GetHandler(int msgId)
     {
-        if (_handles.TryGetValue(msgId, out var handler))
+        if (Handles.TryGetValue(msgId, out var handler))
         {
             return handler;
         }
-        else
-        {
-            throw new KeyNotFoundException($"Handler for message ID {msgId} not found");
-        }
-    }
 
+        throw new KeyNotFoundException($"Handler for message ID {msgId} not found");
+    }
 }
