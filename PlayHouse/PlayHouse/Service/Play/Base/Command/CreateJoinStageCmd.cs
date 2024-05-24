@@ -4,15 +4,9 @@ using Playhouse.Protocol;
 using PlayHouse.Service.Shared;
 
 namespace PlayHouse.Service.Play.Base.Command;
-internal class CreateJoinStageCmd : IBaseStageCmd
+
+internal class CreateJoinStageCmd(PlayDispatcher dispatcher) : IBaseStageCmd
 {
-    private readonly PlayDispatcher _dispatcher;
-
-    public CreateJoinStageCmd(PlayDispatcher dispatcher)
-    {
-        _dispatcher = dispatcher;
-    }
-
     public async Task Execute(BaseStage baseStage, RoutePacket routePacket)
     {
         var request = CreateJoinStageReq.Parser.ParseFrom(routePacket.Span);
@@ -25,11 +19,11 @@ internal class CreateJoinStageCmd : IBaseStageCmd
         var sid = request.Sid;
         var apiEndpoint = routePacket.RouteHeader.From;
 
-        CreateJoinStageRes response = new CreateJoinStageRes();
+        var response = new CreateJoinStageRes();
 
-        if (!_dispatcher.IsValidType(stageType))
+        if (!dispatcher.IsValidType(stageType))
         {
-            baseStage.Reply((int) BaseErrorCode.StageTypeIsInvalid);
+            baseStage.Reply((int)BaseErrorCode.StageTypeIsInvalid);
             return;
         }
 
@@ -46,7 +40,7 @@ internal class CreateJoinStageCmd : IBaseStageCmd
             }
             else
             {
-                _dispatcher.RemoveRoom(stageId);
+                dispatcher.RemoveRoom(stageId);
                 baseStage.Reply(createReply.errorCode);
                 return;
             }
@@ -68,4 +62,3 @@ internal class CreateJoinStageCmd : IBaseStageCmd
         }
     }
 }
-

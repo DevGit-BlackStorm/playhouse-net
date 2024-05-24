@@ -4,3 +4,4 @@
 //    //void UpdateServerInfo(XServerInfo serverInfo);
 //    Task<List<XServerInfo>> UpdateServerListAsync(XServerInfo serverInfo);
 //}
+

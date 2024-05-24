@@ -1,40 +1,38 @@
 ﻿using PlayHouse.Communicator.Message;
 using PlayHouse.Utils;
 
-namespace PlayHouse.Service.Play.Base
+namespace PlayHouse.Service.Play.Base;
+
+internal class BaseStageCmdHandler
 {
-    internal class BaseStageCmdHandler
+    private readonly LOG<BaseStageCmdHandler> _log = new();
+    private readonly Dictionary<int, IBaseStageCmd> _maps = new();
+
+    public void Register(int msgId, IBaseStageCmd baseStageCmd)
     {
-        private readonly LOG<BaseStageCmdHandler> _log = new ();
-        private readonly Dictionary<int, IBaseStageCmd> _maps = new();
-
-        public void Register(int msgId, IBaseStageCmd baseStageCmd)
+        if (!_maps.TryAdd(msgId, baseStageCmd))
         {
-            if (_maps.ContainsKey(msgId))
-            {
-                throw new InvalidOperationException($"Already exist command - [msgId:{msgId}]");
-            }
-            _maps[msgId] = baseStageCmd;
+            throw new InvalidOperationException($"Already exist command - [msgId:{msgId}]");
         }
+    }
 
-        public async Task Dispatch(BaseStage baseStage, RoutePacket request)
+    public async Task Dispatch(BaseStage baseStage, RoutePacket request)
+    {
+        var msgId = request.MsgId;
+        if (request.IsBase())
         {
-            int msgId = request.MsgId;
-            if (request.IsBase())
+            if (_maps.TryGetValue(msgId, out var cmd))
             {
-                if (_maps.TryGetValue(msgId, out var cmd))
-                {
-                    await cmd.Execute(baseStage, request);
-                }
-                else
-                {
-                    _log.Error(()=>$"not registered message - [msgId:{msgId}]");
-                }
+                await cmd.Execute(baseStage, request);
             }
             else
             {
-                _log.Error(()=>$"Invalid packet - [msgId:{msgId}]");
+                _log.Error(() => $"not registered message - [msgId:{msgId}]");
             }
+        }
+        else
+        {
+            _log.Error(() => $"Invalid packet - [msgId:{msgId}]");
         }
     }
 }

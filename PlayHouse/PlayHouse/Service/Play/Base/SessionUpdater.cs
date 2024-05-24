@@ -1,35 +1,26 @@
-﻿using Google.Protobuf;
+﻿using PlayHouse.Communicator.Message;
 using Playhouse.Protocol;
-using PlayHouse.Communicator.Message;
 
-namespace PlayHouse.Service.Play.Base
+namespace PlayHouse.Service.Play.Base;
+
+public interface ISessionUpdater
 {
-    public interface ISessionUpdater
+    public Task UpdateStageInfo(string sessionEndpoint, int sid);
+}
+
+internal class XSessionUpdater(string playEndpoint, XStageSender stageSender) : ISessionUpdater
+{
+    public async Task UpdateStageInfo(string sessionEndpoint, int sid)
     {
-        public Task UpdateStageInfo(string sessionEndpoint, int sid);
-    }
-
-    internal class XSessionUpdater : ISessionUpdater
-    {
-        private readonly XStageSender _stageSender;
-        private readonly string _playEndpoint;
-        public XSessionUpdater(string playEndpoint,XStageSender stageSender)
+        var joinStageInfoUpdateReq = new JoinStageInfoUpdateReq
         {
-            _stageSender = stageSender;
-            _playEndpoint = playEndpoint;
-        }
+            StageId = stageSender.StageId,
+            PlayEndpoint = playEndpoint
+        };
 
-        public async Task UpdateStageInfo(string sessionEndpoint, int sid)
-        {
-            var joinStageInfoUpdateReq = new JoinStageInfoUpdateReq()
-            {
-                StageId = _stageSender.StageId,
-                PlayEndpoint = _playEndpoint,
-            };
-
-            using var res = await _stageSender.RequestToBaseSession(sessionEndpoint, sid, RoutePacket.Of(joinStageInfoUpdateReq));
-            var result = JoinStageInfoUpdateRes.Parser.ParseFrom(res.Span);
-            //return result.StageId;
-        }
+        using var res =
+            await stageSender.RequestToBaseSession(sessionEndpoint, sid, RoutePacket.Of(joinStageInfoUpdateReq));
+        var result = JoinStageInfoUpdateRes.Parser.ParseFrom(res.Span);
+        //return result.StageId;
     }
 }

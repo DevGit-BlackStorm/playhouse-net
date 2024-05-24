@@ -2,26 +2,26 @@
 
 public class ApiControllAspectifyManager
 {
-    private  readonly List<AspectifyAttribute> _attibutes = new List<AspectifyAttribute>();
-    private readonly List<AspectifyAttribute> _backendAttibutes = new List<AspectifyAttribute>();
+    private readonly List<AspectifyAttribute> _attributes = new();
+    private readonly List<AspectifyAttribute> _backendAttributes = new();
 
     public void Add(AspectifyAttribute attribute)
     {
-        _attibutes.Add(attribute);
+        _attributes.Add(attribute);
     }
 
     public void AddBackend(AspectifyAttribute attribute)
     {
-        _backendAttibutes.Add(attribute);
+        _backendAttributes.Add(attribute);
     }
 
-    public  List<AspectifyAttribute> Get()
+    public List<AspectifyAttribute> Get()
     {
-        return _attibutes;
+        return _attributes;
     }
+
     public List<AspectifyAttribute> GetBackend()
     {
-        return _backendAttibutes;
+        return _backendAttributes;
     }
 }
-

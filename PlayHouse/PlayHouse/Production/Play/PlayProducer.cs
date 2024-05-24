@@ -2,6 +2,7 @@
 using PlayHouse.Service.Play;
 
 namespace PlayHouse.Production.Play;
+
 public class PlayProducer
 {
     private readonly Dictionary<string, Func<IStageSender, IStage>> _rooms = new();
@@ -19,6 +20,7 @@ public class PlayProducer
         {
             return factory(stageSender);
         }
+
         throw new KeyNotFoundException($"Stage type {stageType} not registered");
     }
 
@@ -28,6 +30,7 @@ public class PlayProducer
         {
             return factory(actorSender);
         }
+
         throw new KeyNotFoundException($"Actor type {stageType} not registered");
     }
 
@@ -36,4 +39,3 @@ public class PlayProducer
         return _rooms.ContainsKey(stageType);
     }
 }
-

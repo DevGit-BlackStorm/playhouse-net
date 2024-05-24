@@ -2,50 +2,48 @@
 using PlayHouse.Communicator.Message;
 using PlayHouse.Production.Shared;
 
-namespace PlayHouseTests
+namespace PlayHouseTests;
+
+internal class TestPacket : IPacket
 {
-    internal class TestPacket : IPacket
+    private readonly ushort _msgSeq;
+
+    public TestPacket(IMessage message)
     {
-        private int _msgId;
-        private IPayload _payload;
-        private ushort _msgSeq;
+        MsgId = message.Descriptor.Index;
+        Payload = new ProtoPayload(message);
+    }
 
-        public TestPacket(IMessage message)
-        {
-            _msgId = message.Descriptor.Index;
-            _payload = new ProtoPayload(message);
-        }
+    public TestPacket(int msgId)
+    {
+        MsgId = msgId;
+        Payload = new EmptyPayload();
+    }
 
-        public TestPacket(int msgId)
-        {
-            _msgId = msgId;
-            _payload = new EmptyPayload();
-        }
+    public TestPacket(int msgId, IPayload payload, ushort msgSeq) : this(msgId)
+    {
+        Payload = payload;
+        _msgSeq = msgSeq;
+    }
 
-        public TestPacket(int msgId, IPayload payload, ushort msgSeq) : this(msgId)
-        {
-            _payload = payload;
-            _msgSeq = msgSeq;
-        }
+    public bool IsRequest => _msgSeq > 0;
 
-        public int MsgId => _msgId;
+    public int MsgId { get; }
 
-        public IPayload Payload => _payload;
-        public bool IsRequest => _msgSeq > 0;
+    public IPayload Payload { get; }
 
-        public IPacket Copy()
-        {
-            throw new NotImplementedException();
-        }
+    public void Dispose()
+    {
+        Payload.Dispose();
+    }
 
-        public void Dispose()
-        {
-            _payload.Dispose();
-        }
+    public IPacket Copy()
+    {
+        throw new NotImplementedException();
+    }
 
-        public T Parse<T>()
-        {
-            throw new NotImplementedException();
-        }
+    public T Parse<T>()
+    {
+        throw new NotImplementedException();
     }
 }

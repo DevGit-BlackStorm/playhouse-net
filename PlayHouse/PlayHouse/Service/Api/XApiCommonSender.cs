@@ -1,11 +1,12 @@
 ﻿using Google.Protobuf;
-using Playhouse.Protocol;
 using PlayHouse.Communicator;
 using PlayHouse.Communicator.Message;
 using PlayHouse.Production.Shared;
+using Playhouse.Protocol;
 using PlayHouse.Service.Shared;
 
 namespace PlayHouse.Service.Api;
+
 internal class XApiCommonSender : XSender, IApiCommonSender
 {
     protected XApiCommonSender(ushort serviceId, IClientCommunicator clientCommunicator, RequestCache reqCache)
@@ -15,9 +16,10 @@ internal class XApiCommonSender : XSender, IApiCommonSender
 
     public long AccountId => CurrentHeader?.AccountId ?? 0;
 
-    public async Task<CreateStageResult> CreateStage(string playEndpoint, string stageType, long stageId, IPacket packet)
+    public async Task<CreateStageResult> CreateStage(string playEndpoint, string stageType, long stageId,
+        IPacket packet)
     {
-        var req = new CreateStageReq()
+        var req = new CreateStageReq
         {
             StageType = stageType,
             PayloadId = packet.MsgId,

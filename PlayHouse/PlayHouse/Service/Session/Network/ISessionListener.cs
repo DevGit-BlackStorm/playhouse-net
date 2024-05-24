@@ -1,13 +1,10 @@
 ﻿using PlayHouse.Communicator.Message;
 
+namespace PlayHouse.Service.Session.Network;
 
-namespace PlayHouse.Service.Session.Network
+internal interface ISessionListener
 {
-    internal interface ISessionListener
-    {
-        void OnConnect(int sid, ISession session);
-        void OnReceive(int sid, ClientPacket clientPacket);
-        void OnDisconnect(int sid);
-
-    }
+    void OnConnect(int sid, ISession session);
+    void OnReceive(int sid, ClientPacket clientPacket);
+    void OnDisconnect(int sid);
 }

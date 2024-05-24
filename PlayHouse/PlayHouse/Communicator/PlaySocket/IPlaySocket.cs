@@ -1,19 +1,17 @@
 ﻿using PlayHouse.Communicator.Message;
 
-namespace PlayHouse.Communicator.PlaySocket
+namespace PlayHouse.Communicator.PlaySocket;
+
+internal interface IPlaySocket
 {
-    internal interface IPlaySocket
-    {
-        string GetBindEndpoint();
-        void Bind();
-        void Send(String endpoint, RoutePacket routerPacket);
-        void Connect(String target);
-        RoutePacket? Receive();
-        void Disconnect(String endpoint);
+    string GetBindEndpoint();
+    void Bind();
+    void Send(string endpoint, RoutePacket routerPacket);
+    void Connect(string target);
+    RoutePacket? Receive();
+    void Disconnect(string endpoint);
 
-        void Close();
+    void Close();
 
-        string Id();
-
-    }
+    string Id();
 }

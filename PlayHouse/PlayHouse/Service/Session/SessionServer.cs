@@ -6,39 +6,40 @@ using PlayHouse.Production.Shared;
 using PlayHouse.Service.Shared;
 
 namespace PlayHouse.Service.Session;
-
 public class SessionServer : IServer
 {
-    private Communicator.Communicator _communicator;
     private readonly PlayhouseOption _commonOption;
     private readonly SessionOption _sessionOption;
+    private readonly Communicator.Communicator _communicator;
 
     public SessionServer(PlayhouseOption commonOption, SessionOption sessionOption)
     {
-        if(commonOption.PacketProducer == null)
+        if (commonOption.PacketProducer == null)
         {
             commonOption.PacketProducer = (msgId, payload, msgSeq) => new EmptyPacket();
         }
+
         _commonOption = commonOption;
         _sessionOption = sessionOption;
 
-         var communicatorOption = new CommunicatorOption.Builder()
-                  .SetIp(_commonOption.Ip)
-                  .SetPort(_commonOption.Port)
-                  .SetServiceProvider(_commonOption.ServiceProvider)
-                  .SetShowQps(_commonOption.ShowQps)
-                  .SetNodeId(_commonOption.NodeId)
-                  .SetPacketProducer(_commonOption.PacketProducer)
-                  .SetAddressServerEndpoints(_commonOption.AddressServerEndpoints)
-                  .SetAddressServerServiceId(_commonOption.AddressServerServiceId)
-                  .Build();
+        var communicatorOption = new CommunicatorOption.Builder()
+            .SetIp(_commonOption.Ip)
+            .SetPort(_commonOption.Port)
+            .SetServiceProvider(_commonOption.ServiceProvider)
+            .SetShowQps(_commonOption.ShowQps)
+            .SetNodeId(_commonOption.NodeId)
+            .SetPacketProducer(_commonOption.PacketProducer)
+            .SetAddressServerEndpoints(_commonOption.AddressServerEndpoints)
+            .SetAddressServerServiceId(_commonOption.AddressServerServiceId)
+            .Build();
 
         PooledBuffer.Init(_commonOption.MaxBufferPoolSize);
 
         var bindEndpoint = communicatorOption.BindEndpoint;
-        ushort serviceId = _commonOption.ServiceId;
+        var serviceId = _commonOption.ServiceId;
 
-        var communicateClient = new XClientCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(),bindEndpoint));
+        var communicateClient =
+            new XClientCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(), bindEndpoint));
 
         var requestCache = new RequestCache(_commonOption.RequestTimeoutSec);
 

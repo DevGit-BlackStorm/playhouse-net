@@ -1,19 +1,18 @@
 ﻿using PlayHouse.Production.Shared;
 
-namespace PlayHouse.Service.Play
+namespace PlayHouse.Service.Play;
+
+public interface IActorSender
 {
-    public interface IActorSender
-    {
-        long AccountId();
-        string SessionEndpoint();
-        string ApiEndpoint();
-        int Sid();
-        void LeaveStage();
+    long AccountId();
+    string SessionEndpoint();
+    string ApiEndpoint();
+    int Sid();
+    void LeaveStage();
 
-        void SendToClient(IPacket packet);
+    void SendToClient(IPacket packet);
 
-        void SendToApi(IPacket packet);
-        Task<IPacket> RequestToApi(IPacket packet);
-        Task<IPacket> AsyncToApi(IPacket packet);
-    }
+    void SendToApi(IPacket packet);
+    Task<IPacket> RequestToApi(IPacket packet);
+    Task<IPacket> AsyncToApi(IPacket packet);
 }

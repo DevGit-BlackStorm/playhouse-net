@@ -1,7 +1,7 @@
-﻿
-using PlayHouse.Production.Shared;
+﻿using PlayHouse.Production.Shared;
 
 namespace PlayHouse.Production.Play;
+
 public class PacketHandler<TS, TA> where TA : IActor
 {
     private readonly Dictionary<int, IPacketCmd<TS, TA>> _messageMap = new();
@@ -20,10 +20,9 @@ public class PacketHandler<TS, TA> where TA : IActor
 
     public void Add(int msgId, IPacketCmd<TS, TA> cmd)
     {
-        if (_messageMap.ContainsKey(msgId))
+        if (!_messageMap.TryAdd(msgId, cmd))
         {
             throw new ArgumentException($"msgId:{msgId} is already registered");
         }
-        _messageMap[msgId] = cmd;
     }
 }

@@ -1,43 +1,40 @@
-﻿using PlayHouse.Communicator.Message;
-using Playhouse.Protocol;
-using PlayHouse.Utils;
+﻿using System.Collections.Concurrent;
 using PlayHouse.Communicator;
-using System.Collections.Concurrent;
-using PlayHouse.Service.Play.Base.Command;
+using PlayHouse.Communicator.Message;
 using PlayHouse.Production.Play;
-using PlayHouse.Service.Shared;
 using PlayHouse.Production.Shared;
+using Playhouse.Protocol;
+using PlayHouse.Service.Play.Base.Command;
+using PlayHouse.Service.Shared;
+using PlayHouse.Utils;
 
 namespace PlayHouse.Service.Play.Base;
+
 internal class BaseStage
 {
-    private readonly LOG<BaseStage> _log = new ();
-    private readonly long _stageId;
     private readonly PlayDispatcher _dispatcher;
+    private readonly AtomicBoolean _isUsing = new(false);
+    private readonly LOG<BaseStage> _log = new();
+    private readonly BaseStageCmdHandler _msgHandler = new();
+    private readonly ConcurrentQueue<RoutePacket> _msgQueue = new();
     private readonly IServerInfoCenter _serverInfoCenter;
-    private readonly XStageSender _stageSender;
-    private readonly BaseStageCmdHandler _msgHandler = new BaseStageCmdHandler();
-    private readonly ConcurrentQueue<RoutePacket> _msgQueue = new ConcurrentQueue<RoutePacket>();
-    private readonly AtomicBoolean _isUsing = new AtomicBoolean(false);
     private readonly ISessionUpdater _sessionUpdater;
+    private readonly long _stageId;
 
-    public XStageSender StageSender => _stageSender;
-
-    private IStage?  _stage; 
-    public bool IsCreated { get; private set; }
+    private IStage? _stage;
 
     public BaseStage(long stageId,
-                     PlayDispatcher dispatcher, 
-                     IClientCommunicator clientCommunicator,
-                     RequestCache reqCache, 
-                     IServerInfoCenter serverInfoCenter,
-                     ISessionUpdater sessionUpdater,
-                     XStageSender stageSender )
+        PlayDispatcher dispatcher,
+        IClientCommunicator clientCommunicator,
+        RequestCache reqCache,
+        IServerInfoCenter serverInfoCenter,
+        ISessionUpdater sessionUpdater,
+        XStageSender stageSender)
     {
         _stageId = stageId;
         _dispatcher = dispatcher;
         _serverInfoCenter = serverInfoCenter;
-        _stageSender = stageSender;
+        StageSender = stageSender;
         _sessionUpdater = sessionUpdater;
 
 
@@ -49,9 +46,15 @@ internal class BaseStage
         _msgHandler.Register(AsyncBlock.Descriptor.Index, new AsyncBlockCmd());
     }
 
+    public XStageSender StageSender { get; }
+
+    public bool IsCreated { get; private set; }
+
+    public long StageId => StageSender.StageId;
+
     private async Task Dispatch(RoutePacket routePacket)
     {
-        _stageSender.SetCurrentPacketHeader(routePacket.RouteHeader);
+        StageSender.SetCurrentPacketHeader(routePacket.RouteHeader);
         try
         {
             if (routePacket.IsBase())
@@ -60,24 +63,23 @@ internal class BaseStage
             }
             else
             {
-                long accountId = routePacket.AccountId;
+                var accountId = routePacket.AccountId;
                 var baseUser = _dispatcher.FindUser(accountId);
                 if (baseUser != null)
                 {
-                    await _stage!.OnDispatch(baseUser.Actor,CPacket.Of(routePacket.MsgId, routePacket.Payload));
+                    await _stage!.OnDispatch(baseUser.Actor, CPacket.Of(routePacket.MsgId, routePacket.Payload));
                 }
             }
         }
         catch (Exception e)
         {
-            _stageSender.Reply((ushort)BaseErrorCode.SystemError);
-            _log.Error(()=>e.ToString());
+            StageSender.Reply((ushort)BaseErrorCode.SystemError);
+            _log.Error(() => e.ToString());
         }
         finally
         {
-            _stageSender.ClearCurrentPacketHeader();
+            StageSender.ClearCurrentPacketHeader();
         }
-
     }
 
     public void Post(RoutePacket routePacket)
@@ -98,35 +100,35 @@ internal class BaseStage
                     }
                     catch (Exception e)
                     {
-                        _stageSender.Reply((ushort)BaseErrorCode.UncheckedContentsError);
+                        StageSender.Reply((ushort)BaseErrorCode.UncheckedContentsError);
                         _log.Error(() => e.ToString());
                     }
                 }
 
                 _isUsing.Set(false);
             });
-         
         }
     }
 
     public async Task<(ushort errorCode, IPacket reply)> Create(string stageType, IPacket packet)
     {
-        _stage = _dispatcher.CreateContentRoom(stageType, _stageSender);
-        _stageSender.SetStageType(stageType);
+        _stage = _dispatcher.CreateContentRoom(stageType, StageSender);
+        StageSender.SetStageType(stageType);
         var outcome = await _stage.OnCreate(packet);
         IsCreated = true;
         return outcome;
     }
 
 
-    public async Task<(ushort errorCode,IPacket reply)> Join(long accountId, string sessionEndpoint, int sid, string apiEndpoint, IPacket packet)
+    public async Task<(ushort errorCode, IPacket reply)> Join(long accountId, string sessionEndpoint, int sid,
+        string apiEndpoint, IPacket packet)
     {
-        BaseActor? baseUser = _dispatcher.FindUser(accountId);
+        var baseUser = _dispatcher.FindUser(accountId);
 
         if (baseUser == null)
         {
-            XActorSender userSender = new XActorSender(accountId, sessionEndpoint, sid, apiEndpoint, this, _serverInfoCenter);
-            IActor user = _dispatcher.CreateContentUser(_stageSender.StageType, userSender);
+            var userSender = new XActorSender(accountId, sessionEndpoint, sid, apiEndpoint, this, _serverInfoCenter);
+            var user = _dispatcher.CreateContentUser(StageSender.StageType, userSender);
             baseUser = new BaseActor(user, userSender);
             await baseUser.Actor.OnCreate();
             _dispatcher.AddUser(baseUser);
@@ -136,9 +138,9 @@ internal class BaseStage
             baseUser.ActorSender.Update(sessionEndpoint, sid, apiEndpoint);
         }
 
-        var outcome = await _stage!.OnJoinStage(baseUser.Actor, packet);
+        var (errorCode, reply) = await _stage!.OnJoinStage(baseUser.Actor, packet);
 
-        if (outcome.errorCode != (ushort)BaseErrorCode.Success)
+        if (errorCode != (ushort)BaseErrorCode.Success)
         {
             _dispatcher.RemoveUser(accountId);
         }
@@ -147,38 +149,36 @@ internal class BaseStage
             await _sessionUpdater.UpdateStageInfo(sessionEndpoint, sid);
         }
 
-        return  (outcome.errorCode, outcome.reply);
+        return (errorCode: errorCode, reply: reply);
     }
-
 
 
     public void Reply(ushort errorCode)
     {
-        this._stageSender.Reply(errorCode);
+        StageSender.Reply(errorCode);
     }
+
     public void Reply(IPacket packet)
     {
-        this._stageSender.Reply(packet);
+        StageSender.Reply(packet);
     }
 
     public void LeaveStage(long accountId, string sessionEndpoint, int sid)
     {
-        this._dispatcher.RemoveUser(accountId);
+        _dispatcher.RemoveUser(accountId);
         var request = new LeaveStageMsg();
         request.StageId = _stageId;
-        this._stageSender.SendToBaseSession(sessionEndpoint, sid,RoutePacket.Of(request));
+        StageSender.SendToBaseSession(sessionEndpoint, sid, RoutePacket.Of(request));
     }
-
-    public long StageId => _stageSender.StageId;
 
     public void CancelTimer(long timerId)
     {
-        this._stageSender.CancelTimer(timerId);
+        StageSender.CancelTimer(timerId);
     }
 
     public bool HasTimer(long timerId)
     {
-        return this._stageSender.HasTimer(timerId);
+        return StageSender.HasTimer(timerId);
     }
 
     public async Task OnPostCreate()
@@ -189,7 +189,7 @@ internal class BaseStage
         }
         catch (Exception e)
         {
-            _log.Error(()=>e.ToString());
+            _log.Error(() => e.ToString());
         }
     }
 
@@ -197,7 +197,7 @@ internal class BaseStage
     {
         try
         {
-            BaseActor? baseUser = _dispatcher.FindUser(accountId);
+            var baseUser = _dispatcher.FindUser(accountId);
 
             if (baseUser != null)
             {
@@ -205,13 +205,12 @@ internal class BaseStage
             }
             else
             {
-                _log.Error(()=>$"user is not exist - [accountId:{accountId}]");
+                _log.Error(() => $"user is not exist - [accountId:{accountId}]");
             }
-
         }
         catch (Exception e)
         {
-            _log.Error(()=>e.ToString());
+            _log.Error(() => e.ToString());
         }
     }
 
@@ -221,16 +220,11 @@ internal class BaseStage
 
         if (baseUser != null)
         {
-            await this._stage!.OnDisconnect(baseUser.Actor);
+            await _stage!.OnDisconnect(baseUser.Actor);
         }
         else
         {
-            _log.Error(()=>$"user is not exist - [accountId:{accountId}]");
+            _log.Error(() => $"user is not exist - [accountId:{accountId}]");
         }
     }
 }
-
-
-
-
-

@@ -1,25 +1,20 @@
-﻿using PlayHouse.Communicator.Message;
+﻿using System.Collections.Concurrent;
 using PlayHouse.Communicator;
+using PlayHouse.Communicator.Message;
+using PlayHouse.Production.Shared;
 using Playhouse.Protocol;
 using PlayHouse.Service.Session.Network;
-using PlayHouse.Utils;
-using System.Collections.Concurrent;
-using CommonLib;
 using PlayHouse.Service.Shared;
-using PlayHouse.Production.Shared;
+using PlayHouse.Utils;
 
 namespace PlayHouse.Service.Session;
-internal class TargetAddress
-{
-    public string Endpoint { get; }
-    public long StageId { get; }
 
-    public TargetAddress(string endpoint, long stageId)
-    {
-        Endpoint = endpoint;
-        StageId = stageId;
-    }
+internal class TargetAddress(string endpoint, long stageId)
+{
+    public string Endpoint { get; } = endpoint;
+    public long StageId { get; } = stageId;
 }
+
 internal class StageIndexGenerator
 {
     private byte _byteValue;
@@ -27,49 +22,46 @@ internal class StageIndexGenerator
     public byte IncrementByte()
     {
         _byteValue = (byte)((_byteValue + 1) & 0xff);
-        if(_byteValue == 0)
+        if (_byteValue == 0)
         {
             _byteValue = IncrementByte();
         }
+
         return _byteValue;
     }
 }
 
 internal class SessionActor
 {
-    private readonly LOG<SessionActor> _log = new ();
-    private readonly int _sid;
+    private readonly AtomicBoolean _isUsing = new(false);
+    private readonly LOG<SessionActor> _log = new();
+    private readonly ConcurrentQueue<RoutePacket> _msgQueue = new();
+
+    private readonly Dictionary<long, TargetAddress> _playEndpoints = new();
     private readonly IServerInfoCenter _serviceInfoCenter;
     private readonly ISession _session;
 
     private readonly XSessionSender _sessionSender;
-    private readonly TargetServiceCache _targetServiceCache;
-    private readonly ConcurrentQueue<RoutePacket> _msgQueue = new();
-    private readonly AtomicBoolean _isUsing = new(false);
-
-    public  bool IsAuthenticated { get; private set; }
     private readonly HashSet<string> _signInUrIs = new();
-    private long _accountId;
-
-    private readonly Dictionary<long, TargetAddress> _playEndpoints = new();
+    private readonly StageIndexGenerator _stageIndexGenerator = new();
+    private readonly TargetServiceCache _targetServiceCache;
     private ushort _authenticateServiceId;
     private string _authServerEndpoint = "";
-    private readonly StageIndexGenerator _stageIndexGenerator = new();
+    private bool _debugMode;
+    private readonly PooledByteBuffer _heartbeatBuffer = new(100);
     private DateTime _lastUpdateTime = DateTime.UtcNow;
-    private PooledByteBuffer _heartbeatBuffer = new PooledByteBuffer(100);
-    private bool _debugMode = false;
 
     public SessionActor(
-        ushort serviceId, 
-        int sid, 
-        IServerInfoCenter serviceInfoCenter, 
-        ISession session ,
-        IClientCommunicator clientCommunicator, 
-        List<string> urls, 
+        ushort serviceId,
+        int sid,
+        IServerInfoCenter serviceInfoCenter,
+        ISession session,
+        IClientCommunicator clientCommunicator,
+        List<string> urls,
         RequestCache reqCache
-        )
+    )
     {
-        _sid = sid;
+        Sid = sid;
         _serviceInfoCenter = serviceInfoCenter;
         _session = session;
 
@@ -79,60 +71,38 @@ internal class SessionActor
         _signInUrIs.UnionWith(urls);
     }
 
+    public bool IsAuthenticated { get; private set; }
+
+    internal long AccountId { get; private set; }
+
+    internal int Sid { get; }
+
 
     private void Authenticate(ushort serviceId, string apiEndpoint, long accountId)
     {
-        _accountId = accountId;
+        AccountId = accountId;
         IsAuthenticated = true;
         _authenticateServiceId = serviceId;
         _authServerEndpoint = apiEndpoint;
     }
 
-    private void  UpdateStageInfo(string playEndpoint, long stageId)
+    private void UpdateStageInfo(string playEndpoint, long stageId)
     {
-        //int? stageIndex = null;
-
-
-        //foreach (var action in _playEndpoints)
-        //{
-        //    if (action.Value.StageId == stageId)
-        //    {
-        //        stageIndex = action.Key;
-        //        break;
-        //    }
-        //}
-
-        //if(stageIndex == null)
-        //{
-        //    for(int i = 0; i < 256; i++)
-        //    {
-        //        if (!_playEndpoints.ContainsKey(i))
-        //        {
-        //            stageIndex = i;
-        //            break;
-        //        }
-        //    }
-        //}
-
-        //if (stageIndex == null)
-        //{
-        //    stageIndex = _stageIndexGenerator.IncrementByte();
-        //}
         _playEndpoints[stageId] = new TargetAddress(playEndpoint, stageId);
-        //return stageIndex.Value;
     }
 
     public void Disconnect()
     {
         if (IsAuthenticated)
         {
-            IServerInfo serverInfo = FindSuitableServer(_authenticateServiceId, _authServerEndpoint);
-            RoutePacket disconnectPacket = RoutePacket.Of(new DisconnectNoticeMsg());
-            _sessionSender.SendToBaseApi(serverInfo.GetBindEndpoint(),_accountId, disconnectPacket);
+            var serverInfo = FindSuitableServer(_authenticateServiceId, _authServerEndpoint);
+            var disconnectPacket = RoutePacket.Of(new DisconnectNoticeMsg());
+            _sessionSender.SendToBaseApi(serverInfo.GetBindEndpoint(), AccountId, disconnectPacket);
             foreach (var targetId in _playEndpoints.Values)
             {
                 IServerInfo targetServer = _serviceInfoCenter.FindServer(targetId.Endpoint);
-                _sessionSender.SendToBaseStage(targetServer.GetBindEndpoint(), targetId.StageId, _accountId, disconnectPacket);
+                _sessionSender.SendToBaseStage(targetServer.GetBindEndpoint(), targetId.StageId, AccountId,
+                    disconnectPacket);
             }
         }
     }
@@ -146,10 +116,10 @@ internal class SessionActor
     {
         try
         {
-            _log.Trace(() => $"recvFrom:client - [accountId:{_accountId},packetInfo:{clientPacket.Header}]");
+            _log.Trace(() => $"recvFrom:client - [accountId:{AccountId},packetInfo:{clientPacket.Header}]");
 
-            ushort serviceId = clientPacket.ServiceId;
-            int msgId = clientPacket.MsgId;
+            var serviceId = clientPacket.ServiceId;
+            var msgId = clientPacket.MsgId;
 
             UpdateHeartBeatTime();
 
@@ -159,9 +129,9 @@ internal class SessionActor
                 return;
             }
 
-            if(msgId == -2) //debug mode
+            if (msgId == -2) //debug mode
             {
-                _log.Debug(() => $"session is debug mode - [sid:{_sid}]");
+                _log.Debug(() => $"session is debug mode - [sid:{Sid}]");
                 _debugMode = true;
                 return;
             }
@@ -172,7 +142,7 @@ internal class SessionActor
             }
             else
             {
-                string uri = $"{serviceId}:{msgId}";
+                var uri = $"{serviceId}:{msgId}";
 
                 //for test check - don't remove
                 //var packet = new ClientPacket(clientPacket.Header, new EmptyPayload());
@@ -193,15 +163,15 @@ internal class SessionActor
                     _session.ClientDisconnect();
                 }
             }
-        }catch (Exception ex)
+        }
+        catch (Exception ex)
         {
-            _log.Error(()=>ex.Message);
+            _log.Error(() => ex.Message);
         }
     }
 
     private void SendHeartBeat(ClientPacket clientPacket)
     {
-        
         //_log.Trace(() => $"send heartbeat - [packet:{clientPacket.Header}]");
         RoutePacket.WriteClientPacketBytes(clientPacket, _heartbeatBuffer);
         var reply = new ClientPacket(clientPacket.Header, new PooledBytePayload(_heartbeatBuffer));
@@ -214,14 +184,15 @@ internal class SessionActor
         IServerInfo serverInfo = _serviceInfoCenter.FindServer(endpoint);
         if (serverInfo.GetState() != ServerState.RUNNING)
         {
-            serverInfo = _serviceInfoCenter.FindServerByAccountId(serviceId, _accountId);
+            serverInfo = _serviceInfoCenter.FindServerByAccountId(serviceId, AccountId);
         }
+
         return serverInfo;
     }
-           
+
     private void RelayTo(ushort serviceId, ClientPacket clientPacket)
     {
-        ServiceType type = _targetServiceCache.FindTypeBy(serviceId);
+        var type = _targetServiceCache.FindTypeBy(serviceId);
 
         IServerInfo? serverInfo = null;
 
@@ -236,29 +207,32 @@ internal class SessionActor
                 {
                     serverInfo = FindSuitableServer(serviceId, _authServerEndpoint);
                 }
-                _sessionSender.RelayToApi(serverInfo.GetBindEndpoint(), _sid, _accountId, clientPacket);
+
+                _sessionSender.RelayToApi(serverInfo.GetBindEndpoint(), Sid, AccountId, clientPacket);
                 break;
 
             case ServiceType.Play:
                 var targetId = _playEndpoints.GetValueOrDefault(clientPacket.Header.StageId);
                 if (targetId == null)
                 {
-                    _log.Error(()=>$"Target Stage is not exist - [service type:{type}, msgId:{clientPacket.MsgId}]");
+                    _log.Error(() => $"Target Stage is not exist - [service type:{type}, msgId:{clientPacket.MsgId}]");
                 }
                 else
                 {
                     serverInfo = _serviceInfoCenter.FindServer(targetId.Endpoint);
-                    _sessionSender.RelayToStage(serverInfo.GetBindEndpoint(), targetId.StageId, _sid, _accountId, clientPacket);
+                    _sessionSender.RelayToStage(serverInfo.GetBindEndpoint(), targetId.StageId, Sid, AccountId,
+                        clientPacket);
                 }
+
                 break;
 
             default:
-                _log.Error(()=>$"Invalid Service Type request - [service type:{type}, msgId:{clientPacket.MsgId}]");
+                _log.Error(() => $"Invalid Service Type request - [service type:{type}, msgId:{clientPacket.MsgId}]");
                 break;
         }
     }
 
-    public void  Post(RoutePacket routePacket)
+    public void Post(RoutePacket routePacket)
     {
         _msgQueue.Enqueue(routePacket);
         if (_isUsing.CompareAndSet(false, true))
@@ -281,6 +255,7 @@ internal class SessionActor
                         _log.Error(() => e.ToString());
                     }
                 }
+
                 _isUsing.Set(false);
             });
         }
@@ -289,46 +264,45 @@ internal class SessionActor
 
     public async Task DispatchAsync(RoutePacket packet)
     {
-        int msgId = packet.MsgId;
-        bool isBase = packet.IsBase();
+        var msgId = packet.MsgId;
+        var isBase = packet.IsBase();
 
         if (isBase)
         {
-            if(msgId == AuthenticateMsg.Descriptor.Index) 
+            if (msgId == AuthenticateMsg.Descriptor.Index)
             {
-                AuthenticateMsg authenticateMsg = AuthenticateMsg.Parser.ParseFrom(packet.Span);
+                var authenticateMsg = AuthenticateMsg.Parser.ParseFrom(packet.Span);
                 var apiEndpoint = packet.RouteHeader.From;
                 Authenticate((ushort)authenticateMsg.ServiceId, apiEndpoint, authenticateMsg.AccountId);
-                _log.Debug(()=>$"session authenticated - [accountId:{_accountId}]");
+                _log.Debug(() => $"session authenticated - [accountId:{AccountId}]");
             }
-            else if(msgId == SessionCloseMsg.Descriptor.Index)
+            else if (msgId == SessionCloseMsg.Descriptor.Index)
             {
                 _session.ClientDisconnect();
-                _log.Debug(()=>$"force session close - [accountId:{_accountId}]");
+                _log.Debug(() => $"force session close - [accountId:{AccountId}]");
             }
-            else if(msgId == JoinStageInfoUpdateReq.Descriptor.Index)
+            else if (msgId == JoinStageInfoUpdateReq.Descriptor.Index)
             {
-                JoinStageInfoUpdateReq joinStageMsg = JoinStageInfoUpdateReq.Parser.ParseFrom(packet.Span);
-                string playEndpoint = joinStageMsg.PlayEndpoint;
-                long stageId = joinStageMsg.StageId;
+                var joinStageMsg = JoinStageInfoUpdateReq.Parser.ParseFrom(packet.Span);
+                var playEndpoint = joinStageMsg.PlayEndpoint;
+                var stageId = joinStageMsg.StageId;
                 UpdateStageInfo(playEndpoint, stageId);
 
                 _sessionSender.Reply(XPacket.Of(new JoinStageInfoUpdateRes()));
 
-                _log.Debug(()=>$"stageInfo updated - [accountId:{_accountId},playEndpoint:{playEndpoint},stageId:{stageId}");
+                _log.Debug(() =>
+                    $"stageInfo updated - [accountId:{AccountId},playEndpoint:{playEndpoint},stageId:{stageId}");
             }
             else if (msgId == LeaveStageMsg.Descriptor.Index)
             {
-                long stageId = LeaveStageMsg.Parser.ParseFrom(packet.Span).StageId;
+                var stageId = LeaveStageMsg.Parser.ParseFrom(packet.Span).StageId;
                 ClearRoomInfo(stageId);
-                _log.Debug(()=>$"stage info clear - [accountId: {_accountId}, stageId: {stageId}]");
-
+                _log.Debug(() => $"stage info clear - [accountId: {AccountId}, stageId: {stageId}]");
             }
             else
             {
-                _log.Error(()=>$"invalid base packet - [msgId:{msgId}]");
+                _log.Error(() => $"invalid base packet - [msgId:{msgId}]");
             }
-          
         }
         else
         {
@@ -339,44 +313,27 @@ internal class SessionActor
     }
 
 
-
     private void ClearRoomInfo(long stageId)
     {
-        if(_playEndpoints.ContainsKey(stageId)) 
+        if (_playEndpoints.ContainsKey(stageId))
         {
             _playEndpoints.Remove(stageId);
         }
-        
-        //int? stageIndex = null;
-        //foreach (var action in _playEndpoints)
-        //{
-        //    if (action.Value.StageId == stageId)
-        //    {
-        //        stageIndex = action.Key;
-        //        break;
-        //    }
-        //}
-
-
-        //if (stageIndex != null)
-        //{
-        //    _playEndpoints.Remove(stageIndex.Value);
-        //}
     }
 
     private void SendToClient(ClientPacket clientPacket)
     {
         using (clientPacket)
         {
-            _log.Trace(()=>$"sendTo:client - [accountId:{_accountId},packetInfo:{clientPacket.Header}]");
+            _log.Trace(() => $"sendTo:client - [accountId:{AccountId},packetInfo:{clientPacket.Header}]");
             _session.Send(clientPacket);
         }
     }
 
     internal bool IsIdleState(int idleTime)
     {
-        if(IsAuthenticated == false)
-        { 
+        if (IsAuthenticated == false)
+        {
             return false;
         }
 
@@ -385,16 +342,17 @@ internal class SessionActor
             return false;
         }
 
-        if(idleTime <= 0)
+        if (idleTime <= 0)
         {
             return false;
         }
 
-        var timeDifference =  DateTime.UtcNow - _lastUpdateTime;
-        if (timeDifference.TotalMilliseconds > idleTime )
+        var timeDifference = DateTime.UtcNow - _lastUpdateTime;
+        if (timeDifference.TotalMilliseconds > idleTime)
         {
             return true;
         }
+
         return false;
     }
 
@@ -406,9 +364,6 @@ internal class SessionActor
     internal long IdleTime()
     {
         var timeDifference = DateTime.UtcNow - _lastUpdateTime;
-        return ((long)timeDifference.TotalMilliseconds);
+        return (long)timeDifference.TotalMilliseconds;
     }
-
-    internal long AccountId => _accountId;
-    internal int Sid => _sid;
 }

@@ -1,62 +1,49 @@
 ﻿using PlayHouse.Production.Api;
 
 namespace PlayHouse.Service.Api.Reflection;
+
 internal class HandlerRegister : IHandlerRegister
 {
-    private readonly Dictionary<int, ApiHandler> _handles = new ();
-    public Dictionary<int, ApiHandler> Handles => _handles;
+    public Dictionary<int, ApiHandler> Handles { get; } = new();
 
     public void Add(int msgId, ApiHandler handler)
     {
-        if (_handles.ContainsKey(msgId))
+        if (!Handles.TryAdd(msgId, handler))
         {
             throw new InvalidOperationException($"Already exists message ID: {msgId}");
-        }
-        else
-        {
-            _handles[msgId] = handler;
         }
     }
 
     public ApiHandler GetHandler(int msgId)
     {
-        if (_handles.TryGetValue(msgId, out var handler))
+        if (Handles.TryGetValue(msgId, out var handler))
         {
             return handler;
         }
-        else
-        {
-            throw new KeyNotFoundException($"Handler for message ID {msgId} not found");
-        }
+
+        throw new KeyNotFoundException($"Handler for message ID {msgId} not found");
     }
 }
 
 internal class BackendHandlerRegister : IBackendHandlerRegister
 {
-    private readonly Dictionary<int, Delegate> _handles = new();
-    public Dictionary<int, Delegate> Handles => _handles;
+    public Dictionary<int, Delegate> Handles { get; } = new();
 
     public void Add(int msgId, ApiBackendHandler handler)
     {
-        if (Handles.ContainsKey(msgId))
+        if (!Handles.TryAdd(msgId, handler))
         {
             throw new InvalidOperationException($"Already exists message ID: {msgId}");
-        }
-        else
-        {
-            _handles[msgId] = handler;
         }
     }
 
     public ApiBackendHandler GetHandler(int msgId)
     {
-        if (_handles.TryGetValue(msgId, out var handler))
+        if (Handles.TryGetValue(msgId, out var handler))
         {
             return (ApiBackendHandler)handler;
         }
-        else
-        {
-            throw new KeyNotFoundException($"Handler for message ID {msgId} not found");
-        }
+
+        throw new KeyNotFoundException($"Handler for message ID {msgId} not found");
     }
 }

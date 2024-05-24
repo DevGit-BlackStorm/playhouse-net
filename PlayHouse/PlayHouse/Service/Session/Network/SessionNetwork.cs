@@ -4,7 +4,7 @@ using PlayHouse.Service.Session.Network.websocket;
 
 namespace PlayHouse.Service.Session.Network;
 
-internal class SessionNetwork 
+internal class SessionNetwork
 {
     private readonly ISessionNetwork _sessionNetwork;
 
@@ -22,26 +22,12 @@ internal class SessionNetwork
 
     public void Start()
     {
-
         _sessionNetwork.Start();
-        //_sessionThread = new Thread(() =>
-        //{
-        //    _sessionNetwork.Start();
-
-        //    while (_isRunning)
-        //    {
-        //        Thread.Sleep(100);
-        //    }
-        //});
-        //_sessionThread.Start();
-
-
     }
 
     public void Stop()
     {
         _sessionNetwork.Stop();
-        //_isRunning = false;
     }
 
     public void Await()

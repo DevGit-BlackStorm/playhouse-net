@@ -1,25 +1,18 @@
-﻿using Playhouse.Protocol;
+﻿using System.Collections.Concurrent;
 using PlayHouse.Communicator.Message;
 using PlayHouse.Communicator.PlaySocket;
-using PlayHouse.Production;
+using Playhouse.Protocol;
 using PlayHouse.Utils;
-using System.Collections.Concurrent;
 
 namespace PlayHouse.Communicator;
-internal class XClientCommunicator : IClientCommunicator
-{
-    private readonly IPlaySocket _playSocket;
 
+internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
+{
     private readonly HashSet<string> _connected = new();
     private readonly HashSet<string> _disconnected = new();
+    private readonly LOG<XClientCommunicator> _log = new();
     private readonly ConcurrentQueue<Action> _queue = new();
     private bool _running = true;
-    private readonly LOG<XClientCommunicator> _log = new ();
-
-    public XClientCommunicator(IPlaySocket playSocket)
-    {
-        _playSocket = playSocket;
-    }
 
     public void Connect(string endpoint)
     {
@@ -32,14 +25,14 @@ internal class XClientCommunicator : IClientCommunicator
         {
             try
             {
-                _playSocket.Connect(endpoint);
+                playSocket.Connect(endpoint);
                 _connected.Add(endpoint);
                 _disconnected.Remove(endpoint);
-                _log.Info(()=>$"connected with {endpoint}");
+                _log.Info(() => $"connected with {endpoint}");
             }
-            catch(Exception ex) 
+            catch (Exception ex)
             {
-                _log.Error(()=>$"connect error - endpoint:{endpoint}, error:{ex.Message}");
+                _log.Error(() => $"connect error - endpoint:{endpoint}, error:{ex.Message}");
             }
         });
     }
@@ -55,18 +48,18 @@ internal class XClientCommunicator : IClientCommunicator
         {
             try
             {
-                _playSocket.Disconnect(endpoint);
-                _log.Info(()=>$"disconnected with {endpoint}");
+                playSocket.Disconnect(endpoint);
+                _log.Info(() => $"disconnected with {endpoint}");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                _log.Error(()=>$"disconnect error - endpoint:{endpoint}, error:{ex.Message}");
-                
-            }finally {
-                _connected.Remove(endpoint);
-                _disconnected.Add(endpoint); 
+                _log.Error(() => $"disconnect error - endpoint:{endpoint}, error:{ex.Message}");
             }
-            
+            finally
+            {
+                _connected.Remove(endpoint);
+                _disconnected.Add(endpoint);
+            }
         });
     }
 
@@ -83,18 +76,20 @@ internal class XClientCommunicator : IClientCommunicator
             {
                 using (routePacket)
                 {
-                    if( routePacket.MsgId != UpdateServerInfoReq.Descriptor.Index && routePacket.MsgId != UpdateServerInfoRes.Descriptor.Index)
+                    if (routePacket.MsgId != UpdateServerInfoReq.Descriptor.Index &&
+                        routePacket.MsgId != UpdateServerInfoRes.Descriptor.Index)
                     {
                         _log.Trace(() => $"sendTo:{endpoint} - [packetInfo:{routePacket.RouteHeader}]");
                     }
-                    
-                    _playSocket.Send(endpoint, routePacket);
+
+                    playSocket.Send(endpoint, routePacket);
                 }
             }
             catch (Exception e)
             {
                 _log.Error(
-                    ()=>$"socket send error : [target endpoint:{endpoint},target msgId:{routePacket.MsgId}] - {e.Message}"
+                    () =>
+                        $"socket send error : [target endpoint:{endpoint},target msgId:{routePacket.MsgId}] - {e.Message}"
                 );
             }
         });
@@ -114,10 +109,11 @@ internal class XClientCommunicator : IClientCommunicator
                 catch (Exception e)
                 {
                     _log.Error(
-                        ()=>$"{_playSocket.Id()} Error during communication - {e.Message}"
+                        () => $"{playSocket.Id()} Error during communication - {e.Message}"
                     );
                 }
             }
+
             Thread.Sleep(ConstOption.ThreadSleep);
         }
     }

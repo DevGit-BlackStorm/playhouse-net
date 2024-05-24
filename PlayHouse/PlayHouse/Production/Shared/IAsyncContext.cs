@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PlayHouse.Production.Shared;
+﻿namespace PlayHouse.Production.Shared;
 
 public enum SendTarget
 {
@@ -13,9 +7,8 @@ public enum SendTarget
     Client = 2,
     Api = 3,
     Play = 4,
-    System = 5,
-
-};
+    System = 5
+}
 
 public class SendPacketInfo
 {
@@ -25,7 +18,6 @@ public class SendPacketInfo
     public ushort MsgSeq { get; set; }
 }
 
-
 public interface IAsyncCore
 {
     public void Init();
@@ -34,5 +26,4 @@ public interface IAsyncCore
 
     public void Add(SendTarget target, ushort msgSeq, IPacket? packet);
     public void Add(SendTarget target, ushort msgSeq, ushort errorCode);
-
 }

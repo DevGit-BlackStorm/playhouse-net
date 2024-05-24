@@ -2,20 +2,14 @@
 using PlayHouse.Communicator.Message;
 using Playhouse.Protocol;
 using PlayHouse.Service.Shared;
-using PlayHouse.Production.Shared;
 
 namespace PlayHouse.Service.Play.Base.Command;
 
-internal class JoinStageCmd : IBaseStageCmd
+internal class JoinStageCmd(PlayDispatcher dispatcher) : IBaseStageCmd
 {
-    private PlayDispatcher _dispatcher;
+    private PlayDispatcher _dispatcher = dispatcher;
 
-    public JoinStageCmd(PlayDispatcher dispatcher)
-    {
-        _dispatcher = dispatcher;
-    }
-
-    public  async Task Execute(BaseStage baseStage, RoutePacket routePacket)
+    public async Task Execute(BaseStage baseStage, RoutePacket routePacket)
     {
         var request = JoinStageReq.Parser.ParseFrom(routePacket.Span);
         var accountId = routePacket.AccountId;
@@ -24,13 +18,13 @@ internal class JoinStageCmd : IBaseStageCmd
         var packet = CPacket.Of(request.PayloadId, request.Payload);
         var apiEndpoint = routePacket.RouteHeader.From;
 
-        (ushort errorCode,IPacket reply) joinResult = await baseStage.Join(accountId, sessionEndpoint, sid, apiEndpoint, packet);
+        var joinResult = await baseStage.Join(accountId, sessionEndpoint, sid, apiEndpoint, packet);
 
         var outcome = joinResult.reply;
-        var response = new JoinStageRes()
+        var response = new JoinStageRes
         {
             Payload = ByteString.CopyFrom(joinResult.reply.Payload.DataSpan),
-            PayloadId = outcome.MsgId,
+            PayloadId = outcome.MsgId
         };
 
         if (joinResult.errorCode == (ushort)BaseErrorCode.Success)
