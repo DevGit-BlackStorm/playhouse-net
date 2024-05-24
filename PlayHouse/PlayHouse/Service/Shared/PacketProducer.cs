@@ -10,7 +10,7 @@ internal static class PacketProducer
 
     public static void Init(Func<int, IPayload, ushort, IPacket> createFunc) //int msgId, payload,msgSeq return IPacket
     {
-        PacketProducer.CreateFunc = createFunc;
+        CreateFunc = createFunc;
     }
 
     public static IPacket CreatePacket(int msgId, IPayload payload, ushort msgSeq)

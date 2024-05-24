@@ -5,7 +5,8 @@ namespace PlayHouse.Service.Shared.Reflection;
 
 internal class SystemReflection(IServiceProvider serviceProvider)
 {
-    private readonly SystemHandleReflectionInvoker _reflectionInvoker = new(serviceProvider, new List<AspectifyAttribute>());
+    private readonly SystemHandleReflectionInvoker _reflectionInvoker =
+        new(serviceProvider, new List<AspectifyAttribute>());
 
     public async Task CallMethodAsync(IPacket packet, ISystemPanel panel, ISender sender)
     {

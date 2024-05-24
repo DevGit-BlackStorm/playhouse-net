@@ -13,7 +13,7 @@ internal class StageTimerCmd : IBaseStageCmd
         var timerId = routePacket.TimerId;
         if (baseStage.HasTimer(timerId))
         {
-            var task = (Task)timerCallback!.Invoke();
+            var task = timerCallback!.Invoke();
             await task.ConfigureAwait(false);
         }
         else

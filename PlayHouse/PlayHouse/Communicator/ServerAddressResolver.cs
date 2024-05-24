@@ -22,7 +22,8 @@ internal class ServerAddressResolver(
         {
             try
             {
-                var myServerInfo = new XServerInfo(bindEndpoint, service.GetServiceType(), service.ServiceId, service.GetServerState(), service.GetActorCount(), DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+                var myServerInfo = new XServerInfo(bindEndpoint, service.GetServiceType(), service.ServiceId,
+                    service.GetServerState(), service.GetActorCount(), DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
 
                 //자신의 정보먼저  update
                 serverInfoCenter.Update(new List<XServerInfo> { myServerInfo });
@@ -50,7 +51,8 @@ internal class ServerAddressResolver(
             }
         }
 
-        _timer = new Timer(TimerCallback, null, ConstOption.AddressResolverInitialDelayMs, ConstOption.AddressResolverPeriodMs);
+        _timer = new Timer(TimerCallback, null, ConstOption.AddressResolverInitialDelayMs,
+            ConstOption.AddressResolverPeriodMs);
     }
 
     public void Stop()

@@ -14,7 +14,9 @@ internal class ApiService(
     IServiceProvider serviceProvider)
     : IService
 {
-    private readonly ApiDispatcher _apiDispatcher = new(serviceId, requestCache, clientCommunicator, serviceProvider, apiOption);
+    private readonly ApiDispatcher _apiDispatcher =
+        new(serviceId, requestCache, clientCommunicator, serviceProvider, apiOption);
+
     private readonly LOG<ApiService> _log = new();
     private readonly AtomicEnum<ServerState> _state = new(ServerState.DISABLE);
 

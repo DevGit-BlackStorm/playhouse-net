@@ -6,12 +6,12 @@ namespace PlayHouse.Communicator;
 
 internal class XServerInfo : IServerInfo
 {
-    private int _actorCount;
     private readonly string _bindEndpoint = string.Empty;
-    private long _lastUpdate;
-    private ServerState _serverState;
     private readonly ushort _serviceId;
     private readonly ServiceType _serviceType;
+    private int _actorCount;
+    private long _lastUpdate;
+    private ServerState _serverState;
 
     public XServerInfo(
         string bindEndpoint,
