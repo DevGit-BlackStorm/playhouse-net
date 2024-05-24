@@ -6,11 +6,12 @@ using PlayHouse.Production.Shared;
 using PlayHouse.Service.Shared;
 
 namespace PlayHouse.Service.Session;
+
 public class SessionServer : IServer
 {
     private readonly PlayhouseOption _commonOption;
-    private readonly SessionOption _sessionOption;
     private readonly Communicator.Communicator _communicator;
+    private readonly SessionOption _sessionOption;
 
     public SessionServer(PlayhouseOption commonOption, SessionOption sessionOption)
     {

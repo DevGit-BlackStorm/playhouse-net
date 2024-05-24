@@ -21,6 +21,7 @@ internal class ApiDispatcher
     private readonly CacheItemPolicy _policy;
     private readonly RequestCache _requestCache;
     private readonly ushort _serviceId;
+
     public ApiDispatcher(
         ushort serviceId,
         RequestCache requestCache,
@@ -58,7 +59,7 @@ internal class ApiDispatcher
     {
     }
 
-   
+
     internal int GetAccountCount()
     {
         return _cache.Count();

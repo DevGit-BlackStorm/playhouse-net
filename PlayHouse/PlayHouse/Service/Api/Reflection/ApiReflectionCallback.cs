@@ -9,6 +9,7 @@ internal class ApiReflectionCallback(IServiceProvider serviceProvider)
 {
     private readonly CallbackReflectionInvoker _invoker = new(serviceProvider,
         new[] { typeof(IDisconnectCallback), typeof(IUpdateServerInfoCallback) });
+
     private readonly LOG<ApiReflectionCallback> _log = new();
 
     public async Task OnDisconnectAsync(IApiSender sender)

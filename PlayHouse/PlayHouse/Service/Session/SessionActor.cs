@@ -33,6 +33,7 @@ internal class StageIndexGenerator
 
 internal class SessionActor
 {
+    private readonly PooledByteBuffer _heartbeatBuffer = new(100);
     private readonly AtomicBoolean _isUsing = new(false);
     private readonly LOG<SessionActor> _log = new();
     private readonly ConcurrentQueue<RoutePacket> _msgQueue = new();
@@ -48,7 +49,6 @@ internal class SessionActor
     private ushort _authenticateServiceId;
     private string _authServerEndpoint = "";
     private bool _debugMode;
-    private readonly PooledByteBuffer _heartbeatBuffer = new(100);
     private DateTime _lastUpdateTime = DateTime.UtcNow;
 
     public SessionActor(

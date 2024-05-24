@@ -5,12 +5,12 @@ namespace PlayHouse.Communicator;
 
 internal class PerformanceTester
 {
-    private readonly LOG<MessageLoop> _log = new();
-    private int _counter;
     private readonly string _from;
+    private readonly LOG<MessageLoop> _log = new();
     private readonly bool _showQps;
     private readonly Stopwatch _stopWatch = new();
     private readonly Timer _timer;
+    private int _counter;
 
     public PerformanceTester(bool showQps, string from = "Server")
     {

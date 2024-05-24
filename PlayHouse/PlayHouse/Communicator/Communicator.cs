@@ -151,8 +151,10 @@ public class CommunicatorOption
 
 internal class Communicator : ICommunicateListener
 {
+    private readonly ServerAddressResolver _addressResolver;
     private readonly XClientCommunicator _clientCommunicator;
     private readonly LOG<Communicator> _log = new();
+    private readonly MessageLoop _messageLoop;
     private readonly CommunicatorOption _option;
     private readonly PerformanceTester _performanceTester;
     private readonly RequestCache _requestCache;
@@ -165,8 +167,6 @@ internal class Communicator : ICommunicateListener
     private readonly ushort _serviceId;
     private readonly SystemDispatcher _systemDispatcher;
     private readonly XSystemPanel _systemPanel;
-    private readonly ServerAddressResolver _addressResolver;
-    private readonly MessageLoop _messageLoop;
 
     public Communicator(
         CommunicatorOption option,

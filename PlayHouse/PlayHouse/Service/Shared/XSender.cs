@@ -9,13 +9,12 @@ namespace PlayHouse.Service.Shared;
 internal class XSender(ushort serviceId, IClientCommunicator clientCommunicator, RequestCache reqCache)
     : ISender
 {
-    protected readonly IClientCommunicator ClientCommunicator = clientCommunicator;
     private readonly LOG<XSender> _log = new();
-    private readonly ushort _serviceId = serviceId;
+    protected readonly IClientCommunicator ClientCommunicator = clientCommunicator;
 
     protected RouteHeader? CurrentHeader;
 
-    public ushort ServiceId => _serviceId;
+    public ushort ServiceId { get; } = serviceId;
 
     public void Reply(IPacket reply)
     {
@@ -31,7 +30,7 @@ internal class XSender(ushort serviceId, IClientCommunicator clientCommunicator,
     {
         PacketContext.AsyncCore.Add(SendTarget.Client, 0, packet);
 
-        var routePacket = RoutePacket.ClientOf(_serviceId, sid, packet);
+        var routePacket = RoutePacket.ClientOf(ServiceId, sid, packet);
         ClientCommunicator.Send(sessionEndpoint, routePacket);
     }
 
@@ -174,7 +173,7 @@ internal class XSender(ushort serviceId, IClientCommunicator clientCommunicator,
                 }
 
                 var from = CurrentHeader.From;
-                var routePacket = RoutePacket.ReplyOf(_serviceId, CurrentHeader, errorCode, reply);
+                var routePacket = RoutePacket.ReplyOf(ServiceId, CurrentHeader, errorCode, reply);
                 routePacket.RouteHeader.AccountId = CurrentHeader.AccountId;
                 //_log.Trace(() => $"Before Send - [packetInfo:${routePacket.RouteHeader}]");
                 ClientCommunicator.Send(from, routePacket);

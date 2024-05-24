@@ -4,7 +4,8 @@ using PlayHouse.Service.Api.Reflection;
 
 internal class ApiReflection(IServiceProvider serviceProvider, ApiControllAspectifyManager controllAspectifyManager)
 {
-    private readonly ApiHandleReflectionInvoker _apiReflectionInvoker = new(serviceProvider, controllAspectifyManager.Get(),
+    private readonly ApiHandleReflectionInvoker _apiReflectionInvoker = new(serviceProvider,
+        controllAspectifyManager.Get(),
         controllAspectifyManager.GetBackend());
 
 

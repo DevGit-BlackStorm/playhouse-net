@@ -16,8 +16,10 @@ internal class PlayService(
     : IService
 {
     private readonly LOG<PlayService> _log = new();
+
     private readonly PlayDispatcher _playDispatcher = new(serviceId, clientCommunicator, requestCache, serverInfoCenter,
         publicEndpoint, playOption);
+
     private readonly AtomicEnum<ServerState> _state = new(ServerState.DISABLE);
 
     public ushort ServiceId { get; } = serviceId;

@@ -36,7 +36,6 @@ public class ReflectionMethod
 
 public class ReflectionInstance(Type type, IEnumerable<AspectifyAttribute> filters, IServiceProvider serviceProvider)
 {
-
     public object Instance { get; set; } = ActivatorUtilities.CreateInstance(serviceProvider, type);
     public Type Type { get; set; } = type;
 
@@ -233,7 +232,7 @@ internal class CallbackReflectionInvoker
         var method = _methods[methodName];
         var instance = _instances[method.ClassName];
         await instance.Invoke(method, arguements);
-}
+    }
 
     public async Task<object?> InvokeMethodsWithReturn(string methodName, object[] arguments)
     {
