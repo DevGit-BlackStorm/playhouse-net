@@ -428,12 +428,12 @@ internal class RoutePacket : IBasePacket
             throw new Exception($"body size is over : {bodySize}");
         }
 
-        buffer.WriteInt32(XBitConverter.ToNetworkOrder(bodySize));
-        buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.ServiceId));
-        buffer.WriteInt32(XBitConverter.ToNetworkOrder(clientPacket.MsgId));
-        buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.MsgSeq));
-        buffer.WriteInt64(XBitConverter.ToNetworkOrder(clientPacket.Header.StageId));
-        buffer.WriteInt16(XBitConverter.ToNetworkOrder(clientPacket.Header.ErrorCode));
+        buffer.WriteInt32(bodySize);
+        buffer.WriteInt16(clientPacket.ServiceId);
+        buffer.WriteInt32(clientPacket.MsgId);
+        buffer.WriteInt16(clientPacket.MsgSeq);
+        buffer.WriteInt64(clientPacket.Header.StageId);
+        buffer.WriteInt16(clientPacket.Header.ErrorCode);
         buffer.Write(clientPacket.Payload.DataSpan);
     }
 
