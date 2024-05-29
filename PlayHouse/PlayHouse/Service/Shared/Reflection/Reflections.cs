@@ -88,11 +88,45 @@ internal class ReflectionOperator
 
     private Type[] GetAllSubtypes(params Type[] subTypes)
     {
-        return AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(assembly => assembly.GetTypes())
-            .Where(type => type.IsClass && !type.IsAbstract && subTypes.Any(subType => subType.IsAssignableFrom(type)))
+        Type?[] result = AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(assembly =>
+            {
+                try
+                {
+                    return assembly.GetTypes();
+                }
+                catch (ReflectionTypeLoadException ex)
+                {
+                    // 로드된 타입만 반환
+                    return ex.Types.Where(t => t != null);
+                }
+                catch (Exception ex)
+                {
+                    // 다른 예외가 발생한 경우, 로그를 남기고 빈 배열 반환
+                    Console.WriteLine($"Failed to load types from assembly: {assembly.FullName}. Exception: {ex.Message}");
+                    return new Type[0];
+                    // throw;
+
+                }
+            })
+            .Where(type => type!=null && type.IsClass && !type.IsAbstract && subTypes.Any(subType => subType.IsAssignableFrom(type)))
             .ToArray();
+
+        if (result == null)
+        {
+            return new Type[0];
+        }
+        
+        return result!;
     }
+
+    //private Type[] GetAllSubtypes(params Type[] subTypes)
+    //{
+    //    return AppDomain.CurrentDomain.GetAssemblies()
+    //        .SelectMany(assembly => assembly.GetTypes())
+    //        .Where(type => type.IsClass && !type.IsAbstract && subTypes.Any(subType => subType.IsAssignableFrom(type)))
+    //        .ToArray();
+    //}
 
     public List<ReflectionInstance> GetInstanceBy(params Type[] targetTypes)
     {
