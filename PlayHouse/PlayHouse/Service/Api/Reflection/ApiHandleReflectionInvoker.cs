@@ -8,13 +8,13 @@ namespace PlayHouse.Service.Api.Reflection;
 
 internal class ApiHandleReflectionInvoker
 {
-    private readonly Dictionary<int, string> _backendMessageIndexChecker = new();
-    private readonly Dictionary<int, ReflectionMethod> _backendMethods = new();
+    private readonly Dictionary<string, string> _backendMessageIndexChecker = new();
+    private readonly Dictionary<string, ReflectionMethod> _backendMethods = new();
     private readonly IEnumerable<AspectifyAttribute> _backendTargetFilters;
     private readonly Dictionary<string, ReflectionInstance> _instances = new();
 
-    private readonly Dictionary<int, string> _messageIndexChecker = new();
-    private readonly Dictionary<int, ReflectionMethod> _methods = new();
+    private readonly Dictionary<string, string> _messageIndexChecker = new();
+    private readonly Dictionary<string, ReflectionMethod> _methods = new();
     private readonly IEnumerable<AspectifyAttribute> _targetFilters;
 
     public ApiHandleReflectionInvoker(
@@ -78,7 +78,7 @@ internal class ApiHandleReflectionInvoker
             });
     }
 
-    public async Task InvokeMethods(int msgId, IPacket packet, IApiSender apiSender)
+    public async Task InvokeMethods(string msgId, IPacket packet, IApiSender apiSender)
     {
         if (_methods.TryGetValue(msgId, out var method) == false)
         {
@@ -94,7 +94,7 @@ internal class ApiHandleReflectionInvoker
         await instance.Invoke(method, packet, apiSender);
     }
 
-    public async Task InvokeBackendMethods(int msgId, IPacket packet, IApiBackendSender apiSender)
+    public async Task InvokeBackendMethods(string msgId, IPacket packet, IApiBackendSender apiSender)
     {
         if (_backendMethods.TryGetValue(msgId, out var method) == false)
         {

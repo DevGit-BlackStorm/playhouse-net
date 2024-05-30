@@ -4,7 +4,7 @@ namespace PlayHouse.Production.Play;
 
 public class PacketHandler<TS, TA> where TA : IActor
 {
-    private readonly Dictionary<int, IPacketCmd<TS, TA>> _messageMap = new();
+    private readonly Dictionary<string, IPacketCmd<TS, TA>> _messageMap = new();
 
     public async Task Dispatch(TS stage, TA actor, IPacket packet)
     {
@@ -18,7 +18,7 @@ public class PacketHandler<TS, TA> where TA : IActor
         }
     }
 
-    public void Add(int msgId, IPacketCmd<TS, TA> cmd)
+    public void Add(string msgId, IPacketCmd<TS, TA> cmd)
     {
         if (!_messageMap.TryAdd(msgId, cmd))
         {

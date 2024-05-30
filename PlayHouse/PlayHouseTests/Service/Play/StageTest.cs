@@ -76,6 +76,8 @@ public class StageTest
             _xStageSender
         );
 
+        PacketProducer.Init((msgId, payload, msgSeq) => new TestPacket(msgId, payload, msgSeq));
+
 
         Mock.Get(_contentStage)
             .Setup(stage => stage.OnCreate(It.IsAny<IPacket>()))
@@ -91,7 +93,7 @@ public class StageTest
     {
         // given
         PacketContext.AsyncCore.Init();
-        PacketProducer.Init((msgId, payload, msgSeq) => new TestPacket(msgId, payload, msgSeq));
+        //PacketProducer.Init((msgId, payload, msgSeq) => new TestPacket(msgId, payload, msgSeq));
 
         var result = new List<RoutePacket>();
         _clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
@@ -99,14 +101,15 @@ public class StageTest
 
         // when
         _stage.Post(CreateRoomPacket(_stageType));
+        Thread.Sleep(100);
 
         // then
         result[0].RouteHeader.Header.ErrorCode.Should().Be((ushort)BaseErrorCode.Success);
 
-        result[0].MsgId.Should().Be(CreateStageRes.Descriptor.Index);
+        result[0].MsgId.Should().Be(CreateStageRes.Descriptor.Name);
         var createStageRes = CreateStageRes.Parser.ParseFrom(result[0].Span);
 
-        createStageRes.PayloadId.Should().Be(TestMsg.Descriptor.Index);
+        createStageRes.PayloadId.Should().Be(TestMsg.Descriptor.Name);
 
         TestMsg.Parser.ParseFrom(createStageRes.Payload).TestMsg_.Should().Be("onCreate");
     }
@@ -123,6 +126,7 @@ public class StageTest
 
         // when
         _stage.Post(CreateRoomPacket("invalid type"));
+        Thread.Sleep(100);
 
         // then
         result[0].RouteHeader.Header.ErrorCode.Should().Be((ushort)BaseErrorCode.StageTypeIsInvalid);
@@ -133,7 +137,7 @@ public class StageTest
     public void CreateJoinRoomInCreateState_ShouldBeSuccess()
     {
         PacketContext.AsyncCore.Init();
-        PacketProducer.Init((msgId, payload, msgSeq) => new TestPacket(msgId, payload, msgSeq));
+        //PacketProducer.Init((msgId, payload, msgSeq) => new TestPacket(msgId, payload, msgSeq));
 
         var result = new List<RoutePacket>();
         _clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
@@ -142,13 +146,14 @@ public class StageTest
         var createJoinRoom = CreateJoinRoomPacket(_stageType, _stageId, _accountId);
         _stage.Post(createJoinRoom);
 
+        Thread.Sleep(100);
 
-        result[0].MsgId.Should().Be(CreateJoinStageRes.Descriptor.Index);
+        result[0].MsgId.Should().Be(CreateJoinStageRes.Descriptor.Name);
         var createJoinStageRes = CreateJoinStageRes.Parser.ParseFrom(result[0].Span);
 
         createJoinStageRes.IsCreated.Should().BeTrue();
-        createJoinStageRes.CreatePayloadId.Should().Be(TestMsg.Descriptor.Index);
-        createJoinStageRes.JoinPayloadId.Should().Be(TestMsg.Descriptor.Index);
+        createJoinStageRes.CreatePayloadId.Should().Be(TestMsg.Descriptor.Name);
+        createJoinStageRes.JoinPayloadId.Should().Be(TestMsg.Descriptor.Name);
 
         TestMsg.Parser.ParseFrom(createJoinStageRes.CreatePayload).TestMsg_.Should().Be("onCreate");
         TestMsg.Parser.ParseFrom(createJoinStageRes.JoinPayload).TestMsg_.Should().Be("onJoinStage");
@@ -159,7 +164,7 @@ public class StageTest
     {
         // Arrange
         PacketContext.AsyncCore.Init();
-        PacketProducer.Init((msgId, payload, msgSeq) => new TestPacket(msgId, payload, msgSeq));
+        //PacketProducer.Init((msgId, payload, msgSeq) => new TestPacket(msgId, payload, msgSeq));
 
         CreateRoomWithSuccess();
 
@@ -171,13 +176,15 @@ public class StageTest
         // Act
         _stage.Post(createJoinRoom);
 
+        Thread.Sleep(100);
+
         // Assert
-        CreateJoinStageRes.Descriptor.Index.Should().Be(result[0].MsgId);
+        CreateJoinStageRes.Descriptor.Name.Should().Be(result[0].MsgId);
         var createJoinStageRes = CreateJoinStageRes.Parser.ParseFrom(result[0].Span);
 
         createJoinStageRes.IsCreated.Should().BeFalse();
-        createJoinStageRes.CreatePayloadId.Should().Be(0);
-        createJoinStageRes.JoinPayloadId.Should().Be(TestMsg.Descriptor.Index);
+        createJoinStageRes.CreatePayloadId.Should().Be(string.Empty);
+        createJoinStageRes.JoinPayloadId.Should().Be(TestMsg.Descriptor.Name);
     }
 
     [Fact]
@@ -189,6 +196,7 @@ public class StageTest
             result = (string)arg;
             await Task.CompletedTask;
         }, "test async block"));
+        Thread.Sleep(100);
         Assert.Equal("test async block", result);
     }
 
@@ -210,7 +218,7 @@ public class StageTest
         {
             SessionEndpoint = _sessionEndpoint,
             Sid = 1,
-            PayloadId = 1,
+            PayloadId = "1",
             Payload = ByteString.Empty
         });
         var result = RoutePacket.StageOf(stageId, accountId, packet, true, true);
@@ -225,9 +233,9 @@ public class StageTest
             StageType = stageType,
             SessionEndpoint = _sessionEndpoint,
             Sid = 1,
-            CreatePayloadId = 1,
+            CreatePayloadId = "1",
             CreatePayload = ByteString.Empty,
-            JoinPayloadId = 2,
+            JoinPayloadId = "2",
             JoinPayload = ByteString.Empty
         };
         var packet = RoutePacket.Of(req);
@@ -243,6 +251,7 @@ public class StageTest
             .Callback<string, RoutePacket>((sid, packet) => result.Add(packet));
 
         _stage.Post(CreateRoomPacket(_stageType));
+        Thread.Sleep(100);
 
 
         result[0].RouteHeader.Header.ErrorCode.Should().Be((ushort)BaseErrorCode.Success);

@@ -7,7 +7,7 @@ namespace PlayHouse.Service.Shared.Reflection;
 
 public class ReflectionMethod
 {
-    public ReflectionMethod(int msgId, string className, MethodInfo method,
+    public ReflectionMethod(string msgId, string className, MethodInfo method,
         IEnumerable<AspectifyAttribute> targetFilters, IEnumerable<AspectifyAttribute> classFilters)
     {
         MsgId = msgId;
@@ -19,7 +19,7 @@ public class ReflectionMethod
             .Select(e => (AspectifyAttribute)e));
     }
 
-    public ReflectionMethod(int msgId, string className, MethodInfo method)
+    public ReflectionMethod(string msgId, string className, MethodInfo method)
     {
         MsgId = msgId;
         ClassName = className;
@@ -28,7 +28,7 @@ public class ReflectionMethod
             .Select(e => (AspectifyAttribute)e));
     }
 
-    public int MsgId { get; set; }
+    public string MsgId { get; set; }
     public string ClassName { get; set; }
     public MethodInfo Method { get; set; }
     public List<AspectifyAttribute> Filters { get; set; } = new();
@@ -166,8 +166,8 @@ internal class ReflectionOperator
 internal class SystemHandleReflectionInvoker
 {
     private readonly Dictionary<string, ReflectionInstance> _instances = new();
-    private readonly Dictionary<int, string> _messageIndexChecker = new();
-    private readonly Dictionary<int, ReflectionMethod> _methods = new();
+    private readonly Dictionary<string, string> _messageIndexChecker = new();
+    private readonly Dictionary<string, ReflectionMethod> _methods = new();
     private readonly IEnumerable<AspectifyAttribute> _targetFilters;
 
     public SystemHandleReflectionInvoker(IServiceProvider serviceProvider,
@@ -205,7 +205,7 @@ internal class SystemHandleReflectionInvoker
         });
     }
 
-    public async Task InvokeMethods(int msgId, object[] arguments)
+    public async Task InvokeMethods(string msgId, object[] arguments)
     {
         var method = _methods[msgId];
 
@@ -251,7 +251,7 @@ internal class CallbackReflectionInvoker
 
                 if (_methods.ContainsKey(methodInfo.Name) == false)
                 {
-                    _methods[methodInfo.Name] = new ReflectionMethod(0, className, methodInfo);
+                    _methods[methodInfo.Name] = new ReflectionMethod(string.Empty, className, methodInfo);
                 }
                 else
                 {

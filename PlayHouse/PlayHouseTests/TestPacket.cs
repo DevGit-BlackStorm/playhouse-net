@@ -10,17 +10,17 @@ internal class TestPacket : IPacket
 
     public TestPacket(IMessage message)
     {
-        MsgId = message.Descriptor.Index;
+        MsgId = message.Descriptor.Name;
         Payload = new ProtoPayload(message);
     }
 
-    public TestPacket(int msgId)
+    public TestPacket(string msgId)
     {
         MsgId = msgId;
         Payload = new EmptyPayload();
     }
 
-    public TestPacket(int msgId, IPayload payload, ushort msgSeq) : this(msgId)
+    public TestPacket(string msgId, IPayload payload, ushort msgSeq) : this(msgId)
     {
         Payload = payload;
         _msgSeq = msgSeq;
@@ -28,7 +28,7 @@ internal class TestPacket : IPacket
 
     public bool IsRequest => _msgSeq > 0;
 
-    public int MsgId { get; }
+    public string MsgId { get; }
 
     public IPayload Payload { get; }
 

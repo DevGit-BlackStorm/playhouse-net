@@ -123,13 +123,13 @@ internal class SessionActor
 
             UpdateHeartBeatTime();
 
-            if (msgId == -1) //heartbeat
+            if (msgId == PacketConst.HeartBeat) //heartbeat
             {
                 SendHeartBeat(clientPacket);
                 return;
             }
 
-            if (msgId == -2) //debug mode
+            if (msgId == PacketConst.Debug) //debug mode
             {
                 _log.Debug(() => $"session is debug mode - [sid:{Sid}]");
                 _debugMode = true;
@@ -269,19 +269,19 @@ internal class SessionActor
 
         if (isBase)
         {
-            if (msgId == AuthenticateMsg.Descriptor.Index)
+            if (msgId == AuthenticateMsg.Descriptor.Name)
             {
                 var authenticateMsg = AuthenticateMsg.Parser.ParseFrom(packet.Span);
                 var apiEndpoint = packet.RouteHeader.From;
                 Authenticate((ushort)authenticateMsg.ServiceId, apiEndpoint, authenticateMsg.AccountId);
                 _log.Debug(() => $"session authenticated - [accountId:{AccountId}]");
             }
-            else if (msgId == SessionCloseMsg.Descriptor.Index)
+            else if (msgId == SessionCloseMsg.Descriptor.Name)
             {
                 _session.ClientDisconnect();
                 _log.Debug(() => $"force session close - [accountId:{AccountId}]");
             }
-            else if (msgId == JoinStageInfoUpdateReq.Descriptor.Index)
+            else if (msgId == JoinStageInfoUpdateReq.Descriptor.Name)
             {
                 var joinStageMsg = JoinStageInfoUpdateReq.Parser.ParseFrom(packet.Span);
                 var playEndpoint = joinStageMsg.PlayEndpoint;
@@ -293,7 +293,7 @@ internal class SessionActor
                 _log.Debug(() =>
                     $"stageInfo updated - [accountId:{AccountId},playEndpoint:{playEndpoint},stageId:{stageId}");
             }
-            else if (msgId == LeaveStageMsg.Descriptor.Index)
+            else if (msgId == LeaveStageMsg.Descriptor.Name)
             {
                 var stageId = LeaveStageMsg.Parser.ParseFrom(packet.Span).StageId;
                 ClearRoomInfo(stageId);

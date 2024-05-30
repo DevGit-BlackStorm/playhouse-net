@@ -76,8 +76,8 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
             {
                 using (routePacket)
                 {
-                    if (routePacket.MsgId != UpdateServerInfoReq.Descriptor.Index &&
-                        routePacket.MsgId != UpdateServerInfoRes.Descriptor.Index)
+                    if (routePacket.MsgId != UpdateServerInfoReq.Descriptor.Name &&
+                        routePacket.MsgId != UpdateServerInfoRes.Descriptor.Name)
                     {
                         _log.Trace(() => $"sendTo:{endpoint} - [packetInfo:{routePacket.RouteHeader}]");
                     }

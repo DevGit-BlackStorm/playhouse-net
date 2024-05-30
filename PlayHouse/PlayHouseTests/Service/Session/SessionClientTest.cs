@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Moq;
+using PlayHouse;
 using PlayHouse.Communicator;
 using PlayHouse.Communicator.Message;
 using PlayHouse.Production.Shared;
@@ -7,6 +8,7 @@ using Playhouse.Protocol;
 using PlayHouse.Service.Session;
 using PlayHouse.Service.Session.Network;
 using Xunit;
+using CommonLib;
 
 namespace PlayHouseTests.Service.Session;
 
@@ -25,6 +27,8 @@ public class SessionClientTest : IDisposable
 
     public SessionClientTest()
     {
+        PooledBuffer.Init();
+
         _serviceCenter = new XServerInfoCenter();
 
         _serviceCenter.Update(new List<XServerInfo>
@@ -56,8 +60,8 @@ public class SessionClientTest : IDisposable
     [Fact]
     public void PacketOnTheAuthList_ShouldBeDelivered()
     {
-        //string messageId = "AuthenticateReq";
-        var messageId = 1;
+        string messageId = "AuthenticateReq";
+        //var messageId = "1";
         _urls.Add($"{_idApi}:{messageId}");
 
         var sessionClient = new SessionActor(_idSession, _sid, _serviceCenter, _session, _clientCommunicator, _urls,

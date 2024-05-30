@@ -4,7 +4,7 @@ namespace PlayHouse.Production.Shared;
 
 public interface IPacket : IDisposable
 {
-    public int MsgId { get; }
+    public string MsgId { get; }
 
     public IPayload Payload { get; }
     //public IPacket Copy();

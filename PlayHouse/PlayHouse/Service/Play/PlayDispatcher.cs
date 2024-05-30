@@ -153,9 +153,9 @@ internal class PlayDispatcher : IPlayDispatcher
         return _playOption.PlayProducer.IsInvalidType(stageType);
     }
 
-    private void DoBaseRoomPacket(int msgId, RoutePacket routePacket, long stageId)
+    private void DoBaseRoomPacket(string msgId, RoutePacket routePacket, long stageId)
     {
-        if (msgId == CreateStageReq.Descriptor.Index)
+        if (msgId == CreateStageReq.Descriptor.Name)
         {
             var newStageId = routePacket.StageId;
             if (_baseRooms.ContainsKey(newStageId))
@@ -167,7 +167,7 @@ internal class PlayDispatcher : IPlayDispatcher
                 MakeBaseRoom(newStageId).Post(RoutePacket.MoveOf(routePacket));
             }
         }
-        else if (msgId == CreateJoinStageReq.Descriptor.Index)
+        else if (msgId == CreateJoinStageReq.Descriptor.Name)
         {
             _baseRooms.TryGetValue(stageId, out var room);
             if (room != null)
@@ -179,13 +179,13 @@ internal class PlayDispatcher : IPlayDispatcher
                 MakeBaseRoom(stageId).Post(RoutePacket.MoveOf(routePacket));
             }
         }
-        else if (msgId == TimerMsg.Descriptor.Index)
+        else if (msgId == TimerMsg.Descriptor.Name)
         {
             var timerId = routePacket.TimerId;
             var protoPayload = (routePacket.Payload as ProtoPayload)!;
             TimerProcess(stageId, timerId, (protoPayload.GetProto() as TimerMsg)!, routePacket.TimerCallback!);
         }
-        else if (msgId == DestroyStage.Descriptor.Index)
+        else if (msgId == DestroyStage.Descriptor.Name)
         {
             _baseRooms.Remove(stageId, out _);
         }
@@ -193,16 +193,16 @@ internal class PlayDispatcher : IPlayDispatcher
         {
             if (!_baseRooms.TryGetValue(stageId, out var room))
             {
-                if (msgId == StageTimer.Descriptor.Index) return;
+                if (msgId == StageTimer.Descriptor.Name) return;
                 _log.Error(() => $"Room is not exist : {stageId},{msgId}");
                 _sender.Reply((ushort)BaseErrorCode.StageIsNotExist);
                 return;
             }
 
-            if (msgId == JoinStageReq.Descriptor.Index ||
-                msgId == StageTimer.Descriptor.Index ||
-                msgId == DisconnectNoticeMsg.Descriptor.Index ||
-                msgId == AsyncBlock.Descriptor.Index)
+            if (msgId == JoinStageReq.Descriptor.Name ||
+                msgId == StageTimer.Descriptor.Name ||
+                msgId == DisconnectNoticeMsg.Descriptor.Name ||
+                msgId == AsyncBlock.Descriptor.Name)
             {
                 room!.Post(RoutePacket.MoveOf(routePacket));
             }
