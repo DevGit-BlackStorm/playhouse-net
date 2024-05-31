@@ -101,8 +101,8 @@ internal sealed class PacketParser
                 buffer.Clear(4);
 
                 var serviceId = buffer.ReadInt16();
-                var sizeOfMsgName = buffer.ReadByte();
-                var msgId = buffer.ReadString(sizeOfMsgName);
+                var sizeOfMsgId = buffer.ReadByte();
+                var msgId = buffer.ReadString(sizeOfMsgId);
 
                 var msgSeq = buffer.ReadInt16();
                 var stageId = buffer.ReadInt64();
