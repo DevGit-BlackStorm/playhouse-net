@@ -2,7 +2,7 @@
 
 package playhouse.protocol;
 
-import "common.proto";
+import "proto/common.proto";
 
 message HeaderMsg {
   int32 service_id = 1;

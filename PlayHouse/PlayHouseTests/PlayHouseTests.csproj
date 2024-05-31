@@ -31,7 +31,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\playhouse-connector-net\playhouse-connector-net\playhouse-connector-net\PlayHouseConnector.csproj" />
     <ProjectReference Include="..\PlayHouse\PlayHouse.csproj" />
-    <ProjectReference Include="..\Protocol\Common.csproj" />
   </ItemGroup>
 
 
