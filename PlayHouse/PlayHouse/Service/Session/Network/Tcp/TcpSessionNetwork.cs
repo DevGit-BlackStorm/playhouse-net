@@ -25,7 +25,7 @@ internal class XTcpSession : TcpSession, ISession
 
     public void ClientDisconnect()
     {
-        base.Disconnect();
+        //base.Disconnect();
     }
 
     public void Send(ClientPacket packet)

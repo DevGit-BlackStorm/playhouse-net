@@ -16,7 +16,7 @@ public class CommunicatorOption
         int nodeId,
         ushort addressServerId,
         List<string> addressServerEndpoints,
-        Func<int, IPayload, ushort, IPacket> packetProducer
+        Func<string, IPayload, ushort, IPacket> packetProducer
     )
     {
         BindEndpoint = bindEndpoint;
@@ -35,7 +35,7 @@ public class CommunicatorOption
     public ushort AddressServerId { get; }
     public List<string> AddressServerEndpoints { get; }
 
-    public Func<int, IPayload, ushort, IPacket>? PacketProducer { get; }
+    public Func<string, IPayload, ushort, IPacket>? PacketProducer { get; }
 
     public class Builder
     {
@@ -43,7 +43,7 @@ public class CommunicatorOption
         private ushort _addressServerId;
         private string _Ip = string.Empty;
         private int _nodeId;
-        public Func<int, IPayload, ushort, IPacket>? _packetProducer;
+        private Func<string, IPayload, ushort, IPacket>? _packetProducer;
         private int _port;
         private IServiceProvider? _serviceProvider;
         private bool _showQps;
@@ -119,7 +119,7 @@ public class CommunicatorOption
             return this;
         }
 
-        public Builder SetPacketProducer(Func<int, IPayload, ushort, IPacket>? producer)
+        public Builder SetPacketProducer(Func<string, IPayload, ushort, IPacket>? producer)
         {
             _packetProducer = producer;
             return this;

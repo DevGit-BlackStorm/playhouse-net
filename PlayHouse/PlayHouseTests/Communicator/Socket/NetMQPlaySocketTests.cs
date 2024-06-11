@@ -73,7 +73,7 @@ public class NetMQPlaySocketTests : IDisposable
             ErrorCode = 10,
             MsgSeq = 1,
             ServiceId = (short)ServiceType.SESSION,
-            MsgId = TestMsg.Descriptor.Index
+            MsgId = TestMsg.Descriptor.Name
         };
 
         var routeHeader = RouteHeader.Of(header);

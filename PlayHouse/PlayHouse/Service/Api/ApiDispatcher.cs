@@ -103,7 +103,7 @@ internal class ApiDispatcher
         var apiSender = new AllApiSender(_serviceId, _clientCommunicator, _requestCache);
         apiSender.SetCurrentPacketHeader(routeHeader);
 
-        if (routeHeader.IsBase && routeHeader.MsgId == UpdateServerInfoReq.Descriptor.Index)
+        if (routeHeader.IsBase && routeHeader.MsgId == UpdateServerInfoReq.Descriptor.Name)
         {
             var updateServerInfoReq = UpdateServerInfoReq.Parser.ParseFrom(routePacket.Span);
 

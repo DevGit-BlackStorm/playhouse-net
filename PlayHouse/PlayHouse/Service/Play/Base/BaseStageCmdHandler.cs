@@ -6,9 +6,9 @@ namespace PlayHouse.Service.Play.Base;
 internal class BaseStageCmdHandler
 {
     private readonly LOG<BaseStageCmdHandler> _log = new();
-    private readonly Dictionary<int, IBaseStageCmd> _maps = new();
+    private readonly Dictionary<string, IBaseStageCmd> _maps = new();
 
-    public void Register(int msgId, IBaseStageCmd baseStageCmd)
+    public void Register(string msgId, IBaseStageCmd baseStageCmd)
     {
         if (!_maps.TryAdd(msgId, baseStageCmd))
         {

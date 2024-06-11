@@ -7,7 +7,7 @@ internal class ClientPacket(Header header, IPayload payload) : IBasePacket
     public Header Header { get; set; } = header;
 
     public ushort MsgSeq => Header.MsgSeq;
-    public int MsgId => Header.MsgId;
+    public string MsgId => Header.MsgId;
     public ushort ServiceId => Header.ServiceId;
     public ReadOnlyMemory<byte> Data => Payload.Data;
     public ReadOnlySpan<byte> Span => Payload.DataSpan;

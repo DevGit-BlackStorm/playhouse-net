@@ -3,12 +3,13 @@ using Google.Protobuf;
 using PlayHouse.Production.Shared;
 using Playhouse.Protocol;
 using PlayHouse.Service.Shared;
+using PlayHouse.Service.Session.Network;
 
 namespace PlayHouse.Communicator.Message;
 
 public class Header
 {
-    public Header(ushort serviceId = 0, int msgId = 0, ushort msgSeq = 0, ushort errorCode = 0, long stageId = 0)
+    public Header(ushort serviceId = 0, string msgId = "", ushort msgSeq = 0, ushort errorCode = 0, long stageId = 0)
     {
         ServiceId = serviceId;
         MsgId = msgId;
@@ -18,7 +19,7 @@ public class Header
     }
 
     public ushort ServiceId { get; set; }
-    public int MsgId { get; set; }
+    public string MsgId { get; set; }
     public ushort MsgSeq { get; set; }
     public ushort ErrorCode { get; set; }
     public long StageId { get; set; }
@@ -80,7 +81,7 @@ public class RouteHeader
 
     public bool IsToClient { get; set; }
 
-    public int MsgId => Header.MsgId;
+    public string MsgId => Header.MsgId;
 
     public byte[] ToByteArray()
     {
@@ -111,7 +112,7 @@ public class RouteHeader
         return new RouteHeader(header);
     }
 
-    public static RouteHeader TimerOf(long stageId, int msgId)
+    public static RouteHeader TimerOf(long stageId, string msgId)
     {
         return new RouteHeader(new Header(msgId: msgId))
         {
@@ -140,7 +141,7 @@ internal class RoutePacket : IBasePacket
     }
 
 
-    public int MsgId => RouteHeader.MsgId;
+    public string MsgId => RouteHeader.MsgId;
 
 
     public Header Header => RouteHeader.Header;
@@ -262,14 +263,14 @@ internal class RoutePacket : IBasePacket
         return new RoutePacket(routeHeader, payload);
     }
 
-    internal static RoutePacket Of(int msgId, IPayload payload)
+    internal static RoutePacket Of(string msgId, IPayload payload)
     {
         return new RoutePacket(new RouteHeader(new Header { MsgId = msgId }), payload);
     }
 
     internal static RoutePacket Of(IMessage message)
     {
-        return new RoutePacket(new RouteHeader(new Header { MsgId = message.Descriptor.Index }),
+        return new RoutePacket(new RouteHeader(new Header { MsgId = message.Descriptor.Name }),
             new ProtoPayload(message));
     }
 
@@ -310,7 +311,7 @@ internal class RoutePacket : IBasePacket
     public static RoutePacket AddTimerOf(TimerMsg.Types.Type type, long stageId, long timerId,
         TimerCallbackTask timerCallback, TimeSpan initialDelay, TimeSpan period, int count = 0)
     {
-        var header = new Header(msgId: TimerMsg.Descriptor.Index);
+        var header = new Header(msgId: TimerMsg.Descriptor.Name);
         var routeHeader = RouteHeader.Of(header);
         routeHeader.StageId = stageId;
         routeHeader.IsBase = true;
@@ -333,7 +334,7 @@ internal class RoutePacket : IBasePacket
     public static RoutePacket StageTimerOf(long stageId, long timerId, TimerCallbackTask timerCallback,
         object? timerState)
     {
-        var header = new Header(msgId: StageTimer.Descriptor.Index);
+        var header = new Header(msgId: StageTimer.Descriptor.Name);
         var routeHeader = RouteHeader.Of(header);
 
         return new RoutePacket(routeHeader, new EmptyPayload())
@@ -374,7 +375,7 @@ internal class RoutePacket : IBasePacket
     //}
     public static RoutePacket ReplyOf(ushort serviceId, RouteHeader sourceHeader, ushort errorCode, IPacket? reply)
     {
-        Header header = new(msgId: reply != null ? reply.MsgId : 0)
+        Header header = new(msgId: reply != null ? reply.MsgId : "")
         {
             ServiceId = serviceId,
             MsgSeq = sourceHeader.Header.MsgSeq
@@ -419,18 +420,25 @@ internal class RoutePacket : IBasePacket
 
     public static void WriteClientPacketBytes(ClientPacket clientPacket, PooledByteBuffer buffer)
     {
+
+        int msgIdLength = clientPacket.MsgId.Length;
+        if (msgIdLength > PacketConst.MsgIdLimit)
+        {
+            throw new Exception($"MsgId size is over : {msgIdLength}");
+        }
+
         var body = clientPacket.Payload.Data;
-
         var bodySize = body.Length;
-
         if (bodySize > ConstOption.MaxPacketSize)
         {
             throw new Exception($"body size is over : {bodySize}");
         }
+        
 
         buffer.WriteInt32(bodySize);
         buffer.WriteInt16(clientPacket.ServiceId);
-        buffer.WriteInt32(clientPacket.MsgId);
+        buffer.Write((byte)msgIdLength);
+        buffer.Write(clientPacket.MsgId);
         buffer.WriteInt16(clientPacket.MsgSeq);
         buffer.WriteInt64(clientPacket.Header.StageId);
         buffer.WriteInt16(clientPacket.Header.ErrorCode);
@@ -462,7 +470,7 @@ internal class AsyncBlockPacket : RoutePacket
 
     public static RoutePacket Of(long stageId, AsyncPostCallback asyncPostCallback, object result)
     {
-        var header = new Header(msgId: AsyncBlock.Descriptor.Index);
+        var header = new Header(msgId: AsyncBlock.Descriptor.Name);
         var routeHeader = RouteHeader.Of(header);
         var packet = new AsyncBlockPacket(asyncPostCallback, result, routeHeader);
         packet.RouteHeader.StageId = stageId;

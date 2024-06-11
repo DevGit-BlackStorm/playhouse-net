@@ -4,9 +4,9 @@ namespace PlayHouse.Service.Shared.Reflection;
 
 internal class SystemHandlerRegister : ISystemHandlerRegister
 {
-    public Dictionary<int, SystemHandler> Handles { get; } = new();
+    public Dictionary<string, SystemHandler> Handles { get; } = new();
 
-    public void Add(int msgId, SystemHandler handler)
+    public void Add(string msgId, SystemHandler handler)
     {
         if (!Handles.TryAdd(msgId, handler))
         {
@@ -14,7 +14,7 @@ internal class SystemHandlerRegister : ISystemHandlerRegister
         }
     }
 
-    public SystemHandler GetHandler(int msgId)
+    public SystemHandler GetHandler(string msgId)
     {
         if (Handles.TryGetValue(msgId, out var handler))
         {
