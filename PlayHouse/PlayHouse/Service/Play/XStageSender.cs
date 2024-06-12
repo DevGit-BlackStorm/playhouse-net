@@ -84,7 +84,7 @@ internal class XStageSender(
 
         _timerIds.Clear();
 
-        var packet2 = RoutePacket.StageOf(StageId, 0, RoutePacket.Of(DestroyStage.Descriptor.Index, new EmptyPayload()),
+        var packet2 = RoutePacket.StageOf(StageId, 0, RoutePacket.Of(DestroyStage.Descriptor.Name, new EmptyPayload()),
             true, false);
         dispatcher.OnPost(packet2);
     }

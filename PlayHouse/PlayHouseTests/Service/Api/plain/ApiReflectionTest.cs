@@ -43,18 +43,18 @@ public class ApiReflectionTest
 
         ReflectionTestResult.ResultMap["TestApiController_Test1"].Should().Be("ApiServiceCall_Test1");
 
-        ReflectionTestResult.ResultMap[$"TestApiGlobalActionAttributeBefore_{ApiTestMsg1.Descriptor.Index}"].Should()
+        ReflectionTestResult.ResultMap[$"TestApiGlobalActionAttributeBefore_{ApiTestMsg1.Descriptor.Name}"].Should()
             .Be("BeforeExecution");
-        ReflectionTestResult.ResultMap[$"TestApiGlobalActionAttributeAfter_{ApiTestMsg1.Descriptor.Index}"].Should()
+        ReflectionTestResult.ResultMap[$"TestApiGlobalActionAttributeAfter_{ApiTestMsg1.Descriptor.Name}"].Should()
             .Be("AfterExecution");
 
-        ReflectionTestResult.ResultMap[$"TestApiActionAttributeBefore_{ApiTestMsg1.Descriptor.Index}"].Should()
+        ReflectionTestResult.ResultMap[$"TestApiActionAttributeBefore_{ApiTestMsg1.Descriptor.Name}"].Should()
             .Be("BeforeExecution");
-        ReflectionTestResult.ResultMap[$"TestApiActionAttributeAfter_{ApiTestMsg1.Descriptor.Index}"].Should()
+        ReflectionTestResult.ResultMap[$"TestApiActionAttributeAfter_{ApiTestMsg1.Descriptor.Name}"].Should()
             .Be("AfterExecution");
-        ReflectionTestResult.ResultMap[$"TestApiMethodActionAttributeBefore_{ApiTestMsg1.Descriptor.Index}"].Should()
+        ReflectionTestResult.ResultMap[$"TestApiMethodActionAttributeBefore_{ApiTestMsg1.Descriptor.Name}"].Should()
             .Be("BeforeExecution");
-        ReflectionTestResult.ResultMap[$"TestApiMethodActionAttributeAfter_{ApiTestMsg1.Descriptor.Index}"].Should()
+        ReflectionTestResult.ResultMap[$"TestApiMethodActionAttributeAfter_{ApiTestMsg1.Descriptor.Name}"].Should()
             .Be("AfterExecution");
 
 
@@ -62,19 +62,19 @@ public class ApiReflectionTest
             isBackend);
         await apiReflections.CallMethodAsync(routePacket.ToContentsPacket(), apiSender);
 
-        ReflectionTestResult.ResultMap[$"TestApiGlobalActionAttributeBefore_{ApiTestMsg2.Descriptor.Index}"].Should()
+        ReflectionTestResult.ResultMap[$"TestApiGlobalActionAttributeBefore_{ApiTestMsg2.Descriptor.Name}"].Should()
             .Be("BeforeExecution");
-        ReflectionTestResult.ResultMap[$"TestApiGlobalActionAttributeAfter_{ApiTestMsg2.Descriptor.Index}"].Should()
+        ReflectionTestResult.ResultMap[$"TestApiGlobalActionAttributeAfter_{ApiTestMsg2.Descriptor.Name}"].Should()
             .Be("AfterExecution");
 
         ReflectionTestResult.ResultMap["TestApiController_Test2"].Should().Be("ApiServiceCall_Test2");
-        ReflectionTestResult.ResultMap[$"TestApiActionAttributeBefore_{ApiTestMsg2.Descriptor.Index}"].Should()
+        ReflectionTestResult.ResultMap[$"TestApiActionAttributeBefore_{ApiTestMsg2.Descriptor.Name}"].Should()
             .Be("BeforeExecution");
-        ReflectionTestResult.ResultMap[$"TestApiActionAttributeAfter_{ApiTestMsg2.Descriptor.Index}"].Should()
+        ReflectionTestResult.ResultMap[$"TestApiActionAttributeAfter_{ApiTestMsg2.Descriptor.Name}"].Should()
             .Be("AfterExecution");
-        ReflectionTestResult.ResultMap.ContainsKey($"TestApiMethodActionAttributeBefore_{ApiTestMsg2.Descriptor.Index}")
+        ReflectionTestResult.ResultMap.ContainsKey($"TestApiMethodActionAttributeBefore_{ApiTestMsg2.Descriptor.Name}")
             .Should().BeFalse();
-        ReflectionTestResult.ResultMap.ContainsKey($"TestApiMethodActionAttributeAfter_{ApiTestMsg2.Descriptor.Index}")
+        ReflectionTestResult.ResultMap.ContainsKey($"TestApiMethodActionAttributeAfter_{ApiTestMsg2.Descriptor.Name}")
             .Should().BeFalse();
 
         //await callbackReflection.InvokeCallbackMethods("OnDisconnectAsync", apiSender);
@@ -102,13 +102,13 @@ public class ApiReflectionTest
         ReflectionTestResult.ResultMap["TestBackendApiController_Test3"].Should().Be("ApiBackendServiceCall_Test1");
 
 
-        ReflectionTestResult.ResultMap[$"TestBackendApiActionAttributeBefore_{ApiTestMsg1.Descriptor.Index}"].Should()
+        ReflectionTestResult.ResultMap[$"TestBackendApiActionAttributeBefore_{ApiTestMsg1.Descriptor.Name}"].Should()
             .Be("BeforeExecution");
-        ReflectionTestResult.ResultMap[$"TestBackendApiActionAttributeAfter_{ApiTestMsg1.Descriptor.Index}"].Should()
+        ReflectionTestResult.ResultMap[$"TestBackendApiActionAttributeAfter_{ApiTestMsg1.Descriptor.Name}"].Should()
             .Be("AfterExecution");
-        ReflectionTestResult.ResultMap[$"TestBackendApiMethodActionAttributeBefore_{ApiTestMsg1.Descriptor.Index}"]
+        ReflectionTestResult.ResultMap[$"TestBackendApiMethodActionAttributeBefore_{ApiTestMsg1.Descriptor.Name}"]
             .Should().Be("BeforeExecution");
-        ReflectionTestResult.ResultMap[$"TestBackendApiMethodActionAttributeAfter_{ApiTestMsg1.Descriptor.Index}"]
+        ReflectionTestResult.ResultMap[$"TestBackendApiMethodActionAttributeAfter_{ApiTestMsg1.Descriptor.Name}"]
             .Should().Be("AfterExecution");
 
 
@@ -120,15 +120,15 @@ public class ApiReflectionTest
         ReflectionTestResult.ResultMap["TestBackendApiController_Test4"].Should().Be("ApiBackendServiceCall_Test2");
 
 
-        ReflectionTestResult.ResultMap[$"TestBackendApiActionAttributeBefore_{ApiTestMsg2.Descriptor.Index}"].Should()
+        ReflectionTestResult.ResultMap[$"TestBackendApiActionAttributeBefore_{ApiTestMsg2.Descriptor.Name}"].Should()
             .Be("BeforeExecution");
-        ReflectionTestResult.ResultMap[$"TestBackendApiActionAttributeAfter_{ApiTestMsg2.Descriptor.Index}"].Should()
+        ReflectionTestResult.ResultMap[$"TestBackendApiActionAttributeAfter_{ApiTestMsg2.Descriptor.Name}"].Should()
             .Be("AfterExecution");
         ReflectionTestResult.ResultMap
-            .ContainsKey($"TestBackendApiMethodActionAttributeBefore_{ApiTestMsg2.Descriptor.Index}").Should()
+            .ContainsKey($"TestBackendApiMethodActionAttributeBefore_{ApiTestMsg2.Descriptor.Name}").Should()
             .BeFalse();
         ReflectionTestResult.ResultMap
-            .ContainsKey($"TestBackendApiMethodActionAttributeAfter_{ApiTestMsg2.Descriptor.Index}").Should().BeFalse();
+            .ContainsKey($"TestBackendApiMethodActionAttributeAfter_{ApiTestMsg2.Descriptor.Name}").Should().BeFalse();
     }
 
     [Fact]

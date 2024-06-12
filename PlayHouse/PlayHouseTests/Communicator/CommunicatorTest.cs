@@ -74,7 +74,7 @@ public class CommunicatorTest
         Thread.Sleep(200);
 
         apiListener.Results.Count.Should().Be(1);
-        apiListener.Results[0].MsgId.Should().Be(HeaderMsg.Descriptor.Index);
+        apiListener.Results[0].MsgId.Should().Be(HeaderMsg.Descriptor.Name);
 
         ////////// api to session ///////////////
 
@@ -84,7 +84,7 @@ public class CommunicatorTest
         Thread.Sleep(100);
 
         //string messageId = "TestMsgId";
-        var messageId = TestMsg.Descriptor.Index;
+        var messageId = TestMsg.Descriptor.Name;
         apiClient.Send(sessionEndpoint, RoutePacket.ClientOf((ushort)ServiceType.API, 0, new TestPacket(messageId)));
 
         Thread.Sleep(200);

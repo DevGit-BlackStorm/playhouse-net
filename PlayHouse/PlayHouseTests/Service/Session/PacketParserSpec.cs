@@ -7,7 +7,6 @@ namespace PlayHouseTests.Service.Session;
 public class PacketParserTests
 {
     private readonly PacketParser _parser = new();
-    private const int HeaderSize = 20;
 
     public PacketParserTests()
     {
@@ -20,14 +19,15 @@ public class PacketParserTests
     {
         var buffer = new RingBuffer(1024);
         var serviceId = (ushort)1;
-        var msgId = 12345;
+        var msgId = "12345";
         var msgSeq = (ushort)1;
         var stageId = 67890L;
         var body = new byte[] { 1, 2, 3, 4, 5 };
 
         buffer.WriteInt32(body.Length);
         buffer.WriteInt16(serviceId);
-        buffer.WriteInt32(msgId);
+        buffer.Write((byte)msgId.Length);
+        buffer.Write(msgId);
         buffer.WriteInt16(msgSeq);
         buffer.WriteInt64(stageId);
         buffer.Write(body);
@@ -62,7 +62,7 @@ public class PacketParserTests
         var buffer = new RingBuffer(1024);
         var packetCount = 3;
         var serviceId = (ushort)1;
-        var msgId = 12345;
+        var msgId = "12345";
         var msgSeq = (ushort)1;
         var stageId = 67890L;
         var body = new byte[] { 1, 2, 3, 4, 5 };
@@ -71,7 +71,8 @@ public class PacketParserTests
         {
             buffer.WriteInt32(body.Length);
             buffer.WriteInt16(serviceId);
-            buffer.WriteInt32(msgId);
+            buffer.Write((byte)msgId.Length);
+            buffer.Write(msgId);
             buffer.WriteInt16(msgSeq);
             buffer.WriteInt64(stageId);
             buffer.Write(body);
@@ -95,7 +96,7 @@ public class PacketParserTests
     {
         var buffer = new RingBuffer(1024);
         var serviceId = (ushort)1;
-        var msgId = 12345;
+        var msgId = "12345";
         var msgSeq = (ushort)1;
         var stageId = 67890L;
         var body = new byte[] { 1, 2, 3, 4, 5 };
@@ -103,7 +104,8 @@ public class PacketParserTests
         // Write a full packet
         buffer.WriteInt32(body.Length);
         buffer.WriteInt16(serviceId);
-        buffer.WriteInt32(msgId);
+        buffer.Write((byte)msgId.Length);
+        buffer.Write(msgId);
         buffer.WriteInt16(msgSeq);
         buffer.WriteInt64(stageId);
         buffer.Write(body);
@@ -111,7 +113,8 @@ public class PacketParserTests
         // Write a partial packet
         buffer.WriteInt32(body.Length);
         buffer.WriteInt16(serviceId);
-        buffer.WriteInt32(msgId);
+        buffer.Write((byte)msgId.Length);
+        buffer.Write(msgId);
 
         var packets = _parser.Parse(buffer);
 
@@ -130,7 +133,7 @@ public class PacketParserTests
         var buffer = new RingBuffer(1024 * 1024);
         var packetCount = 1000;
         var serviceId = (ushort)1;
-        var msgId = 12345;
+        var msgId = "12345";
         var msgSeq = (ushort)1;
         var stageId = 67890L;
         var body = new byte[] { 1, 2, 3, 4, 5 };
@@ -139,7 +142,8 @@ public class PacketParserTests
         {
             buffer.WriteInt32(body.Length);
             buffer.WriteInt16(serviceId);
-            buffer.WriteInt32(msgId);
+            buffer.Write((byte)msgId.Length);
+            buffer.Write(msgId);
             buffer.WriteInt16(msgSeq);
             buffer.WriteInt64(stageId);
             buffer.Write(body);

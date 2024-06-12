@@ -11,7 +11,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Protobuf" Version="3.25.3" />
+    <None Remove="proto\common.proto" />
+    <None Remove="proto\server.proto" />
+    <None Remove="proto\test.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.27.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.64.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="NetCoreServer" Version="8.0.7" />
@@ -20,9 +30,15 @@
     <PackageReference Include="System.Runtime.Caching" Version="8.0.0" />
   </ItemGroup>
 
-  <ItemGroup>
+
+	<ItemGroup>
     <ProjectReference Include="..\..\..\playhouse-net-common\CommonLib\CommonLib\CommonLib.csproj" />
-    <ProjectReference Include="..\Protocol\Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="proto\common.proto" GrpcServices="None" />
+    <Protobuf Include="proto\server.proto" GrpcServices="None" />
+    <Protobuf Include="proto\test.proto" GrpcServices="None" />
   </ItemGroup>
 
 </Project>

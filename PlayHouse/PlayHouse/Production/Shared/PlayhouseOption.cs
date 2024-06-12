@@ -16,5 +16,5 @@ public class PlayhouseOption
     public List<string> AddressServerEndpoints { get; set; } = [];
     public ushort AddressServerServiceId { get; set; }
 
-    public Func<int, IPayload, ushort, IPacket>? PacketProducer { get; set; }
+    public Func<string, IPayload, ushort, IPacket>? PacketProducer { get; set; }
 }

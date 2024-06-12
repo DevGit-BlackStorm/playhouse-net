@@ -4,9 +4,9 @@ namespace PlayHouse.Service.Api.Reflection;
 
 internal class HandlerRegister : IHandlerRegister
 {
-    public Dictionary<int, ApiHandler> Handles { get; } = new();
+    public Dictionary<string, ApiHandler> Handles { get; } = new();
 
-    public void Add(int msgId, ApiHandler handler)
+    public void Add(string msgId, ApiHandler handler)
     {
         if (!Handles.TryAdd(msgId, handler))
         {
@@ -14,7 +14,7 @@ internal class HandlerRegister : IHandlerRegister
         }
     }
 
-    public ApiHandler GetHandler(int msgId)
+    public ApiHandler GetHandler(string msgId)
     {
         if (Handles.TryGetValue(msgId, out var handler))
         {
@@ -27,9 +27,9 @@ internal class HandlerRegister : IHandlerRegister
 
 internal class BackendHandlerRegister : IBackendHandlerRegister
 {
-    public Dictionary<int, Delegate> Handles { get; } = new();
+    public Dictionary<string, Delegate> Handles { get; } = new();
 
-    public void Add(int msgId, ApiBackendHandler handler)
+    public void Add(string msgId, ApiBackendHandler handler)
     {
         if (!Handles.TryAdd(msgId, handler))
         {
@@ -37,7 +37,7 @@ internal class BackendHandlerRegister : IBackendHandlerRegister
         }
     }
 
-    public ApiBackendHandler GetHandler(int msgId)
+    public ApiBackendHandler GetHandler(string msgId)
     {
         if (Handles.TryGetValue(msgId, out var handler))
         {

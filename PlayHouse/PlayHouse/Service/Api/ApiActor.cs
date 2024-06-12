@@ -30,7 +30,7 @@ internal class ApiActor(
         {
             if (routeHeader.IsBase)
             {
-                if (routeHeader.MsgId == DisconnectNoticeMsg.Descriptor.Index)
+                if (routeHeader.MsgId == DisconnectNoticeMsg.Descriptor.Name)
                 {
                     try
                     {
