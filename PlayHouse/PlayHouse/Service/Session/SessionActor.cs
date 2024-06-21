@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using PlayHouse.Communicator;
 using PlayHouse.Communicator.Message;
 using PlayHouse.Production.Shared;
@@ -49,7 +50,7 @@ internal class SessionActor
     private ushort _authenticateServiceId;
     private string _authServerEndpoint = "";
     private bool _debugMode;
-    private DateTime _lastUpdateTime = DateTime.UtcNow;
+    private Stopwatch _lastUpdateTime = new();
 
     public SessionActor(
         ushort serviceId,
@@ -84,6 +85,8 @@ internal class SessionActor
         IsAuthenticated = true;
         _authenticateServiceId = serviceId;
         _authServerEndpoint = apiEndpoint;
+
+        _lastUpdateTime.Start();
     }
 
     private void UpdateStageInfo(string playEndpoint, long stageId)
@@ -121,7 +124,7 @@ internal class SessionActor
             var serviceId = clientPacket.ServiceId;
             var msgId = clientPacket.MsgId;
 
-            UpdateHeartBeatTime();
+            _lastUpdateTime.Restart();
 
             if (msgId == PacketConst.HeartBeat) //heartbeat
             {
@@ -347,8 +350,7 @@ internal class SessionActor
             return false;
         }
 
-        var timeDifference = DateTime.UtcNow - _lastUpdateTime;
-        if (timeDifference.TotalMilliseconds > idleTime)
+        if (_lastUpdateTime.ElapsedMilliseconds > idleTime)
         {
             return true;
         }
@@ -356,14 +358,13 @@ internal class SessionActor
         return false;
     }
 
-    internal void UpdateHeartBeatTime()
-    {
-        _lastUpdateTime = DateTime.UtcNow;
-    }
+    //internal void UpdateHeartBeatTime()
+    //{
+    //    _lastUpdateTime = DateTime.UtcNow;
+    //}
 
     internal long IdleTime()
     {
-        var timeDifference = DateTime.UtcNow - _lastUpdateTime;
-        return (long)timeDifference.TotalMilliseconds;
+        return _lastUpdateTime.ElapsedMilliseconds;
     }
 }

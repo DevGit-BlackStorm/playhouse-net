@@ -93,7 +93,7 @@ internal class SessionDispatcher : ISessionListener
         // 여기에 타이머 만료 시 실행할 코드 작성
         var keysToRemove =
             dispacher._sessionActors.Where(k => k.Value.IsIdleState(dispacher._sessionOption.ClientIdleTimeoutMSec))
-                .Select(k => k.Key);
+                .Select(k => k.Key).ToList();
 
         foreach (var key in keysToRemove)
         {

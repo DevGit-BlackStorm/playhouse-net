@@ -2,7 +2,7 @@
 
 public class SessionOption
 {
-    public int ClientIdleTimeoutMSec = 0; //5000  0인경우 idle확인 안함
+    public int ClientIdleTimeoutMSec = 30000; //5000  0인경우 idle확인 안함
 
     public List<string> Urls { get; set; } = new();
     public int SessionPort { get; set; } = 0;
