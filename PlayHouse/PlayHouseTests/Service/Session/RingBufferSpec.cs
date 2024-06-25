@@ -141,9 +141,12 @@ public class RingBufferSpec
         string value = "Hello, World!";
 
         buffer.Write(value);
-        buffer.Count.Should().Be(Encoding.UTF8.GetByteCount(value));
 
-        var readValue = buffer.ReadString(buffer.Count);
+        int count = Encoding.UTF8.GetByteCount(value) + 1;
+        buffer.Count.Should().Be(count);
+
+        int length = buffer.ReadByte();
+        var readValue = buffer.ReadString(length);
         readValue.Should().Be(value);
     }
 

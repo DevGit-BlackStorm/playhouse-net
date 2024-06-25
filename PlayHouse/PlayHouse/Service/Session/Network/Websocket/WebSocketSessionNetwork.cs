@@ -7,20 +7,11 @@ using PlayHouse.Utils;
 
 namespace PlayHouse.Service.Session.Network.websocket;
 
-internal class XWsSession : WsSession, ISession
+internal class XWsSession(WsSessionServer server, ISessionListener sessionListener) : WsSession(server), ISession
 {
-    private readonly RingBuffer _buffer = new(1024 * 8, 1024 * 64 * 4);
+    private readonly RingBuffer _buffer = new(1024 * 4, PacketConst.MaxPacketSize);
     private readonly LOG<XWsSession> _log = new();
-    private readonly PacketParser _packetParser;
-    private readonly ISessionListener _sessionListener;
-    private readonly RingBufferStream _stream;
-
-    public XWsSession(WsSessionServer server, ISessionListener sessionListener) : base(server)
-    {
-        _packetParser = new PacketParser();
-        _sessionListener = sessionListener;
-        _stream = new RingBufferStream(_buffer);
-    }
+    private readonly PacketParser _packetParser = new();
 
     public void ClientDisconnect()
     {
@@ -45,7 +36,7 @@ internal class XWsSession : WsSession, ISession
         try
         {
             _log.Debug(() => $"WS session OnConnected - [Sid:{GetSid()}]");
-            _sessionListener.OnConnect(GetSid(), this);
+            sessionListener.OnConnect(GetSid(), this);
         }
         catch (Exception e)
         {
@@ -58,7 +49,7 @@ internal class XWsSession : WsSession, ISession
         try
         {
             _log.Debug(() => $"WS session OnDisConnected - [Sid:{GetSid()}]");
-            _sessionListener.OnDisconnect(GetSid());
+            sessionListener.OnDisconnect(GetSid());
         }
         catch (Exception e)
         {
@@ -70,11 +61,11 @@ internal class XWsSession : WsSession, ISession
     {
         try
         {
-            _stream.Write(buffer, (int)offset, (int)size);
+            _buffer.Write(buffer, (int)offset, (int)size);
             var packets = _packetParser.Parse(_buffer);
             foreach (var packet in packets)
             {
-                _sessionListener.OnReceive(GetSid(), packet);
+                sessionListener.OnReceive(GetSid(), packet);
             }
         }
         catch (Exception e)
