@@ -26,7 +26,6 @@ public class PacketParserTests
 
         buffer.WriteInt32(body.Length);
         buffer.WriteInt16(serviceId);
-        buffer.Write((byte)msgId.Length);
         buffer.Write(msgId);
         buffer.WriteInt16(msgSeq);
         buffer.WriteInt64(stageId);
@@ -71,7 +70,6 @@ public class PacketParserTests
         {
             buffer.WriteInt32(body.Length);
             buffer.WriteInt16(serviceId);
-            buffer.Write((byte)msgId.Length);
             buffer.Write(msgId);
             buffer.WriteInt16(msgSeq);
             buffer.WriteInt64(stageId);
@@ -104,7 +102,6 @@ public class PacketParserTests
         // Write a full packet
         buffer.WriteInt32(body.Length);
         buffer.WriteInt16(serviceId);
-        buffer.Write((byte)msgId.Length);
         buffer.Write(msgId);
         buffer.WriteInt16(msgSeq);
         buffer.WriteInt64(stageId);
@@ -142,7 +139,6 @@ public class PacketParserTests
         {
             buffer.WriteInt32(body.Length);
             buffer.WriteInt16(serviceId);
-            buffer.Write((byte)msgId.Length);
             buffer.Write(msgId);
             buffer.WriteInt16(msgSeq);
             buffer.WriteInt64(stageId);
@@ -160,5 +156,41 @@ public class PacketParserTests
             packet.Header.StageId.Should().Be(stageId);
             packet.Payload.Data.ToArray().Should().Equal(body);
         }
+    }
+
+    [Fact]
+    public void Parse_LargeNumberOfPackets_ShouldHandleProperly_oneByone()
+    {
+        var buffer = new RingBuffer(1024 * 1);
+        var packetCount = 1000;
+        var serviceId = (ushort)1;
+        var msgId = "12345asdfsadfasdfasfrewqrfd";
+        var msgSeq = (ushort)1;
+        var stageId = 67890L;
+        var body = new byte[] { 1, 2, 3, 4, 5 };
+
+        for (int i = 0; i < packetCount; i++)
+        {
+            buffer.WriteInt32(body.Length);
+            buffer.WriteInt16(serviceId);
+            buffer.Write(msgId);
+            buffer.WriteInt16(msgSeq);
+            buffer.WriteInt64(stageId);
+            buffer.Write(body);
+
+            var packets = _parser.Parse(buffer);
+
+            packets.Should().HaveCount(1);
+            foreach (var packet in packets)
+            {
+                packet.Header.ServiceId.Should().Be(serviceId);
+                packet.Header.MsgId.Should().Be(msgId);
+                packet.Header.MsgSeq.Should().Be(msgSeq);
+                packet.Header.StageId.Should().Be(stageId);
+                packet.Payload.Data.ToArray().Should().Equal(body);
+            }
+        }
+
+        
     }
 }

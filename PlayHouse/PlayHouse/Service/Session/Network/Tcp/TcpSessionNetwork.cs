@@ -7,21 +7,12 @@ using PlayHouse.Utils;
 
 namespace PlayHouse.Service.Session.Network.tcp;
 
-internal class XTcpSession : TcpSession, ISession
+internal class XTcpSession(TcpServer server, ISessionListener sessionListener) : TcpSession(server), ISession
 {
-    private readonly RingBuffer _buffer = new(1024 * 8, 1024 * 64 * 4);
+    private readonly RingBuffer _buffer = new(1024 * 4, PacketConst.MaxPacketSize);
     private readonly LOG<XTcpSession> _log = new();
-    private readonly PacketParser _packetParser;
-    private readonly ISessionListener _sessionListener;
-    private readonly RingBufferStream _stream;
+    private readonly PacketParser _packetParser = new();
 
-
-    public XTcpSession(TcpServer server, ISessionListener sessionListener) : base(server)
-    {
-        _packetParser = new PacketParser();
-        _sessionListener = sessionListener;
-        _stream = new RingBufferStream(_buffer);
-    }
 
     public void ClientDisconnect()
     {
@@ -46,7 +37,7 @@ internal class XTcpSession : TcpSession, ISession
         try
         {
             _log.Debug(() => $"TCP session OnConnected - [Sid:{GetSid()}]");
-            _sessionListener.OnConnect(GetSid(), this);
+            sessionListener.OnConnect(GetSid(), this);
         }
         catch (Exception e)
         {
@@ -59,7 +50,7 @@ internal class XTcpSession : TcpSession, ISession
         try
         {
             _log.Debug(() => $"TCP session OnDisConnected - [Sid:{GetSid()}]");
-            _sessionListener.OnDisconnect(GetSid());
+            sessionListener.OnDisconnect(GetSid());
         }
         catch (Exception e)
         {
@@ -71,17 +62,18 @@ internal class XTcpSession : TcpSession, ISession
     {
         try
         {
-            _stream.Write(buffer, (int)offset, (int)size);
+            _buffer.Write(buffer, offset, size);
             var packets = _packetParser.Parse(_buffer);
             foreach (var packet in packets)
             {
                 _log.Trace(() => $"OnReceive from:client - [packetInfo:{packet.Header}]");
-                _sessionListener.OnReceive(GetSid(), packet);
+                sessionListener.OnReceive(GetSid(), packet);
             }
         }
         catch (Exception e)
         {
             _log.Error(() => e.ToString());
+            Disconnect();
         }
     }
 
@@ -115,7 +107,7 @@ internal class TcpSessionServer : TcpServer
 
         OptionReceiveBufferSize = 64 * 1024;
         OptionSendBufferSize = 64 * 1024;
-        OptionAcceptorBacklog = 1024;
+        OptionAcceptorBacklog = 4096;
     }
 
     protected override TcpSession CreateSession()

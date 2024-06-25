@@ -437,7 +437,7 @@ internal class RoutePacket : IBasePacket
 
         buffer.WriteInt32(bodySize);
         buffer.WriteInt16(clientPacket.ServiceId);
-        buffer.Write((byte)msgIdLength);
+        //buffer.Write((byte)msgIdLength);
         buffer.Write(clientPacket.MsgId);
         buffer.WriteInt16(clientPacket.MsgSeq);
         buffer.WriteInt64(clientPacket.Header.StageId);
