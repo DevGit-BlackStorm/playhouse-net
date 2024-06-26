@@ -69,7 +69,7 @@ public class RouteHeader
     }
 
     public Header Header { get; }
-    public int Sid { get; set; }
+    public long Sid { get; set; }
     public bool IsSystem { get; set; }
     public bool IsBase { get; set; }
     public bool IsBackend { get; set; }
@@ -297,7 +297,7 @@ internal class RoutePacket : IBasePacket
         return new RoutePacket(routeHeader, packet.MovePayload());
     }
 
-    public static RoutePacket SessionOf(int sid, RoutePacket packet, bool isBase, bool isBackend)
+    public static RoutePacket SessionOf(long sid, RoutePacket packet, bool isBase, bool isBackend)
     {
         var header = new Header(msgId: packet.MsgId);
         var routeHeader = RouteHeader.Of(header);
@@ -396,7 +396,7 @@ internal class RoutePacket : IBasePacket
         return routePacket;
     }
 
-    public static RoutePacket ClientOf(ushort serviceId, int sid, IPacket packet, long stageId = 0)
+    public static RoutePacket ClientOf(ushort serviceId, long sid, IPacket packet, long stageId = 0)
     {
         Header header = new(msgId: packet.MsgId)
         {

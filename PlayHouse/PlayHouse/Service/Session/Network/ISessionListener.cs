@@ -4,7 +4,7 @@ namespace PlayHouse.Service.Session.Network;
 
 internal interface ISessionListener
 {
-    void OnConnect(int sid, ISession session);
-    void OnReceive(int sid, ClientPacket clientPacket);
-    void OnDisconnect(int sid);
+    void OnConnect(long sid, ISession session);
+    void OnReceive(long sid, ClientPacket clientPacket);
+    void OnDisconnect(long sid);
 }

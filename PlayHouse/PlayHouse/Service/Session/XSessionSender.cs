@@ -8,7 +8,7 @@ namespace PlayHouse.Service.Session;
 internal class XSessionSender(ushort serviceId, IClientCommunicator clientCommunicator, RequestCache reqCache)
     : XSender(serviceId, clientCommunicator, reqCache), ISessionSender
 {
-    public void RelayToStage(string playEndpoint, long stageId, int sid, long accountId, ClientPacket packet)
+    public void RelayToStage(string playEndpoint, long stageId, long sid, long accountId, ClientPacket packet)
     {
         var routePacket = RoutePacket.ApiOf(packet.ToRoutePacket(), false, false);
         routePacket.RouteHeader.StageId = stageId;
@@ -19,7 +19,7 @@ internal class XSessionSender(ushort serviceId, IClientCommunicator clientCommun
         ClientCommunicator.Send(playEndpoint, routePacket);
     }
 
-    public void RelayToApi(string apiEndpoint, int sid, long accountId, ClientPacket packet)
+    public void RelayToApi(string apiEndpoint, long sid, long accountId, ClientPacket packet)
     {
         var routePacket = RoutePacket.ApiOf(packet.ToRoutePacket(), false, false);
         routePacket.RouteHeader.Sid = sid;

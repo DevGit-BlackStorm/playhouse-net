@@ -24,7 +24,7 @@ public interface ISender
     void Reply(ushort errorCode);
     void Reply(IPacket reply);
 
-    void SendToClient(string sessionEndpoint, int sid, IPacket packet);
+    void SendToClient(string sessionEndpoint, long sid, IPacket packet);
 
     void SendToApi(string apiEndpoint, IPacket packet);
     void SendToApi(string apiEndpoint, long accountId, IPacket packet);
@@ -40,7 +40,7 @@ public interface ISender
     void SendToSystem(string endpoint, IPacket packet);
     Task<IPacket> RequestToSystem(string endpoint, IPacket packet);
 
-    void SessionClose(string sessionEndpoint, int sid);
+    void SessionClose(string sessionEndpoint, long sid);
 }
 
 public interface IApiCommonSender : ISender
@@ -52,7 +52,7 @@ public interface IApiCommonSender : ISender
 public interface IApiSender : IApiCommonSender
 {
     string SessionEndpoint { get; }
-    int Sid { get; }
+    long Sid { get; }
     void Authenticate(long accountId);
 
     Task<JoinStageResult> JoinStage(string playEndpoint,

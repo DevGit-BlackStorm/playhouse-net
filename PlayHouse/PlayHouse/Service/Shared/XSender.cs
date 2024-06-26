@@ -26,7 +26,7 @@ internal class XSender(ushort serviceId, IClientCommunicator clientCommunicator,
         Reply(errorCode, null);
     }
 
-    public virtual void SendToClient(string sessionEndpoint, int sid, IPacket packet)
+    public virtual void SendToClient(string sessionEndpoint, long sid, IPacket packet)
     {
         PacketContext.AsyncCore.Add(SendTarget.Client, 0, packet);
 
@@ -140,7 +140,7 @@ internal class XSender(ushort serviceId, IClientCommunicator clientCommunicator,
     //        _clientCommunicator.Send(from, reply);
     //    }
     //}
-    public void SessionClose(string sessionEndpoint, int sid)
+    public void SessionClose(string sessionEndpoint, long sid)
     {
         var message = new SessionCloseMsg();
         SendToBaseSession(sessionEndpoint, sid, RoutePacket.Of(message));
@@ -205,13 +205,13 @@ internal class XSender(ushort serviceId, IClientCommunicator clientCommunicator,
         }
     }
 
-    public void SendToBaseSession(string sessionEndpoint, int sid, RoutePacket packet)
+    public void SendToBaseSession(string sessionEndpoint, long sid, RoutePacket packet)
     {
         var routePacket = RoutePacket.SessionOf(sid, packet, true, true);
         ClientCommunicator.Send(sessionEndpoint, routePacket);
     }
 
-    public async Task<RoutePacket> RequestToBaseSession(string sessionEndpoint, int sid, RoutePacket packet)
+    public async Task<RoutePacket> RequestToBaseSession(string sessionEndpoint, long sid, RoutePacket packet)
     {
         var seq = GetSequence();
         var deferred = new TaskCompletionSource<RoutePacket>();

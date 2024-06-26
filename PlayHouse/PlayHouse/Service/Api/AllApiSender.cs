@@ -16,7 +16,7 @@ internal class AllApiSender(ushort serviceId, IClientCommunicator clientCommunic
     }
 
     public string SessionEndpoint => CurrentHeader?.From ?? "";
-    public int Sid => CurrentHeader?.Sid ?? 0;
+    public long Sid => CurrentHeader?.Sid ?? 0L;
 
     public void Authenticate(long accountId)
     {

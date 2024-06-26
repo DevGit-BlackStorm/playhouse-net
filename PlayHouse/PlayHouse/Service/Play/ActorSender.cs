@@ -7,7 +7,7 @@ public interface IActorSender
     long AccountId();
     string SessionEndpoint();
     string ApiEndpoint();
-    int Sid();
+    long Sid();
     void LeaveStage();
 
     void SendToClient(IPacket packet);
