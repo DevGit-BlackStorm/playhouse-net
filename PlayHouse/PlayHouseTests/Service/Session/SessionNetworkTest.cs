@@ -2,13 +2,15 @@
 using FluentAssertions;
 using NetMQ;
 using Org.Ulalax.Playhouse.Protocol;
+using PlayHouse;
 using PlayHouse.Communicator;
 using PlayHouse.Communicator.Message;
 using PlayHouse.Production.Session;
+using PlayHouse.Service.Session.Network;
 using PlayHouseConnector;
 using Xunit;
 
-namespace PlayHouse.Service.Session.Network;
+namespace PlayHouseTests.Service.Session;
 
 internal class SessionServerListener : ISessionListener
 {
@@ -18,13 +20,13 @@ internal class SessionServerListener : ISessionListener
 
     public string ResultValue { get; set; } = "";
 
-    public void OnConnect(int sid, ISession session)
+    public void OnConnect(long sid, ISession session)
     {
         ResultValue = "onConnect";
         _session = session;
     }
 
-    public void OnReceive(int sid, ClientPacket clientPacket)
+    public void OnReceive(long sid, ClientPacket clientPacket)
     {
         Console.WriteLine($"OnReceive sid:{sid},packetInfo:{clientPacket.Header}");
         var testMsg = TestMsg.Parser.ParseFrom(clientPacket.Span);
@@ -45,7 +47,7 @@ internal class SessionServerListener : ISessionListener
         ResultValue = testMsg.TestMsg_;
     }
 
-    public void OnDisconnect(int sid)
+    public void OnDisconnect(long sid)
     {
         ResultValue = "onDisconnect";
     }

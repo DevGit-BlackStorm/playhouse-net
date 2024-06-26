@@ -89,7 +89,7 @@ internal class XStageSender(
         dispatcher.OnPost(packet2);
     }
 
-    public override void SendToClient(string sessionEndpoint, int sid, IPacket packet)
+    public override void SendToClient(string sessionEndpoint, long sid, IPacket packet)
     {
         PacketContext.AsyncCore.Add(SendTarget.Client, 0, packet);
 

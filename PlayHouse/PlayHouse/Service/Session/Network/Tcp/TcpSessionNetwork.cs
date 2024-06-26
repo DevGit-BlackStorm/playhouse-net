@@ -27,9 +27,9 @@ internal class XTcpSession(TcpServer server, ISessionListener sessionListener) :
         }
     }
 
-    private int GetSid()
+    private long GetSid()
     {
-        return (int)Socket.Handle;
+        return Socket.Handle.ToInt64();
     }
 
     protected override void OnConnected()

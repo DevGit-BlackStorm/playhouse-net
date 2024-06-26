@@ -13,7 +13,7 @@ message HeaderMsg {
 }
 message RouteHeaderMsg {
   HeaderMsg header_msg = 1;
-  int32 sid = 2;
+  int64 sid = 2;
   bool is_system = 3;
   bool is_reply = 4;
   bool is_base = 5;
@@ -55,7 +55,7 @@ message CreateJoinStageReq {
   string join_payload_id =4;
   bytes join_payload = 5;
   string sessionEndpoint = 6;
-  int32 sid = 7;
+  int64 sid = 7;
 }
 
 message CreateJoinStageRes {
@@ -79,7 +79,7 @@ message CreateStageRes {
 
 message JoinStageReq {
   string sessionEndpoint = 1;
-  int32 sid = 2;
+  int64 sid = 2;
   string payload_id = 3;
   bytes payload = 4;
 }

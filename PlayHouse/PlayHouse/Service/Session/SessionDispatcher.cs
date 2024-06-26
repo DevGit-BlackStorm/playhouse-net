@@ -15,7 +15,7 @@ internal class SessionDispatcher : ISessionListener
     private readonly RequestCache _requestCache;
     private readonly IServerInfoCenter _serverInfoCenter;
     private readonly ushort _serviceId;
-    private readonly ConcurrentDictionary<int, SessionActor> _sessionActors = new();
+    private readonly ConcurrentDictionary<long, SessionActor> _sessionActors = new();
     private readonly SessionNetwork _sessionNetwork;
     private readonly SessionOption _sessionOption;
     private readonly Timer _timer;
@@ -38,7 +38,7 @@ internal class SessionDispatcher : ISessionListener
         _timer = new Timer(TimerCallback, this, 1000, 1000);
     }
 
-    public void OnConnect(int sid, ISession session)
+    public void OnConnect(long sid, ISession session)
     {
         if (!_sessionActors.ContainsKey(sid))
         {
@@ -57,7 +57,7 @@ internal class SessionDispatcher : ISessionListener
         }
     }
 
-    public void OnDisconnect(int sid)
+    public void OnDisconnect(long sid)
     {
         if (_sessionActors.TryGetValue(sid, out var sessionClient))
         {
@@ -70,7 +70,7 @@ internal class SessionDispatcher : ISessionListener
         }
     }
 
-    public void OnReceive(int sid, ClientPacket clientPacket)
+    public void OnReceive(long sid, ClientPacket clientPacket)
     {
         Dispatch(sid, clientPacket);
     }
@@ -109,7 +109,7 @@ internal class SessionDispatcher : ISessionListener
     }
 
 
-    private void Dispatch(int sessionId, ClientPacket clientPacket)
+    private void Dispatch(long sessionId, ClientPacket clientPacket)
     {
         using (clientPacket)
         {

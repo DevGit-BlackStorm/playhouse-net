@@ -54,7 +54,7 @@ internal class SessionActor
 
     public SessionActor(
         ushort serviceId,
-        int sid,
+        long sid,
         IServerInfoCenter serviceInfoCenter,
         ISession session,
         IClientCommunicator clientCommunicator,
@@ -76,7 +76,7 @@ internal class SessionActor
 
     internal long AccountId { get; private set; }
 
-    internal int Sid { get; }
+    internal long Sid { get; }
 
 
     private void Authenticate(ushort serviceId, string apiEndpoint, long accountId)

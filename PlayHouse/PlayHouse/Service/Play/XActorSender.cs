@@ -6,7 +6,7 @@ namespace PlayHouse.Service.Play;
 internal class XActorSender(
     long accountId,
     string sessionEndpoint,
-    int sid,
+    long sid,
     string endpoint,
     BaseStage baseStage,
     IServerInfoCenter serverInfoCenter)
@@ -22,7 +22,7 @@ internal class XActorSender(
         return endpoint;
     }
 
-    public int Sid()
+    public long Sid()
     {
         return sid;
     }
@@ -75,7 +75,7 @@ internal class XActorSender(
         return await baseStage.StageSender.AsyncToApi(serverInfo.GetBindEndpoint(), accountId, packet);
     }
 
-    public void Update(string sessionEndpoint1, int sid1, string apiEndpoint)
+    public void Update(string sessionEndpoint1, long sid1, string apiEndpoint)
     {
         sessionEndpoint = sessionEndpoint1;
         sid = sid1;

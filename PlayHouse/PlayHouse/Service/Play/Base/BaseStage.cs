@@ -120,7 +120,7 @@ internal class BaseStage
     }
 
 
-    public async Task<(ushort errorCode, IPacket reply)> Join(long accountId, string sessionEndpoint, int sid,
+    public async Task<(ushort errorCode, IPacket reply)> Join(long accountId, string sessionEndpoint, long sid,
         string apiEndpoint, IPacket packet)
     {
         var baseUser = _dispatcher.FindUser(accountId);
@@ -163,7 +163,7 @@ internal class BaseStage
         StageSender.Reply(packet);
     }
 
-    public void LeaveStage(long accountId, string sessionEndpoint, int sid)
+    public void LeaveStage(long accountId, string sessionEndpoint, long sid)
     {
         _dispatcher.RemoveUser(accountId);
         var request = new LeaveStageMsg();
