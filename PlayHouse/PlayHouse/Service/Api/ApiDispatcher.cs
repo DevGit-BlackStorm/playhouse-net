@@ -34,13 +34,12 @@ internal class ApiDispatcher
         _requestCache = requestCache;
         _clientCommunicator = clientCommunicator;
         _apiReflection = new ApiReflection(serviceProvider, apiOption.AspectifyManager);
+        _apiReflectionCallback = new ApiReflectionCallback(serviceProvider);
 
 
         var controllerTester = serviceProvider.GetService<ControllerTester>();
-        controllerTester?.Init(_apiReflection);
-
-
-        _apiReflectionCallback = new ApiReflectionCallback(serviceProvider);
+        controllerTester?.Init(_apiReflection, _apiReflectionCallback);
+        
 
         _policy = new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes(5) };
         var cacheSettings = new NameValueCollection
