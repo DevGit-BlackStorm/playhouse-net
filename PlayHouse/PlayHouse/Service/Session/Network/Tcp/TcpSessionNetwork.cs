@@ -62,13 +62,20 @@ internal class XTcpSession(TcpServer server, ISessionListener sessionListener) :
     {
         try
         {
-            _buffer.Write(buffer, offset, size);
-            var packets = _packetParser.Parse(_buffer);
+            List<ClientPacket> packets;
+
+            lock (_buffer)
+            {
+                _buffer.Write(buffer, offset, size);
+                packets = _packetParser.Parse(_buffer);
+            }
+            
             foreach (var packet in packets)
             {
                 _log.Trace(() => $"OnReceive from:client - [packetInfo:{packet.Header}]");
                 sessionListener.OnReceive(GetSid(), packet);
             }
+
         }
         catch (Exception e)
         {
