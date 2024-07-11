@@ -61,16 +61,25 @@ internal class XWsSession(WsSessionServer server, ISessionListener sessionListen
     {
         try
         {
-            _buffer.Write(buffer, (int)offset, (int)size);
-            var packets = _packetParser.Parse(_buffer);
+            List<ClientPacket> packets;
+
+            lock (_buffer)
+            {
+                _buffer.Write(buffer, offset, size);
+                packets = _packetParser.Parse(_buffer);
+            }
+
             foreach (var packet in packets)
             {
+                _log.Trace(() => $"OnReceive from:client - [packetInfo:{packet.Header}]");
                 sessionListener.OnReceive(GetSid(), packet);
             }
+
         }
         catch (Exception e)
         {
             _log.Error(() => e.ToString());
+            Disconnect();
         }
     }
 
