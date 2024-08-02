@@ -5,6 +5,7 @@ namespace PlayHouse.Service.Api.Reflection;
 
 internal class ApiReflection(IServiceProvider serviceProvider ,ApiControllAspectifyManager aspectifyManager)
 {
+    private AsyncLocal<IServiceProvider> _localProvider = new();
     private readonly ApiHandleReflectionInvoker _apiReflectionInvoker = new(serviceProvider,
         aspectifyManager.Get(),
         aspectifyManager.GetBackend());
@@ -12,16 +13,33 @@ internal class ApiReflection(IServiceProvider serviceProvider ,ApiControllAspect
 
     public async Task CallMethodAsync(IPacket packet, IApiSender apiSender)
     {
-        await _apiReflectionInvoker.InvokeMethods(serviceProvider,packet.MsgId, packet, apiSender);
+        if (_localProvider.Value == null)
+        {
+            await _apiReflectionInvoker.InvokeMethods(serviceProvider, packet.MsgId, packet, apiSender);
+        }
+        else
+        {
+            await _apiReflectionInvoker.InvokeMethods(_localProvider.Value, packet.MsgId, packet, apiSender);
+        }
+        
     }
 
     public async Task CallBackendMethodAsync(IPacket packet, IApiBackendSender apiBackendSender)
     {
-        await _apiReflectionInvoker.InvokeBackendMethods(serviceProvider,packet.MsgId, packet, apiBackendSender);
+        if (_localProvider.Value == null)
+        {
+            await _apiReflectionInvoker.InvokeBackendMethods(serviceProvider, packet.MsgId, packet, apiBackendSender);
+        }
+        else
+        {
+            await _apiReflectionInvoker.InvokeBackendMethods(serviceProvider, packet.MsgId, packet, apiBackendSender);
+        }
+        
     }
 
     public void Reset(IServiceProvider provider)
     {
-        serviceProvider = provider;
+        //serviceProvider = provider;
+        _localProvider.Value = provider;
     }
 }
