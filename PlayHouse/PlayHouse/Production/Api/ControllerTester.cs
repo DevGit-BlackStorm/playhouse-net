@@ -14,6 +14,11 @@ public class ControllerTester
         _apiReflectionCallback = apiReflectionCallback;
     }
 
+    public void Reset(IServiceProvider serviceProvider)
+    {
+        _apiReflection?.Reset(serviceProvider);
+        _apiReflectionCallback?.Reset(serviceProvider);
+    }
 
     public async Task CallMethodAsync(IPacket packet, IApiSender apiSender)
     {

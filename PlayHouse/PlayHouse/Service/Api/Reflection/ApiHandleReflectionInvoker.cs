@@ -78,7 +78,8 @@ internal class ApiHandleReflectionInvoker
             });
     }
 
-    public async Task InvokeMethods(string msgId, IPacket packet, IApiSender apiSender)
+    public async Task InvokeMethods(IServiceProvider serviceProvider, string msgId, IPacket packet,
+        IApiSender apiSender)
     {
         if (_methods.TryGetValue(msgId, out var method) == false)
         {
@@ -91,10 +92,11 @@ internal class ApiHandleReflectionInvoker
                 $"{method.ClassName}: reflection instance is not registered");
         }
 
-        await instance.Invoke(method, packet, apiSender);
+        await instance.Invoke(serviceProvider,method, packet, apiSender);
     }
 
-    public async Task InvokeBackendMethods(string msgId, IPacket packet, IApiBackendSender apiSender)
+    public async Task InvokeBackendMethods(IServiceProvider serviceProvider, string msgId, IPacket packet,
+        IApiBackendSender apiSender)
     {
         if (_backendMethods.TryGetValue(msgId, out var method) == false)
         {
@@ -107,6 +109,6 @@ internal class ApiHandleReflectionInvoker
                 $"{method.ClassName}: reflection instance is not registered");
         }
 
-        await instance.Invoke(method, packet, apiSender);
+        await instance.Invoke(serviceProvider,method, packet, apiSender);
     }
 }

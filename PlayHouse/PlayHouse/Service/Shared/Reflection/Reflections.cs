@@ -44,18 +44,20 @@ public class ReflectionInstance(Type type, IEnumerable<AspectifyAttribute> filte
 
     public string Name => Type.FullName!;
 
-    internal async Task Invoke(ReflectionMethod targetMethod, params object[] arguments)
+    internal async Task Invoke(IServiceProvider serviceProvider, ReflectionMethod targetMethod,
+        params object[] arguments)
     {
-        await using var scope = ServiceProvider.CreateAsyncScope();
+        await using var scope = serviceProvider.CreateAsyncScope();
         var targetInstance = scope.ServiceProvider.GetRequiredService(Type);
         var invocation = new Invocation(targetInstance, targetMethod.Method, arguments, targetMethod.Filters,
             ServiceProvider);
         await invocation.Proceed();
     }
 
-    internal async Task<object> InvokeWithReturn(ReflectionMethod targetMethod, object[] arguments)
+    internal async Task<object> InvokeWithReturn(IServiceProvider serviceProvider, ReflectionMethod targetMethod,
+        object[] arguments)
     {
-        await using var scope = ServiceProvider.CreateAsyncScope();
+        await using var scope = serviceProvider.CreateAsyncScope();
         var targetInstance = scope.ServiceProvider.GetRequiredService(Type);
         var invocation = new Invocation(targetInstance, targetMethod.Method, arguments, targetMethod.Filters,
             ServiceProvider);
@@ -205,7 +207,7 @@ internal class SystemHandleReflectionInvoker
         });
     }
 
-    public async Task InvokeMethods(string msgId, object[] arguments)
+    public async Task InvokeMethods(IServiceProvider serviceProvider,string msgId, object[] arguments)
     {
         var method = _methods[msgId];
 
@@ -214,7 +216,7 @@ internal class SystemHandleReflectionInvoker
             throw new ServiceException.NotRegisterInstance(
                 $"{method.ClassName}: reflection instance is not registered");
 
-        await instance.Invoke(method, arguments);
+        await instance.Invoke(serviceProvider,method, arguments);
     }
 }
 
@@ -261,17 +263,17 @@ internal class CallbackReflectionInvoker
         }
     }
 
-    public async Task InvokeMethods(string methodName, object[] arguements)
+    public async Task InvokeMethods(IServiceProvider serviceProvider, string methodName, object[] arguements)
     {
         var method = _methods[methodName];
         var instance = _instances[method.ClassName];
-        await instance.Invoke(method, arguements);
+        await instance.Invoke(serviceProvider,method, arguements);
     }
 
-    public async Task<object?> InvokeMethodsWithReturn(string methodName, object[] arguments)
+    public async Task<object?> InvokeMethodsWithReturn(IServiceProvider serviceProvider,string methodName, object[] arguments)
     {
         var method = _methods[methodName];
         var instance = _instances[method.ClassName];
-        return await instance.InvokeWithReturn(method, arguments);
+        return await instance.InvokeWithReturn(serviceProvider,method, arguments);
     }
 }
