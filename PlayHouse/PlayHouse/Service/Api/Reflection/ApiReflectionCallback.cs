@@ -14,12 +14,17 @@ internal class ApiReflectionCallback(IServiceProvider serviceProvider)
 
     public async Task OnDisconnectAsync(IApiSender sender)
     {
-        await _invoker.InvokeMethods("OnDisconnectAsync", [sender]);
+        await _invoker.InvokeMethods(serviceProvider,"OnDisconnectAsync", [sender]);
     }
 
     public async Task<List<IServerInfo>> UpdateServerInfoAsync(IServerInfo serverInfo)
     {
-        return (List<IServerInfo>)(await _invoker.InvokeMethodsWithReturn("UpdateServerInfoAsync",
+        return (List<IServerInfo>)(await _invoker.InvokeMethodsWithReturn(serviceProvider,"UpdateServerInfoAsync",
             [serverInfo]))!;
+    }
+
+    public void Reset(IServiceProvider provider)
+    {
+        serviceProvider = provider;
     }
 }
