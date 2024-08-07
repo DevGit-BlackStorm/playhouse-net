@@ -41,7 +41,7 @@ internal class XTcpSession(TcpServer server, ISessionListener sessionListener) :
         }
         catch (Exception e)
         {
-            _log.Error(() => e.ToString());
+            _log.Error(() => $"{e}");
         }
     }
 
@@ -54,7 +54,7 @@ internal class XTcpSession(TcpServer server, ISessionListener sessionListener) :
         }
         catch (Exception e)
         {
-            _log.Error(() => e.ToString());
+            _log.Error(() => $"{e}");
         }
     }
 
@@ -79,7 +79,7 @@ internal class XTcpSession(TcpServer server, ISessionListener sessionListener) :
         }
         catch (Exception e)
         {
-            _log.Error(() => e.ToString());
+            _log.Error(() => $"{e}");
             Disconnect();
         }
     }
@@ -93,7 +93,7 @@ internal class XTcpSession(TcpServer server, ISessionListener sessionListener) :
         }
         catch (Exception e)
         {
-            _log.Error(() => e.ToString());
+            _log.Error(() => $"{e}");
         }
     }
 }
@@ -124,7 +124,7 @@ internal class TcpSessionServer : TcpServer
 
     protected override void OnStarted()
     {
-        _log.Info(() => "Server Started");
+        _log.Info(() => $"Server Started");
     }
 }
 
@@ -138,18 +138,18 @@ internal class TcpSessionNetwork(SessionOption sessionOption, ISessionListener s
     {
         if (_tcpSessionServer.Start())
         {
-            _log.Info(() => "TcpSessionNetwork Start");
+            _log.Info(() => $"TcpSessionNetwork Start");
         }
         else
         {
-            _log.Fatal(() => "Session Server Start Fail");
+            _log.Fatal(() => $"Session Server Start Fail");
             Environment.Exit(0);
         }
     }
 
     public void Stop()
     {
-        _log.Info(() => "TcpSessionNetwork StopAsync");
+        _log.Info(() => $"TcpSessionNetwork StopAsync");
         _tcpSessionServer.Stop();
     }
 }

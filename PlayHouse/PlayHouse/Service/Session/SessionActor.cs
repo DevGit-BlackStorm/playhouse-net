@@ -169,7 +169,7 @@ internal class SessionActor
         }
         catch (Exception ex)
         {
-            _log.Error(() => ex.Message);
+            _log.Error(() => $"{ex.Message}");
         }
     }
 
@@ -255,7 +255,7 @@ internal class SessionActor
                     catch (Exception e)
                     {
                         _sessionSender.Reply((ushort)BaseErrorCode.SystemError);
-                        _log.Error(() => e.ToString());
+                        _log.Error(() => $"{e}");
                     }
                 }
 

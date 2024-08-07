@@ -17,7 +17,7 @@ internal class MessageLoop
 
         _serverThread = new Thread(() =>
         {
-            _log.Info(() => "start Server Communicator");
+            _log.Info(() => $"start Server Communicator");
             _server.Communicate();
         })
         {
@@ -26,7 +26,7 @@ internal class MessageLoop
 
         _clientThread = new Thread(() =>
         {
-            _log.Info(() => "start client Communicator");
+            _log.Info(() => $"start client Communicator");
             _client.Communicate();
         })
         {

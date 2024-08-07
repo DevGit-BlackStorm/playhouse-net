@@ -16,7 +16,7 @@ internal class ServerAddressResolver(
 
     public void Start()
     {
-        _log.Info(() => "Server address resolver start");
+        _log.Info(() => $"Server address resolver start");
 
         async void TimerCallback(object? _)
         {
@@ -47,7 +47,7 @@ internal class ServerAddressResolver(
             }
             catch (Exception e)
             {
-                _log.Error(() => e.Message);
+                _log.Error(() => $"{e}");
             }
         }
 
