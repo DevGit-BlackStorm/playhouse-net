@@ -38,13 +38,13 @@ internal class ApiActor(
                     }
                     catch (Exception e)
                     {
-                        _log.Error(() => "exception message:" + e.Message);
-                        _log.Error(() => "exception trace:" + e.StackTrace);
+                        _log.Error(() => $"[exception message:{e.Message}]");
+                        _log.Error(() => $"[exception message:{e.StackTrace}]");
 
                         if (e.InnerException != null)
                         {
-                            _log.Error(() => "internal exception message:" + e.InnerException.Message);
-                            _log.Error(() => "internal exception trace:" + e.InnerException.StackTrace);
+                            _log.Error(() => $"[internal exception message:{e.InnerException.Message}");
+                            _log.Error(() => $"[internal exception trace:{e.InnerException.StackTrace}");
                         }
                     }
                 }
@@ -72,7 +72,7 @@ internal class ApiActor(
                 apiSender.Reply((ushort)BaseErrorCode.NotRegisteredMessage);
             }
 
-            _log.Error(() => e.Message);
+            _log.Error(() => $"{e}");
         }
         catch (ServiceException.NotRegisterInstance e)
         {
@@ -81,7 +81,7 @@ internal class ApiActor(
                 apiSender.Reply((ushort)BaseErrorCode.SystemError);
             }
 
-            _log.Error(() => e.Message);
+            _log.Error(() => $"{e}");
         }
         catch (Exception e)
         {
@@ -91,13 +91,13 @@ internal class ApiActor(
             }
 
             _log.Error(() => $"Packet processing failed due to an unexpected error. - [msgId:{routeHeader.MsgId}]");
-            _log.Error(() => "exception message:" + e.Message);
-            _log.Error(() => "exception trace:" + e.StackTrace);
+            _log.Error(() => $"[exception message:{e.Message}]");
+            _log.Error(() => $"[exception message:{e.StackTrace}]");
 
             if (e.InnerException != null)
             {
-                _log.Error(() => "internal exception message:" + e.InnerException.Message);
-                _log.Error(() => "internal exception trace:" + e.InnerException.StackTrace);
+                _log.Error(() => $"[internal exception message:{e.InnerException.Message}");
+                _log.Error(() => $"[internal exception trace:{e.InnerException.StackTrace}");
             }
         }
     }

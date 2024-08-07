@@ -40,7 +40,7 @@ internal class XWsSession(WsSessionServer server, ISessionListener sessionListen
         }
         catch (Exception e)
         {
-            _log.Error(() => e.ToString());
+            _log.Error(() => $"{e}");
         }
     }
 
@@ -53,7 +53,7 @@ internal class XWsSession(WsSessionServer server, ISessionListener sessionListen
         }
         catch (Exception e)
         {
-            _log.Error(() => e.ToString());
+            _log.Error(() => $"{e}");
         }
     }
 
@@ -78,7 +78,7 @@ internal class XWsSession(WsSessionServer server, ISessionListener sessionListen
         }
         catch (Exception e)
         {
-            _log.Error(() => e.ToString());
+            _log.Error(() => $"{e}");
             Disconnect();
         }
     }
@@ -92,7 +92,7 @@ internal class XWsSession(WsSessionServer server, ISessionListener sessionListen
         }
         catch (Exception e)
         {
-            _log.Error(() => e.ToString());
+            _log.Error(() => $"{e}");
         }
     }
 }
@@ -130,18 +130,18 @@ internal class WsSessionNetwork(SessionOption sessionOption, ISessionListener se
     {
         if (_wsSessionServer.Start())
         {
-            _log.Info(() => "WsSessionNetwork Start");
+            _log.Info(() => $"WsSessionNetwork Start");
         }
         else
         {
-            _log.Fatal(() => "WsSessionNetwork Start Fail");
+            _log.Fatal(() => $"WsSessionNetwork Start Fail");
             Environment.Exit(0);
         }
     }
 
     public void Stop()
     {
-        _log.Info(() => "WsSessionNetwork StopAsync");
+        _log.Info(() => $"WsSessionNetwork StopAsync");
         _wsSessionServer.Stop();
     }
 }

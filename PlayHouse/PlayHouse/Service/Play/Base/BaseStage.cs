@@ -74,7 +74,7 @@ internal class BaseStage
         catch (Exception e)
         {
             StageSender.Reply((ushort)BaseErrorCode.SystemError);
-            _log.Error(() => e.ToString());
+            _log.Error(() => $"{e}");
         }
         finally
         {
@@ -101,7 +101,7 @@ internal class BaseStage
                     catch (Exception e)
                     {
                         StageSender.Reply((ushort)BaseErrorCode.UncheckedContentsError);
-                        _log.Error(() => e.ToString());
+                        _log.Error(() => $"{e}");
                     }
                 }
 
@@ -189,7 +189,7 @@ internal class BaseStage
         }
         catch (Exception e)
         {
-            _log.Error(() => e.ToString());
+            _log.Error(() => $"{e}");
         }
     }
 
@@ -210,7 +210,7 @@ internal class BaseStage
         }
         catch (Exception e)
         {
-            _log.Error(() => e.ToString());
+            _log.Error(() => $"{e}");
         }
     }
 
