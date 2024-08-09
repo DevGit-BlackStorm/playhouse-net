@@ -47,6 +47,12 @@ message SessionCloseMsg {
 message DisconnectNoticeMsg {
 }
 
+message RemoteIpReq {
+}
+message RemoteIpRes {
+    string ip = 1;
+}
+
 //////////////// for room service //////////////////////////
 message CreateJoinStageReq {
   string stageType = 1;

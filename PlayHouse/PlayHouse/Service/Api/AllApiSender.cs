@@ -37,6 +37,13 @@ internal class AllApiSender(ushort serviceId, IClientCommunicator clientCommunic
         }
     }
 
+    public async Task<string> GetRemoteIp()
+    {
+        var res = await RequestToBaseSession(SessionEndpoint, Sid, RoutePacket.Of(new RemoteIpReq()));
+        var remoteRes = RemoteIpRes.Parser.ParseFrom(res.Span);
+        return remoteRes.Ip;
+    }
+
 
     public async Task<JoinStageResult> JoinStage(string playEndpoint, long stageId, IPacket packet)
     {
