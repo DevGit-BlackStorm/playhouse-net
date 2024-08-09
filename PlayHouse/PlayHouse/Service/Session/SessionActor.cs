@@ -51,6 +51,7 @@ internal class SessionActor
     private string _authServerEndpoint = "";
     private bool _debugMode;
     private Stopwatch _lastUpdateTime = new();
+    private string _remoteIp = string.Empty;
 
     public SessionActor(
         ushort serviceId,
@@ -59,7 +60,8 @@ internal class SessionActor
         ISession session,
         IClientCommunicator clientCommunicator,
         List<string> urls,
-        RequestCache reqCache
+        RequestCache reqCache,
+        string remoteIp
     )
     {
         Sid = sid;
@@ -70,6 +72,7 @@ internal class SessionActor
         _targetServiceCache = new TargetServiceCache(serviceInfoCenter);
 
         _signInUrIs.UnionWith(urls);
+        _remoteIp = remoteIp;
     }
 
     public bool IsAuthenticated { get; private set; }
@@ -301,6 +304,10 @@ internal class SessionActor
                 var stageId = LeaveStageMsg.Parser.ParseFrom(packet.Span).StageId;
                 ClearRoomInfo(stageId);
                 _log.Debug(() => $"stage info clear - [accountId: {AccountId}, stageId: {stageId}]");
+            }
+            else if (msgId == RemoteIpReq.Descriptor.Name)
+            {
+                _sessionSender.Reply(XPacket.Of(new RemoteIpRes(){Ip = _remoteIp }));
             }
             else
             {

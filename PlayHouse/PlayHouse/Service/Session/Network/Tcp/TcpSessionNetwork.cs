@@ -13,7 +13,6 @@ internal class XTcpSession(TcpServer server, ISessionListener sessionListener) :
     private readonly LOG<XTcpSession> _log = new();
     private readonly PacketParser _packetParser = new();
 
-
     public void ClientDisconnect()
     {
         base.Disconnect();
@@ -29,6 +28,7 @@ internal class XTcpSession(TcpServer server, ISessionListener sessionListener) :
 
     private long GetSid()
     {
+        
         return Socket.Handle.ToInt64();
     }
 
@@ -37,7 +37,9 @@ internal class XTcpSession(TcpServer server, ISessionListener sessionListener) :
         try
         {
             _log.Debug(() => $"TCP session OnConnected - [Sid:{GetSid()}]");
-            sessionListener.OnConnect(GetSid(), this);
+            var remoteEndpoint = Socket.RemoteEndPoint?.ToString() ?? string.Empty;
+            sessionListener.OnConnect(GetSid(), this,remoteEndpoint);
+
         }
         catch (Exception e)
         {

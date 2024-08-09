@@ -20,7 +20,7 @@ internal class SessionServerListener : ISessionListener
 
     public string ResultValue { get; set; } = "";
 
-    public void OnConnect(long sid, ISession session)
+    public void OnConnect(long sid, ISession session, string remoteIp)
     {
         ResultValue = "onConnect";
         _session = session;

@@ -38,7 +38,7 @@ internal class SessionDispatcher : ISessionListener
         _timer = new Timer(TimerCallback, this, 1000, 1000);
     }
 
-    public void OnConnect(long sid, ISession session)
+    public void OnConnect(long sid, ISession session,string remoteIp)
     {
         if (!_sessionActors.ContainsKey(sid))
         {
@@ -49,7 +49,9 @@ internal class SessionDispatcher : ISessionListener
                 session,
                 _clientCommunicator,
                 _sessionOption.Urls,
-                _requestCache);
+                _requestCache,
+                remoteIp
+                );
         }
         else
         {

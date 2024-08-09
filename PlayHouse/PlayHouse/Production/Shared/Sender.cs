@@ -4,20 +4,6 @@ namespace PlayHouse.Production.Shared;
 
 public delegate Task TimerCallbackTask();
 
-public interface ISystemPanel
-{
-    IServerInfo GetServerInfo();
-    IServerInfo GetServerInfoBy(ushort serviceId);
-    IServerInfo GetServerInfoBy(ushort serviceId, long accountId);
-    IServerInfo GetServerInfoByEndpoint(string endpoint);
-    IList<IServerInfo> GetServers();
-    void Pause();
-    void Resume();
-    Task ShutdownASync();
-    ServerState GetServerState();
-    long GenerateUUID();
-}
-
 public interface ISender
 {
     ushort ServiceId { get; }
@@ -54,6 +40,8 @@ public interface IApiSender : IApiCommonSender
     string SessionEndpoint { get; }
     long Sid { get; }
     void Authenticate(long accountId);
+
+    Task<string> GetRemoteIp();
 
     Task<JoinStageResult> JoinStage(string playEndpoint,
         long stageId,

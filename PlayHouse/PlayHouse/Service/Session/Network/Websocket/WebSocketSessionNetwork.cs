@@ -36,7 +36,8 @@ internal class XWsSession(WsSessionServer server, ISessionListener sessionListen
         try
         {
             _log.Debug(() => $"WS session OnConnected - [Sid:{GetSid()}]");
-            sessionListener.OnConnect(GetSid(), this);
+            var remoteEndpoint = Socket.RemoteEndPoint?.ToString() ?? string.Empty;
+            sessionListener.OnConnect(GetSid(), this,remoteEndpoint);
         }
         catch (Exception e)
         {
