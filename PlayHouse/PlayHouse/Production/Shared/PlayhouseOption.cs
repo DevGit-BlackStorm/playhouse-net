@@ -13,10 +13,5 @@ public class PlayhouseOption
     public bool ShowQps { get; set; }
     public int NodeId { get; set; } // 0~ 4096
 
-    public List<string> AddressServerEndpoints { get; set; } = [];
-    public ushort AddressServerServiceId { get; set; }
-
     public Func<string, IPayload, ushort, IPacket>? PacketProducer { get; set; }
-
-    public required ISystemController System { get; set; }
 }

@@ -40,7 +40,6 @@ public class CommunicatorOption
         private int _port;
         private IServiceProvider? _serviceProvider;
         private bool _showQps;
-        private ISystemController? _system;
 
         public Builder SetIp(string ip)
         {
