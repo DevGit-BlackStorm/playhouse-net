@@ -76,14 +76,14 @@ internal class TestBackendApiController : IApiBackendController
     }
 }
 
-internal class TestSystemController : ISystemController, IUpdateServerInfoCallback
+internal class TestSystemController : ISystemController
 {
     public void Handles(ISystemHandlerRegister handlerRegister)
     {
         handlerRegister.Add(SystemHandlerTestMsg.Descriptor.Name, Test);
     }
 
-    public async Task<List<IServerInfo>> UpdateServerInfoAsync(IServerInfo serverInfo)
+    public async Task<IReadOnlyList<IServerInfo>> UpdateServerInfoAsync(IServerInfo serverInfo)
     {
         ReflectionTestResult.ResultMap[$"{GetType().Name}_UpdateServerInfoAsync"] = "UpdateServerInfoAsync";
         await Task.CompletedTask;

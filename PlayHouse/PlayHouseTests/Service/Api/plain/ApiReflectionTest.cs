@@ -143,21 +143,21 @@ public class ApiReflectionTest
         await callbackReflection.OnDisconnectAsync(apiSenderMock.Object);
     }
 
-    [Fact]
-    public async Task UpdateServerInfo_callback_should_be_called()
-    {
-        PacketProducer.Init((msgId, payload, msgSeq) => new TestPacket(msgId, payload, msgSeq));
-        var serviceCollection = new ServiceCollection();
-        serviceCollection.AddScoped<TestSystemController>();
+    //[Fact]
+    //public async Task UpdateServerInfo_callback_should_be_called()
+    //{
+    //    PacketProducer.Init((msgId, payload, msgSeq) => new TestPacket(msgId, payload, msgSeq));
+    //    var serviceCollection = new ServiceCollection();
+    //    serviceCollection.AddScoped<TestSystemController>();
 
-        var callbackReflection = new ApiReflectionCallback(serviceCollection.BuildServiceProvider());
+    //    var callbackReflection = new ApiReflectionCallback(serviceCollection.BuildServiceProvider());
 
-        var serverInfo = new Mock<IServerInfo>();
-        var serverInfos = await callbackReflection.UpdateServerInfoAsync(serverInfo.Object);
-        serverInfos.Count.Should().Be(1);
-        ReflectionTestResult.ResultMap["TestSystemController_UpdateServerInfoAsync"].Should()
-            .Be("UpdateServerInfoAsync");
-    }
+    //    var serverInfo = new Mock<IServerInfo>();
+    //    //var serverInfos = await callbackReflection.UpdateServerInfoAsync(serverInfo.Object);
+    //    //serverInfos.Count.Should().Be(1);
+    //    ReflectionTestResult.ResultMap["TestSystemController_UpdateServerInfoAsync"].Should()
+    //        .Be("UpdateServerInfoAsync");
+    //}
 
 
     [Fact]

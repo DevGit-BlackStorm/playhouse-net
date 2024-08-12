@@ -30,8 +30,6 @@ public class SessionServer : IServer
             .SetShowQps(_commonOption.ShowQps)
             .SetNodeId(_commonOption.NodeId)
             .SetPacketProducer(_commonOption.PacketProducer)
-            .SetAddressServerEndpoints(_commonOption.AddressServerEndpoints)
-            .SetAddressServerServiceId(_commonOption.AddressServerServiceId)
             .Build();
 
         PooledBuffer.Init(_commonOption.MaxBufferPoolSize);

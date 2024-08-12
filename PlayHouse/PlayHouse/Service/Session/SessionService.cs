@@ -6,31 +6,23 @@ using PlayHouse.Utils;
 
 namespace PlayHouse.Service.Session;
 
-internal class SessionService : IService
+internal class SessionService(
+    ushort serviceId,
+    SessionOption sessionOption,
+    IServerInfoCenter serverInfoCenter,
+    IClientCommunicator clientCommunicator,
+    RequestCache requestCache,
+    bool showQps)
+    : IService
 {
     private readonly LOG<SessionService> _log = new();
-    private readonly PerformanceTester _performanceTester;
-    private readonly SessionDispatcher _sessionDispatcher;
+    private readonly PerformanceTester _performanceTester = new(showQps, "client");
+    private readonly SessionDispatcher _sessionDispatcher = new(serviceId, sessionOption, serverInfoCenter, clientCommunicator, requestCache);
 
     private readonly AtomicEnum<ServerState> _state = new(ServerState.DISABLE);
 
-    public SessionService(
-        ushort serviceId,
-        SessionOption sessionOption,
-        IServerInfoCenter serverInfoCenter,
-        IClientCommunicator clientCommunicator,
-        RequestCache requestCache,
-        bool showQps
-    )
-    {
-        ServiceId = serviceId;
-        _performanceTester = new PerformanceTester(showQps, "client");
-        _sessionDispatcher =
-            new SessionDispatcher(serviceId, sessionOption, serverInfoCenter, clientCommunicator, requestCache);
-    }
 
-
-    public ushort ServiceId { get; }
+    public ushort ServiceId { get; } = serviceId;
 
     public void OnStart()
     {

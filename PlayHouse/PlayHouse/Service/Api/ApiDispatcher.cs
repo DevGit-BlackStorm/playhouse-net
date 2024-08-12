@@ -102,19 +102,21 @@ internal class ApiDispatcher
         var apiSender = new AllApiSender(_serviceId, _clientCommunicator, _requestCache);
         apiSender.SetCurrentPacketHeader(routeHeader);
 
-        if (routeHeader.IsBase && routeHeader.MsgId == UpdateServerInfoReq.Descriptor.Name)
-        {
-            var updateServerInfoReq = UpdateServerInfoReq.Parser.ParseFrom(routePacket.Span);
+        //if (routeHeader.IsBase && routeHeader.MsgId == UpdateServerInfoReq.Descriptor.Name)
+        //{
+        //    var updateServerInfoReq = UpdateServerInfoReq.Parser.ParseFrom(routePacket.Span);
 
-            _clientCommunicator.Connect(updateServerInfoReq.ServerInfo.Endpoint);
-            var serverInfoList =
-                await _apiReflectionCallback.UpdateServerInfoAsync(XServerInfo.Of(updateServerInfoReq.ServerInfo));
-            UpdateServerInfoRes updateServerInfoRes = new();
-            updateServerInfoRes.ServerInfos.AddRange(serverInfoList.Select(e => XServerInfo.Of(e).ToMsg()));
-            apiSender.Reply(XPacket.Of(updateServerInfoRes));
+        //    _clientCommunicator.Connect(updateServerInfoReq.ServerInfo.Endpoint);
 
-            return;
-        }
+        //    var serverInfoList =
+        //        await _apiReflectionCallback.UpdateServerInfoAsync(XServerInfo.Of(updateServerInfoReq.ServerInfo));
+
+        //    UpdateServerInfoRes updateServerInfoRes = new();
+        //    updateServerInfoRes.ServerInfos.AddRange(serverInfoList.Select(e => XServerInfo.Of(e).ToMsg()));
+        //    apiSender.Reply(XPacket.Of(updateServerInfoRes));
+
+        //    return;
+        //}
 
         if (routePacket.IsBackend())
         {

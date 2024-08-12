@@ -7,7 +7,9 @@ public interface ISystemHandlerRegister
     void Add(string msgId, SystemHandler handler);
 }
 
-public interface ISystemController
+public interface ISystemController 
 {
     void Handles(ISystemHandlerRegister handlerRegister);
+
+    Task<IReadOnlyList<IServerInfo>> UpdateServerInfoAsync(IServerInfo serverInfo);
 }

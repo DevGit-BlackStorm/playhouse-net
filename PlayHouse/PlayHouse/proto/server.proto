@@ -141,12 +141,3 @@ message DestroyStage {
 message AsyncBlock {
 }
 
-message UpdateServerInfoReq
-{
-    ServerInfoMsg server_info = 1;
-}
-
-message UpdateServerInfoRes
-{
-    repeated ServerInfoMsg server_infos = 1;
-}

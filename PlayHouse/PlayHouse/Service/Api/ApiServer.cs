@@ -26,8 +26,6 @@ public class ApiServer : IServer
             .SetShowQps(_commonOption.ShowQps)
             .SetNodeId(_commonOption.NodeId)
             .SetPacketProducer(_commonOption.PacketProducer)
-            .SetAddressServerEndpoints(_commonOption.AddressServerEndpoints)
-            .SetAddressServerServiceId(_commonOption.AddressServerServiceId)
             .Build();
 
         var bindEndpoint = communicatorOption.BindEndpoint;

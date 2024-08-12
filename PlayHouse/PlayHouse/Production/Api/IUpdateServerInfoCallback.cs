@@ -1,8 +1,8 @@
-﻿using PlayHouse.Production.Shared;
+﻿//using PlayHouse.Production.Shared;
 
-namespace PlayHouse.Production.Api;
+//namespace PlayHouse.Production.Api;
 
-public interface IUpdateServerInfoCallback
-{
-    Task<List<IServerInfo>> UpdateServerInfoAsync(IServerInfo serverInfo);
-}
+//public interface IUpdateServerInfoCallback
+//{
+//    Task<List<IServerInfo>> UpdateServerInfoAsync(IServerInfo serverInfo);
+//}

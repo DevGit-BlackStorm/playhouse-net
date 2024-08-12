@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using PlayHouse.Communicator.Message;
 using PlayHouse.Communicator.PlaySocket;
-using Playhouse.Protocol;
 using PlayHouse.Utils;
 
 namespace PlayHouse.Communicator;
@@ -9,14 +8,14 @@ namespace PlayHouse.Communicator;
 internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
 {
     private readonly HashSet<string> _connected = new();
-    private readonly HashSet<string> _disconnected = new();
+    //private readonly HashSet<string> _disconnected = new();
     private readonly LOG<XClientCommunicator> _log = new();
     private readonly ConcurrentQueue<Action> _queue = new();
     private bool _running = true;
 
     public void Connect(string endpoint)
     {
-        if (_connected.Contains(endpoint))
+        if (!_connected.Add(endpoint))
         {
             return;
         }
@@ -26,8 +25,8 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
             try
             {
                 playSocket.Connect(endpoint);
-                _connected.Add(endpoint);
-                _disconnected.Remove(endpoint);
+                //_connected.Add(endpoint);
+                //_disconnected.Remove(endpoint);
                 _log.Info(() => $"connected with {endpoint}");
             }
             catch (Exception ex)
@@ -39,28 +38,31 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
 
     public void Disconnect(string endpoint)
     {
-        if (_disconnected.Contains(endpoint))
-        {
-            return;
-        }
 
-        _queue.Enqueue(() =>
-        {
-            try
-            {
-                playSocket.Disconnect(endpoint);
-                _log.Info(() => $"disconnected with {endpoint}");
-            }
-            catch (Exception ex)
-            {
-                _log.Error(() => $"disconnect error - endpoint:{endpoint}, error:{ex.Message}");
-            }
-            finally
-            {
-                _connected.Remove(endpoint);
-                _disconnected.Add(endpoint);
-            }
-        });
+        
+
+        //if (_disconnected.Contains(endpoint))
+        //{
+        //    return;
+        //}
+
+        //_queue.Enqueue(() =>
+        //{
+        //    try
+        //    {
+        //        playSocket.Disconnect(endpoint);
+        //        _log.Info(() => $"disconnected with {endpoint}");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _log.Error(() => $"disconnect error - endpoint:{endpoint}, error:{ex.Message}");
+        //    }
+        //    finally
+        //    {
+        //        _connected.Remove(endpoint);
+        //        _disconnected.Add(endpoint);
+        //    }
+        //});
     }
 
     public void Stop()
@@ -70,18 +72,20 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
 
     public void Send(string endpoint, RoutePacket routePacket)
     {
+
+        if (_connected.Contains(endpoint) == false)
+        {
+            _log.Error(() => $"socket is not connected : [target endpoint:{endpoint},target msgId:{routePacket.MsgId}]");
+            return;
+        }
+
         _queue.Enqueue(() =>
         {
             try
             {
                 using (routePacket)
                 {
-                    if (routePacket.MsgId != UpdateServerInfoReq.Descriptor.Name &&
-                        routePacket.MsgId != UpdateServerInfoRes.Descriptor.Name)
-                    {
-                        _log.Trace(() => $"sendTo:{endpoint} - [packetInfo:{routePacket.RouteHeader}]");
-                    }
-
+                    _log.Trace(() => $"sendTo:{endpoint} - [packetInfo:{routePacket.RouteHeader}]");
                     playSocket.Send(endpoint, routePacket);
                 }
             }

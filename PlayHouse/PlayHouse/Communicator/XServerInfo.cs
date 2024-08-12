@@ -144,7 +144,7 @@ internal class XServerInfo : IServerInfo
 
     public bool IsValid()
     {
-        return _serverState == ServerState.RUNNING;
+        return _serverState == ServerState.RUNNING ;
     }
 
     public byte[] ToByteArray()

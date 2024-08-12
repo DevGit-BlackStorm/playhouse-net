@@ -17,4 +17,6 @@ public class PlayhouseOption
     public ushort AddressServerServiceId { get; set; }
 
     public Func<string, IPayload, ushort, IPacket>? PacketProducer { get; set; }
+
+    public required ISystemController System { get; set; }
 }

@@ -4,10 +4,10 @@ namespace PlayHouse.Production.Shared;
 
 internal interface IServerInfoCenter
 {
-    IList<XServerInfo> Update(IList<XServerInfo> serverList);
+    IReadOnlyList<XServerInfo> Update(IReadOnlyList<XServerInfo> serverList);
     XServerInfo FindServer(string endpoint);
     XServerInfo FindRoundRobinServer(ushort serviceId);
-    IList<XServerInfo> GetServerList();
+    IReadOnlyList<XServerInfo> GetServerList();
     XServerInfo FindServerByAccountId(ushort serviceId, long accountId);
     ServiceType FindServerType(ushort serviceId);
 }
