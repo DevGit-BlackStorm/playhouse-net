@@ -12,28 +12,25 @@ public class PlayServer : IServer
 
     public PlayServer(PlayhouseOption commonOption, PlayOption playOption)
     {
-        var commonOption1 = commonOption;
 
         var communicatorOption = new CommunicatorOption.Builder()
-            .SetIp(commonOption1.Ip)
-            .SetPort(commonOption1.Port)
-            .SetServiceProvider(commonOption1.ServiceProvider)
-            .SetShowQps(commonOption1.ShowQps)
-            .SetNodeId(commonOption1.NodeId)
-            .SetPacketProducer(commonOption1.PacketProducer)
-            .SetAddressServerEndpoints(commonOption1.AddressServerEndpoints)
-            .SetAddressServerServiceId(commonOption1.AddressServerServiceId)
+            .SetIp(commonOption.Ip)
+            .SetPort(commonOption.Port)
+            .SetServiceProvider(commonOption.ServiceProvider)
+            .SetShowQps(commonOption.ShowQps)
+            .SetNodeId(commonOption.NodeId)
+            .SetPacketProducer(commonOption.PacketProducer)
             .Build();
 
         var bindEndpoint = communicatorOption.BindEndpoint;
-        var serviceId = commonOption1.ServiceId;
+        var serviceId = commonOption.ServiceId;
 
-        PooledBuffer.Init(commonOption1.MaxBufferPoolSize);
+        PooledBuffer.Init(commonOption.MaxBufferPoolSize);
 
         var communicateClient =
             new XClientCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(), bindEndpoint));
 
-        var requestCache = new RequestCache(commonOption1.RequestTimeoutSec);
+        var requestCache = new RequestCache(commonOption.RequestTimeoutSec);
         var serverInfoCenter = new XServerInfoCenter();
         var playService = new PlayService(serviceId, bindEndpoint, playOption, communicateClient, requestCache,
             serverInfoCenter);

@@ -5,66 +5,64 @@ namespace PlayHouse.Communicator;
 
 internal class XServerInfoCenter : IServerInfoCenter
 {
-    private readonly IDictionary<string, XServerInfo> _serverInfoMap = new ConcurrentDictionary<string, XServerInfo>();
+    //private readonly IDictionary<string, XServerInfo> _serverInfoMap = new ConcurrentDictionary<string, XServerInfo>();
     private int _offset;
     private List<XServerInfo> _serverInfoList = new();
 
-    public IList<XServerInfo> Update(IList<XServerInfo> serverList)
+    public IReadOnlyList<XServerInfo> Update(IReadOnlyList<XServerInfo> serverList)
     {
-        //var serverInfoMap = new ConcurrentDictionary<string, XServerInfo>();
-        //foreach (XServerInfo serverInfo in serverList)
+        //var updatedMap = new Dictionary<string, XServerInfo>();
+        //foreach (var newInfo in serverList)
         //{
-        //    serverInfo.CheckTimeout();
-        //    _serverInfoMap.Add(serverInfo.GetBindEndpoint,serverInfo);
+        //    newInfo.CheckTimeout();
+
+        //    if (_serverInfoMap.TryGetValue(newInfo.GetBindEndpoint(), out var oldInfo))
+        //    {
+        //        if (oldInfo.Update(newInfo))
+        //        {
+        //            updatedMap[newInfo.GetBindEndpoint()] = newInfo;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        _serverInfoMap[newInfo.GetBindEndpoint()] = newInfo;
+        //        updatedMap[newInfo.GetBindEndpoint()] = newInfo;
+        //    }
         //}
-        //_serverInfoMap = serverInfoMap;
-        //_serverInfoList = _serverInfoMap.Values.ToList().OrderBy(x => x.GetBindEndpoint).ToList();
-        //return _serverInfoList;
-        var updatedMap = new Dictionary<string, XServerInfo>();
-        foreach (var newInfo in serverList)
-        {
-            newInfo.CheckTimeout();
 
-            if (_serverInfoMap.TryGetValue(newInfo.GetBindEndpoint(), out var oldInfo))
-            {
-                if (oldInfo.Update(newInfo))
-                {
-                    updatedMap[newInfo.GetBindEndpoint()] = newInfo;
-                }
-            }
-            else
-            {
-                _serverInfoMap[newInfo.GetBindEndpoint()] = newInfo;
-                updatedMap[newInfo.GetBindEndpoint()] = newInfo;
-            }
+        //// Remove server info if it's not in the list
+        //foreach (var oldInfo in _serverInfoMap.Values.ToList())
+        //{
+        //    if (oldInfo.CheckTimeout())
+        //    {
+        //        updatedMap[oldInfo.GetBindEndpoint()] = oldInfo;
+        //    }
+        //}
+
+        //_serverInfoList = _serverInfoMap.Values.ToList().OrderBy(x => x.GetBindEndpoint()).ToList();
+
+        //return updatedMap.Values.ToList();
+
+        foreach (var xServerInfo in serverList)
+        {
+            xServerInfo.CheckTimeout();
         }
 
-        // Remove server info if it's not in the list
-        foreach (var oldInfo in _serverInfoMap.Values.ToList())
-        {
-            if (oldInfo.CheckTimeout())
-            {
-                updatedMap[oldInfo.GetBindEndpoint()] = oldInfo;
-            }
+        _serverInfoList = serverList.OrderBy(x => x.GetBindEndpoint()).ToList();
 
-            //if (!serverList.Contains(oldInfo))
-            //{
-            //    _serverInfoMap.Remove(oldInfo.GetBindEndpoint);
-            //    if (oldInfo.CheckTimeout())
-            //    {
-            //        updatedMap[oldInfo.GetBindEndpoint] = oldInfo;
-            //    }
-            //}
-        }
-
-        _serverInfoList = _serverInfoMap.Values.ToList().OrderBy(x => x.GetBindEndpoint()).ToList();
-
-        return updatedMap.Values.ToList();
+        return _serverInfoList;
     }
 
     public XServerInfo FindServer(string endpoint)
     {
-        if (!_serverInfoMap.TryGetValue(endpoint, out var serverInfo) || !serverInfo.IsValid())
+        //if (!_serverInfoMap.TryGetValue(endpoint, out var serverInfo) || !serverInfo.IsValid())
+        //{
+        //    throw new CommunicatorException.NotExistServerInfo($"target endpoint:{endpoint} , ServerInfo is not exist");
+        //}
+
+        var serverInfo = _serverInfoList.FirstOrDefault(e => e.IsValid() && e.GetBindEndpoint() == endpoint);
+
+        if (serverInfo == null)
         {
             throw new CommunicatorException.NotExistServerInfo($"target endpoint:{endpoint} , ServerInfo is not exist");
         }
@@ -75,7 +73,7 @@ internal class XServerInfoCenter : IServerInfoCenter
     public XServerInfo FindRoundRobinServer(ushort serviceId)
     {
         var list = _serverInfoList
-            .Where(x => x.GetState() == ServerState.RUNNING && x.GetServiceId() == serviceId)
+            .Where(x => x.IsValid() && x.GetServiceId() == serviceId)
             .ToList();
 
         if (!list.Any())
@@ -93,7 +91,7 @@ internal class XServerInfoCenter : IServerInfoCenter
         return list[index];
     }
 
-    public IList<XServerInfo> GetServerList()
+    public IReadOnlyList<XServerInfo> GetServerList()
     {
         return _serverInfoList;
     }
@@ -101,7 +99,7 @@ internal class XServerInfoCenter : IServerInfoCenter
     public XServerInfo FindServerByAccountId(ushort serviceId, long accountId)
     {
         var list = _serverInfoList
-            .Where(info => info.GetState() == ServerState.RUNNING && info.GetServiceId() == serviceId)
+            .Where(e => e.IsValid() && e.GetServiceId() == serviceId)
             .ToList();
 
         if (list.Count == 0)

@@ -8,7 +8,7 @@ namespace PlayHouse.Service.Api.Reflection;
 internal class ApiReflectionCallback(IServiceProvider serviceProvider)
 {
     private readonly CallbackReflectionInvoker _invoker = new(serviceProvider,
-        new[] { typeof(IDisconnectCallback), typeof(IUpdateServerInfoCallback) });
+        new[] { typeof(IDisconnectCallback) });
 
     private readonly LOG<ApiReflectionCallback> _log = new();
 
@@ -17,11 +17,11 @@ internal class ApiReflectionCallback(IServiceProvider serviceProvider)
         await _invoker.InvokeMethods(serviceProvider,"OnDisconnectAsync", [sender]);
     }
 
-    public async Task<List<IServerInfo>> UpdateServerInfoAsync(IServerInfo serverInfo)
-    {
-        return (List<IServerInfo>)(await _invoker.InvokeMethodsWithReturn(serviceProvider,"UpdateServerInfoAsync",
-            [serverInfo]))!;
-    }
+    //public async Task<List<IServerInfo>> UpdateServerInfoAsync(IServerInfo serverInfo)
+    //{
+    //    return (List<IServerInfo>)(await _invoker.InvokeMethodsWithReturn(serviceProvider,"UpdateServerInfoAsync",
+    //        [serverInfo]))!;
+    //}
 
     public void Reset(IServiceProvider provider)
     {

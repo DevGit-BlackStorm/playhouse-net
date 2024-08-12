@@ -1,4 +1,5 @@
-﻿using PlayHouse.Communicator.Message;
+﻿using Microsoft.Extensions.DependencyInjection;
+using PlayHouse.Communicator.Message;
 using PlayHouse.Communicator.PlaySocket;
 using PlayHouse.Production.Shared;
 using Playhouse.Protocol;
@@ -14,8 +15,6 @@ public class CommunicatorOption
         IServiceProvider serviceProvider,
         bool showQps,
         int nodeId,
-        ushort addressServerId,
-        List<string> addressServerEndpoints,
         Func<string, IPayload, ushort, IPacket> packetProducer
     )
     {
@@ -23,8 +22,6 @@ public class CommunicatorOption
         ShowQps = showQps;
         NodeId = nodeId;
         ServiceProvider = serviceProvider;
-        AddressServerId = addressServerId;
-        AddressServerEndpoints = addressServerEndpoints;
         PacketProducer = packetProducer;
     }
 
@@ -32,21 +29,18 @@ public class CommunicatorOption
     public bool ShowQps { get; }
     public int NodeId { get; }
     public IServiceProvider ServiceProvider { get; }
-    public ushort AddressServerId { get; }
-    public List<string> AddressServerEndpoints { get; }
-
     public Func<string, IPayload, ushort, IPacket>? PacketProducer { get; }
+
 
     public class Builder
     {
-        private List<string> _addressServerEndpoints = new();
-        private ushort _addressServerId;
         private string _Ip = string.Empty;
         private int _nodeId;
         private Func<string, IPayload, ushort, IPacket>? _packetProducer;
         private int _port;
         private IServiceProvider? _serviceProvider;
         private bool _showQps;
+        private ISystemController? _system;
 
         public Builder SetIp(string ip)
         {
@@ -99,8 +93,6 @@ public class CommunicatorOption
                 _serviceProvider!,
                 _showQps,
                 _nodeId,
-                _addressServerId,
-                _addressServerEndpoints,
                 _packetProducer
             );
         }
@@ -125,27 +117,27 @@ public class CommunicatorOption
             return this;
         }
 
-        internal Builder SetAddressServerServiceId(ushort updateServerServiceId)
-        {
-            if (updateServerServiceId <= 0)
-            {
-                throw new Exception("invalid updateServerServiceId");
-            }
+        //internal Builder SetAddressServerServiceId(ushort updateServerServiceId)
+        //{
+        //    if (updateServerServiceId <= 0)
+        //    {
+        //        throw new Exception("invalid updateServerServiceId");
+        //    }
 
-            _addressServerId = updateServerServiceId;
-            return this;
-        }
+        //    _addressServerId = updateServerServiceId;
+        //    return this;
+        //}
 
-        internal Builder SetAddressServerEndpoints(List<string> addressServerEndpoints)
-        {
-            if (addressServerEndpoints == null || addressServerEndpoints.Count == 0)
-            {
-                throw new Exception("no registered addressServerEndpoint");
-            }
+        //internal Builder SetAddressServerEndpoints(List<string> addressServerEndpoints)
+        //{
+        //    if (addressServerEndpoints == null || addressServerEndpoints.Count == 0)
+        //    {
+        //        throw new Exception("no registered addressServerEndpoint");
+        //    }
 
-            _addressServerEndpoints = addressServerEndpoints.Select(e => $"tcp://{e}").ToList();
-            return this;
-        }
+        //    _addressServerEndpoints = addressServerEndpoints.Select(e => $"tcp://{e}").ToList();
+        //    return this;
+        //}
     }
 }
 
@@ -162,7 +154,6 @@ internal class Communicator : ICommunicateListener
     private readonly XSender _sender;
     private readonly XServerCommunicator _serverCommunicator;
     private readonly XServerInfoCenter _serverInfoCenter;
-    private readonly IServerInfoRetriever _serverRetriever;
     private readonly IService _service;
     private readonly ushort _serviceId;
     private readonly SystemDispatcher _systemDispatcher;
@@ -189,13 +180,16 @@ internal class Communicator : ICommunicateListener
         _messageLoop = new MessageLoop(_serverCommunicator, _clientCommunicator);
         _sender = new XSender(_serviceId, _clientCommunicator, _requestCache);
         _systemPanel = new XSystemPanel(_serverInfoCenter, _clientCommunicator, _option.NodeId, _option.BindEndpoint);
-        _serverRetriever = new ServerInfoRetriever(option.AddressServerId, option.AddressServerEndpoints, _sender);
+
+        var systemController = _option.ServiceProvider.GetRequiredService<ISystemController>();
+
         _addressResolver = new ServerAddressResolver(
             _option.BindEndpoint,
             _serverInfoCenter,
             _clientCommunicator,
             _service,
-            _serverRetriever);
+            systemController
+            );
         _systemDispatcher = new SystemDispatcher(_serviceId, _requestCache, _clientCommunicator, _systemPanel,
             option.ServiceProvider);
 
@@ -222,7 +216,6 @@ internal class Communicator : ICommunicateListener
 
         _clientCommunicator.Connect(bindEndpoint);
 
-        _option.AddressServerEndpoints.ForEach(endpoint => { _clientCommunicator.Connect(endpoint); });
 
         _addressResolver.Start();
 
@@ -232,14 +225,6 @@ internal class Communicator : ICommunicateListener
 
         _log.Info(() => $"============== server start ==============");
         _log.Info(() => $"Ready for bind: {bindEndpoint}");
-    }
-
-    private async Task UpdateDisableASync()
-    {
-        var serverInfo = XServerInfo.Of(_option.BindEndpoint, _service);
-        serverInfo.SetState(ServerState.DISABLE);
-
-        await _serverRetriever.UpdateServerListAsync(serverInfo);
     }
 
     public async Task StopAsync()

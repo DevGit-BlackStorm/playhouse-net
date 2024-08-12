@@ -16,8 +16,7 @@ internal class XServerCommunicator(IPlaySocket playSocket) : IServerCommunicator
         _listener = listener;
         playSocket.Bind();
     }
-
-
+    
     public void Communicate()
     {
         while (_running)
@@ -27,11 +26,7 @@ internal class XServerCommunicator(IPlaySocket playSocket) : IServerCommunicator
             {
                 try
                 {
-                    if (packet.MsgId != UpdateServerInfoReq.Descriptor.Name &&
-                        packet.MsgId != UpdateServerInfoRes.Descriptor.Name)
-                    {
-                        _log.Trace(() => $"recvFrom:{packet.RouteHeader.From} - [packetInfo:${packet.RouteHeader}]");
-                    }
+                    _log.Trace(() => $"recvFrom:{packet.RouteHeader.From} - [packetInfo:${packet.RouteHeader}]");
 
                     _listener!.OnReceive(packet);
                 }

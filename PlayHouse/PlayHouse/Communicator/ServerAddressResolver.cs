@@ -8,7 +8,7 @@ internal class ServerAddressResolver(
     XServerInfoCenter serverInfoCenter,
     XClientCommunicator communicateClient,
     IService service,
-    IServerInfoRetriever storageClient)
+    ISystemController system)
 {
     private readonly LOG<ServerAddressResolver> _log = new();
 
@@ -28,9 +28,12 @@ internal class ServerAddressResolver(
                 //자신의 정보먼저  update
                 serverInfoCenter.Update(new List<XServerInfo> { myServerInfo });
 
-                IList<XServerInfo> serverInfoList = await storageClient.UpdateServerListAsync(myServerInfo);
 
-                var updateList = serverInfoCenter.Update(serverInfoList);
+                IReadOnlyList<IServerInfo> serverInfoList = await system.UpdateServerInfoAsync(myServerInfo);
+
+                var updateList = serverInfoCenter.Update(serverInfoList.Select(e=> 
+                    new XServerInfo(e.GetBindEndpoint(),e.GetServiceType(),e.GetServiceId(),e.GetState(),e.GetActorCount(),e.GetLastUpdate())
+                ).ToList());
 
                 foreach (var serverInfo in updateList)
                 {
