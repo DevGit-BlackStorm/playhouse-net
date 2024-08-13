@@ -42,7 +42,7 @@ public class SessionServer : IServer
 
         var requestCache = new RequestCache(_commonOption.RequestTimeoutSec);
 
-        var serverInfoCenter = new XServerInfoCenter();
+        var serverInfoCenter = new XServerInfoCenter(commonOption.DebugMode);
 
         var sessionService = new SessionService(
             serviceId,
