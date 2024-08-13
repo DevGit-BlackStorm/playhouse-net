@@ -1,68 +1,43 @@
 ﻿using PlayHouse.Production.Shared;
+using System.Collections.Immutable;
 
 namespace PlayHouse.Communicator;
 
+using System.Collections.Immutable;
+using System.Threading;
+
 internal class XServerInfoCenter(bool debugMode) : IServerInfoCenter
 {
-    //private readonly IDictionary<string, XServerInfo> _serverInfoMap = new ConcurrentDictionary<string, XServerInfo>();
     private int _offset;
-    private List<XServerInfo> _serverInfoList = new();
+    private ImmutableList<XServerInfo> _serverInfoList = ImmutableList<XServerInfo>.Empty;
 
     public IReadOnlyList<XServerInfo> Update(IReadOnlyList<XServerInfo> serverList)
     {
-        //var updatedMap = new Dictionary<string, XServerInfo>();
-        //foreach (var newInfo in serverList)
-        //{
-        //    newInfo.CheckTimeout();
-
-        //    if (_serverInfoMap.TryGetValue(newInfo.GetBindEndpoint(), out var oldInfo))
-        //    {
-        //        if (oldInfo.Update(newInfo))
-        //        {
-        //            updatedMap[newInfo.GetBindEndpoint()] = newInfo;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        _serverInfoMap[newInfo.GetBindEndpoint()] = newInfo;
-        //        updatedMap[newInfo.GetBindEndpoint()] = newInfo;
-        //    }
-        //}
-
-        //// Remove server info if it's not in the list
-        //foreach (var oldInfo in _serverInfoMap.Values.ToList())
-        //{
-        //    if (oldInfo.CheckTimeout())
-        //    {
-        //        updatedMap[oldInfo.GetBindEndpoint()] = oldInfo;
-        //    }
-        //}
-
-        //_serverInfoList = _serverInfoMap.Values.ToList().OrderBy(x => x.GetBindEndpoint()).ToList();
-
-        //return updatedMap.Values.ToList();
+        if (serverList.Count == 0)
+        {
+            return Volatile.Read(ref _serverInfoList);
+        }
 
         foreach (var xServerInfo in serverList)
         {
-            if (debugMode == false)
+            if (!debugMode)
             {
                 xServerInfo.CheckTimeout();
             }
         }
 
-        _serverInfoList = serverList.OrderBy(x => x.GetBindEndpoint()).ToList();
+        var newList = serverList.OrderBy(x => x.GetBindEndpoint()).ToImmutableList();
 
-        return _serverInfoList;
+        // Volatile.Write를 사용하여 원자적으로 리스트 교체
+        Volatile.Write(ref _serverInfoList, newList);
+
+        return Volatile.Read(ref _serverInfoList);
     }
 
     public XServerInfo FindServer(string endpoint)
     {
-        //if (!_serverInfoMap.TryGetValue(endpoint, out var serverInfo) || !serverInfo.IsValid())
-        //{
-        //    throw new CommunicatorException.NotExistServerInfo($"target endpoint:{endpoint} , ServerInfo is not exist");
-        //}
-
-        var serverInfo = _serverInfoList.FirstOrDefault(e => e.IsValid() && e.GetBindEndpoint() == endpoint);
+        var serverInfo = Volatile.Read(ref _serverInfoList)
+            .FirstOrDefault(e => e.IsValid() && e.GetBindEndpoint() == endpoint);
 
         if (serverInfo == null)
         {
@@ -74,7 +49,7 @@ internal class XServerInfoCenter(bool debugMode) : IServerInfoCenter
 
     public XServerInfo FindRoundRobinServer(ushort serviceId)
     {
-        var list = _serverInfoList
+        var list = Volatile.Read(ref _serverInfoList)
             .Where(x => x.IsValid() && x.GetServiceId() == serviceId)
             .ToList();
 
@@ -86,7 +61,7 @@ internal class XServerInfoCenter(bool debugMode) : IServerInfoCenter
         var next = Interlocked.Increment(ref _offset);
         if (next < 0)
         {
-            next *= next * -1;
+            next *= -1;
         }
 
         var index = next % list.Count;
@@ -95,12 +70,12 @@ internal class XServerInfoCenter(bool debugMode) : IServerInfoCenter
 
     public IReadOnlyList<XServerInfo> GetServerList()
     {
-        return _serverInfoList;
+        return Volatile.Read(ref _serverInfoList);
     }
 
     public XServerInfo FindServerByAccountId(ushort serviceId, long accountId)
     {
-        var list = _serverInfoList
+        var list = Volatile.Read(ref _serverInfoList)
             .Where(e => e.IsValid() && e.GetServiceId() == serviceId)
             .ToList();
 
@@ -115,7 +90,7 @@ internal class XServerInfoCenter(bool debugMode) : IServerInfoCenter
 
     public ServiceType FindServerType(ushort serviceId)
     {
-        var list = _serverInfoList
+        var list = Volatile.Read(ref _serverInfoList)
             .Where(info => info.GetServiceId() == serviceId)
             .ToList();
 
