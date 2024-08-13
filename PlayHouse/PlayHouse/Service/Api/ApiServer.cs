@@ -35,7 +35,7 @@ public class ApiServer : IServer
         PooledBuffer.Init(_commonOption.MaxBufferPoolSize);
 
         var requestCache = new RequestCache(_commonOption.RequestTimeoutSec);
-        var serverInfoCenter = new XServerInfoCenter();
+        var serverInfoCenter = new XServerInfoCenter(commonOption.DebugMode);
 
         var communicateClient =
             new XClientCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(), bindEndpoint));

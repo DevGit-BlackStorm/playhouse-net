@@ -13,5 +13,7 @@ public class PlayhouseOption
     public bool ShowQps { get; set; }
     public int NodeId { get; set; } // 0~ 4096
 
+    public bool DebugMode { get; set; }
+
     public Func<string, IPayload, ushort, IPacket>? PacketProducer { get; set; }
 }

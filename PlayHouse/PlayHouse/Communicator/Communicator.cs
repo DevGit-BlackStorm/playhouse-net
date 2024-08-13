@@ -66,6 +66,7 @@ public class CommunicatorOption
             return this;
         }
 
+
         public CommunicatorOption Build()
         {
             var localIp = IpFinder.FindLocalIp();

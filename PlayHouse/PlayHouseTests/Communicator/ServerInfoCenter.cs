@@ -14,7 +14,7 @@ public class ServerInfoCenterFuncSpecTest
 
     public ServerInfoCenterFuncSpecTest()
     {
-        _serverInfoCenter = new XServerInfoCenter();
+        _serverInfoCenter = new XServerInfoCenter(false);
         _curTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         _serverList = new List<XServerInfo>
         {

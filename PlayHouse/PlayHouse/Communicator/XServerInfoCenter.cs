@@ -1,9 +1,8 @@
-﻿using System.Collections.Concurrent;
-using PlayHouse.Production.Shared;
+﻿using PlayHouse.Production.Shared;
 
 namespace PlayHouse.Communicator;
 
-internal class XServerInfoCenter : IServerInfoCenter
+internal class XServerInfoCenter(bool debugMode) : IServerInfoCenter
 {
     //private readonly IDictionary<string, XServerInfo> _serverInfoMap = new ConcurrentDictionary<string, XServerInfo>();
     private int _offset;
@@ -45,7 +44,10 @@ internal class XServerInfoCenter : IServerInfoCenter
 
         foreach (var xServerInfo in serverList)
         {
-            xServerInfo.CheckTimeout();
+            if (debugMode == false)
+            {
+                xServerInfo.CheckTimeout();
+            }
         }
 
         _serverInfoList = serverList.OrderBy(x => x.GetBindEndpoint()).ToList();

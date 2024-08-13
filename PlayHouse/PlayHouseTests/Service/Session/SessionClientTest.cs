@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using Moq;
-using PlayHouse;
 using PlayHouse.Communicator;
 using PlayHouse.Communicator.Message;
 using PlayHouse.Production.Shared;
@@ -29,7 +28,7 @@ public class SessionClientTest : IDisposable
     {
         PooledBuffer.Init();
 
-        _serviceCenter = new XServerInfoCenter();
+        _serviceCenter = new XServerInfoCenter(false);
 
         _serviceCenter.Update(new List<XServerInfo>
         {

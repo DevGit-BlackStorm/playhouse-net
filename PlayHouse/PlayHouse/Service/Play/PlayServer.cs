@@ -31,7 +31,7 @@ public class PlayServer : IServer
             new XClientCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(), bindEndpoint));
 
         var requestCache = new RequestCache(commonOption.RequestTimeoutSec);
-        var serverInfoCenter = new XServerInfoCenter();
+        var serverInfoCenter = new XServerInfoCenter(commonOption.DebugMode);
         var playService = new PlayService(serviceId, bindEndpoint, playOption, communicateClient, requestCache,
             serverInfoCenter);
 

@@ -14,6 +14,7 @@ internal class ServerAddressResolver(
 
     private Timer? _timer;
 
+
     public void Start()
     {
         _log.Info(() => $"Server address resolver start");
@@ -22,6 +23,7 @@ internal class ServerAddressResolver(
         {
             try
             {
+                
                 var myServerInfo = new XServerInfo(bindEndpoint, service.GetServiceType(), service.ServiceId,
                     service.GetServerState(), service.GetActorCount(), DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
 
@@ -31,8 +33,8 @@ internal class ServerAddressResolver(
 
                 IReadOnlyList<IServerInfo> serverInfoList = await system.UpdateServerInfoAsync(myServerInfo);
 
-                var updateList = serverInfoCenter.Update(serverInfoList.Select(e=> 
-                    new XServerInfo(e.GetBindEndpoint(),e.GetServiceType(),e.GetServiceId(),e.GetState(),e.GetActorCount(),e.GetLastUpdate())
+                var updateList = serverInfoCenter.Update(serverInfoList.Select(e =>
+                    new XServerInfo(e.GetBindEndpoint(), e.GetServiceType(), e.GetServiceId(), e.GetState(), e.GetActorCount(), e.GetLastUpdate())
                 ).ToList());
 
                 foreach (var serverInfo in updateList)
@@ -47,6 +49,7 @@ internal class ServerAddressResolver(
                             break;
                     }
                 }
+
             }
             catch (Exception e)
             {
