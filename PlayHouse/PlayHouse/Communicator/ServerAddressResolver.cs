@@ -23,12 +23,12 @@ internal class ServerAddressResolver(
         {
             try
             {
-                
+
                 var myServerInfo = new XServerInfo(bindEndpoint, service.GetServiceType(), service.ServiceId,
                     service.GetServerState(), service.GetActorCount(), DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
 
                 //자신의 정보먼저  update
-                serverInfoCenter.Update(new List<XServerInfo> { myServerInfo });
+                //serverInfoCenter.Update(new List<XServerInfo> { myServerInfo });
 
 
                 IReadOnlyList<IServerInfo> serverInfoList = await system.UpdateServerInfoAsync(myServerInfo);
