@@ -110,9 +110,9 @@ internal class WsSessionServer : WsServer
         OptionReuseAddress = true;
         OptionKeepAlive = true;
 
-        OptionReceiveBufferSize = 64 * 1024;
-        OptionSendBufferSize = 64 * 1024;
-        OptionAcceptorBacklog = 1024;
+        OptionReceiveBufferSize = 1024 * 64;
+        OptionSendBufferSize = 1024 * 256;
+        OptionAcceptorBacklog = 4096 * 3;
     }
 
     protected override WsSession CreateSession()
