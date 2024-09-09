@@ -90,45 +90,25 @@ internal class ReflectionOperator
 
     private Type[] GetAllSubtypes(params Type[] subTypes)
     {
-        Type?[] result = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(assembly =>
-            {
-                try
-                {
-                    return assembly.GetTypes();
-                }
-                catch (ReflectionTypeLoadException ex)
-                {
-                    // 로드된 타입만 반환
-                    return ex.Types.Where(t => t != null);
-                }
-                catch (Exception ex)
-                {
-                    // 다른 예외가 발생한 경우, 로그를 남기고 빈 배열 반환
-                    Console.WriteLine($"Failed to load types from assembly: {assembly.FullName}. Exception: {ex.Message}");
-                    return new Type[0];
-                    // throw;
+        List<Type> typeList = AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(assembly => assembly.GetTypes())
+            .Where(type => type is { IsClass: true, IsAbstract: false } &&
+                           subTypes.Any(subType => subType.IsAssignableFrom(type)))
+            .ToList();
 
-                }
-            })
-            .Where(type => type!=null && type.IsClass && !type.IsAbstract && subTypes.Any(subType => subType.IsAssignableFrom(type)))
-            .ToArray();
-
-        if (result == null)
+        List<Type> result = [];
+        foreach (var type in typeList)
         {
-            return new Type[0];
+            var exist = _serviceProvider.GetService(type);
+            if (exist != null)
+            {
+                result.Add(type);
+            }
         }
-        
-        return result!;
+
+        return result.ToArray();
     }
 
-    //private Type[] GetAllSubtypes(params Type[] subTypes)
-    //{
-    //    return AppDomain.CurrentDomain.GetAssemblies()
-    //        .SelectMany(assembly => assembly.GetTypes())
-    //        .Where(type => type.IsClass && !type.IsAbstract && subTypes.Any(subType => subType.IsAssignableFrom(type)))
-    //        .ToArray();
-    //}
 
     public List<ReflectionInstance> GetInstanceBy(params Type[] targetTypes)
     {
@@ -143,16 +123,6 @@ internal class ReflectionOperator
             }).ToList();
     }
 
-    //public List<ReflectionInstance> GetInstanceBy(Type targetType)
-    //{
-    //    return _findTypes
-    //        .Where(type => type.IsClass && !type.IsAbstract && targetType.IsAssignableFrom(type))
-    //        .Select(type =>
-    //        {
-    //            IEnumerable<AspectifyAttribute> apiFilters = type.GetCustomAttributes(typeof(AspectifyAttribute), true).Select(e => (AspectifyAttribute)e);
-    //            return new ReflectionInstance(type, apiFilters, _serviceProvider);
-    //        }).ToList();
-    //}
 
     internal List<MethodInfo> GetMethodsBy(Type targetType)
     {
@@ -249,7 +219,7 @@ internal class CallbackReflectionInvoker
             reflections.GetMethodsBy(type).ForEach(methodInfo =>
             {
                 var className = methodInfo.DeclaringType!.FullName!;
-                var systemInstance = _instances[className!]!;
+                //var systemInstance = _instances[className!]!;
 
                 if (_methods.ContainsKey(methodInfo.Name) == false)
                 {
