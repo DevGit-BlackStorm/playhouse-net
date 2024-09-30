@@ -1,4 +1,6 @@
 ﻿using System.Collections.Concurrent;
+using NetMQ;
+using System.Security.Cryptography;
 using PlayHouse.Communicator;
 using PlayHouse.Communicator.Message;
 using PlayHouse.Production.Session;
@@ -8,7 +10,7 @@ using PlayHouse.Utils;
 
 namespace PlayHouse.Service.Session;
 
-internal class SessionDispatcher : ISessionListener
+internal class SessionDispatcher : ISessionDispatcher
 {
     private readonly IClientCommunicator _clientCommunicator;
     private readonly LOG<SessionDispatcher> _log = new();
@@ -19,6 +21,11 @@ internal class SessionDispatcher : ISessionListener
     private readonly SessionNetwork _sessionNetwork;
     private readonly SessionOption _sessionOption;
     private readonly Timer _timer;
+
+    private readonly ConcurrentQueue<KeyValuePair<ISession, ClientPacket>> _sendQueueToClient = new();
+    private readonly PooledByteBuffer _buffer = new(ConstOption.MaxPacketSize);
+    private readonly Thread _sendThread ;
+    private bool _running = true;
 
     public SessionDispatcher(
         ushort serviceId,
@@ -36,6 +43,32 @@ internal class SessionDispatcher : ISessionListener
         _sessionNetwork = new SessionNetwork(sessionOption, this);
 
         _timer = new Timer(TimerCallback, this, 1000, 1000);
+        _sendThread = new Thread(SendingPacket);
+        _sendThread.Start();
+
+    }
+
+    private void SendingPacket()
+    {
+        while (_running)
+        {
+            while (_sendQueueToClient.TryDequeue(out var result))
+            {
+                ISession session = result.Key;
+                ClientPacket packet = result.Value;
+
+                _buffer.Clear();
+                RoutePacket.WriteClientPacketBytes(packet,_buffer);
+                session.Send(new ClientPacket(packet.Header,new PooledBytePayload(_buffer)));
+
+            }
+            Thread.Sleep(ConstOption.ThreadSleep);
+        }
+    }
+
+    public void SendToClient(ISession session, ClientPacket packet)
+    {
+        _sendQueueToClient.Enqueue(new KeyValuePair<ISession, ClientPacket>(session,packet));
     }
 
     public void OnConnect(long sid, ISession session,string remoteIp)
@@ -50,7 +83,9 @@ internal class SessionDispatcher : ISessionListener
                 _clientCommunicator,
                 _sessionOption.Urls,
                 _requestCache,
-                remoteIp
+                remoteIp,
+                _sessionOption.SessionUserFactory?.Invoke(),
+                this
                 );
         }
         else
@@ -86,6 +121,8 @@ internal class SessionDispatcher : ISessionListener
     {
         _sessionNetwork.Stop();
         _timer.Dispose();
+        _running = false;
+        _sendThread.Join();
     }
 
 
@@ -122,7 +159,32 @@ internal class SessionDispatcher : ISessionListener
             }
             else
             {
-                sessionClient.Dispatch(clientPacket);
+                var msgId = clientPacket.MsgId;
+                if (msgId == PacketConst.HeartBeat) //heartbeat
+                {
+                    
+                    sessionClient.SendHeartBeat(clientPacket);
+
+                    return;
+                }
+
+                if (msgId == PacketConst.Debug) //debug mode
+                {
+                    _log.Debug(() => $"session is debug mode - [sid:{sessionId}]");
+                    sessionClient.SetDebugMode(true);
+                    return;
+                }
+
+
+                if (clientPacket.ServiceId == _serviceId)
+                {
+                    sessionClient.UserPost(new ClientPacket(clientPacket.Header,clientPacket.MovePayload()));
+                }
+                else
+                {
+                    sessionClient.Dispatch(clientPacket);
+                }
+                
             }
         }
     }

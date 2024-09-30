@@ -7,7 +7,7 @@ using PlayHouse.Utils;
 
 namespace PlayHouse.Service.Session.Network.websocket;
 
-internal class XWsSession(WsSessionServer server, ISessionListener sessionListener) : WsSession(server), ISession
+internal class XWsSession(WsSessionServer server, ISessionDispatcher sessionDispatcher) : WsSession(server), ISession
 {
     private readonly RingBuffer _buffer = new(1024 * 4, PacketConst.MaxPacketSize);
     private readonly LOG<XWsSession> _log = new();
@@ -37,7 +37,7 @@ internal class XWsSession(WsSessionServer server, ISessionListener sessionListen
         {
             _log.Debug(() => $"WS session OnConnected - [Sid:{GetSid()}]");
             var remoteEndpoint = Socket.RemoteEndPoint?.ToString() ?? string.Empty;
-            sessionListener.OnConnect(GetSid(), this,remoteEndpoint);
+            sessionDispatcher.OnConnect(GetSid(), this,remoteEndpoint);
         }
         catch (Exception e)
         {
@@ -50,7 +50,7 @@ internal class XWsSession(WsSessionServer server, ISessionListener sessionListen
         try
         {
             _log.Debug(() => $"WS session OnDisConnected - [Sid:{GetSid()}]");
-            sessionListener.OnDisconnect(GetSid());
+            sessionDispatcher.OnDisconnect(GetSid());
         }
         catch (Exception e)
         {
@@ -73,7 +73,7 @@ internal class XWsSession(WsSessionServer server, ISessionListener sessionListen
             foreach (var packet in packets)
             {
                 _log.Trace(() => $"OnReceive from:client - [packetInfo:{packet.Header}]");
-                sessionListener.OnReceive(GetSid(), packet);
+                sessionDispatcher.OnReceive(GetSid(), packet);
             }
 
         }
@@ -100,11 +100,11 @@ internal class XWsSession(WsSessionServer server, ISessionListener sessionListen
 
 internal class WsSessionServer : WsServer
 {
-    private readonly ISessionListener _sessionListener;
+    private readonly ISessionDispatcher _sessionDispatcher;
 
-    public WsSessionServer(string address, int port, ISessionListener sessionListener) : base(address, port)
+    public WsSessionServer(string address, int port, ISessionDispatcher sessionDispatcher) : base(address, port)
     {
-        _sessionListener = sessionListener;
+        _sessionDispatcher = sessionDispatcher;
 
         OptionNoDelay = true;
         OptionReuseAddress = true;
@@ -117,15 +117,15 @@ internal class WsSessionServer : WsServer
 
     protected override WsSession CreateSession()
     {
-        return new XWsSession(this, _sessionListener);
+        return new XWsSession(this, _sessionDispatcher);
     }
 }
 
-internal class WsSessionNetwork(SessionOption sessionOption, ISessionListener sessionListener)
+internal class WsSessionNetwork(SessionOption sessionOption, ISessionDispatcher sessionDispatcher)
     : ISessionNetwork
 {
     private readonly LOG<WsSessionNetwork> _log = new();
-    private readonly WsSessionServer _wsSessionServer = new("0.0.0.0", sessionOption.SessionPort, sessionListener);
+    private readonly WsSessionServer _wsSessionServer = new("0.0.0.0", sessionOption.SessionPort, sessionDispatcher);
 
     public void Start()
     {

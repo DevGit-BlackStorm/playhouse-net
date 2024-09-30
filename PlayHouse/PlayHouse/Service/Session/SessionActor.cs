@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using PlayHouse.Communicator;
 using PlayHouse.Communicator.Message;
+using PlayHouse.Production.Session;
 using PlayHouse.Production.Shared;
 using Playhouse.Protocol;
 using PlayHouse.Service.Session.Network;
@@ -34,10 +35,15 @@ internal class StageIndexGenerator
 
 internal class SessionActor
 {
-    private readonly PooledByteBuffer _heartbeatBuffer = new(100);
-    private readonly AtomicBoolean _isUsing = new(false);
     private readonly LOG<SessionActor> _log = new();
+    //private readonly PooledByteBuffer _heartbeatBuffer = new(100);
+
+    private readonly AtomicBoolean _isMsgQueueUsing = new(false);
     private readonly ConcurrentQueue<RoutePacket> _msgQueue = new();
+
+    private readonly AtomicBoolean _isSessionUserQueueUsing = new(false);
+    private readonly ConcurrentQueue<ClientPacket> _sessionUserQueue = new();
+
 
     private readonly Dictionary<long, TargetAddress> _playEndpoints = new();
     private readonly IServerInfoCenter _serviceInfoCenter;
@@ -45,13 +51,13 @@ internal class SessionActor
 
     private readonly XSessionSender _sessionSender;
     private readonly HashSet<string> _signInUrIs = new();
-    private readonly StageIndexGenerator _stageIndexGenerator = new();
     private readonly TargetServiceCache _targetServiceCache;
     private ushort _authenticateServiceId;
     private string _authServerEndpoint = "";
     private bool _debugMode;
-    private Stopwatch _lastUpdateTime = new();
-    private string _remoteIp = string.Empty;
+    private readonly Stopwatch _lastUpdateTime = new();
+    private readonly string _remoteIp;
+    private readonly ISessionUser? _sessionUser;
 
     public SessionActor(
         ushort serviceId,
@@ -61,18 +67,21 @@ internal class SessionActor
         IClientCommunicator clientCommunicator,
         List<string> urls,
         RequestCache reqCache,
-        string remoteIp
+        string remoteIp,
+        ISessionUser? sessionUser,
+        ISessionDispatcher sessionDispatcher
     )
     {
         Sid = sid;
         _serviceInfoCenter = serviceInfoCenter;
         _session = session;
 
-        _sessionSender = new XSessionSender(serviceId, clientCommunicator, reqCache);
+        _sessionSender = new XSessionSender(serviceId, clientCommunicator, reqCache, session, sessionDispatcher);
         _targetServiceCache = new TargetServiceCache(serviceInfoCenter);
 
         _signInUrIs.UnionWith(urls);
         _remoteIp = remoteIp;
+        _sessionUser = sessionUser;
     }
 
     public bool IsAuthenticated { get; private set; }
@@ -122,26 +131,14 @@ internal class SessionActor
     {
         try
         {
-            _log.Trace(() => $"recvFrom:client - [accountId:{AccountId},packetInfo:{clientPacket.Header}]");
+            _log.Trace(() => $"From:client - [accountId:{AccountId},packetInfo:{clientPacket.Header}]");
 
             var serviceId = clientPacket.ServiceId;
             var msgId = clientPacket.MsgId;
 
             _lastUpdateTime.Restart();
 
-            if (msgId == PacketConst.HeartBeat) //heartbeat
-            {
-                SendHeartBeat(clientPacket);
-                return;
-            }
-
-            if (msgId == PacketConst.Debug) //debug mode
-            {
-                _log.Debug(() => $"session is debug mode - [sid:{Sid}]");
-                _debugMode = true;
-                return;
-            }
-
+            
             if (IsAuthenticated)
             {
                 RelayTo(serviceId, clientPacket);
@@ -176,14 +173,17 @@ internal class SessionActor
         }
     }
 
-    private void SendHeartBeat(ClientPacket clientPacket)
-    {
-        //_log.Trace(() => $"send heartbeat - [packet:{clientPacket.Header}]");
-        RoutePacket.WriteClientPacketBytes(clientPacket, _heartbeatBuffer);
-        var reply = new ClientPacket(clientPacket.Header, new PooledBytePayload(_heartbeatBuffer));
-        SendToClient(reply);
-        _heartbeatBuffer.Clear();
-    }
+    //public void SendHeartBeat(ClientPacket clientPacket)
+    //{
+
+    ////    //_log.Trace(() => $"send heartbeat - [packet:{clientPacket.Header}]");
+    ////    //_heartbeatBuffer.Clear();
+    ////    //RoutePacket.WriteClientPacketBytes(clientPacket, _heartbeatBuffer);
+    ////    //var reply = new ClientPacket(clientPacket.Header, new PooledBytePayload(_heartbeatBuffer));
+    ////    SendToClient(reply);
+
+        
+    //}
 
     private IServerInfo FindSuitableServer(ushort serviceId, string endpoint)
     {
@@ -241,7 +241,7 @@ internal class SessionActor
     public void Post(RoutePacket routePacket)
     {
         _msgQueue.Enqueue(routePacket);
-        if (_isUsing.CompareAndSet(false, true))
+        if (_isMsgQueueUsing.CompareAndSet(false, true))
         {
             Task.Run(async () =>
             {
@@ -262,7 +262,7 @@ internal class SessionActor
                     }
                 }
 
-                _isUsing.Set(false);
+                _isMsgQueueUsing.Set(false);
             });
         }
     }
@@ -373,5 +373,49 @@ internal class SessionActor
     internal long IdleTime()
     {
         return _lastUpdateTime.ElapsedMilliseconds;
+    }
+
+    public void UserPost(ClientPacket clientPacket)
+    {
+        _sessionUserQueue.Enqueue(clientPacket);
+        if (_isSessionUserQueueUsing.CompareAndSet(false, true))
+        {
+            Task.Run(async () =>
+            {
+                while (_sessionUserQueue.TryDequeue(out var packet))
+                {
+                    try
+                    {
+                        _sessionSender.SetClientRequestMsgSeq(packet.Header.MsgSeq);
+                        using var routePacket = clientPacket.ToRoutePacket();
+                        if (_sessionUser != null)
+                        {
+                            await _sessionUser.OnDispatch(routePacket.ToContentsPacket(), _sessionSender);
+                        }
+                        else
+                        {
+                            _log.Debug(() => $"session user is not exist");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        _sessionSender.Reply((ushort)BaseErrorCode.SystemError);
+                        _log.Error(() => $"{e}");
+                    }
+                }
+
+                _isSessionUserQueueUsing.Set(false);
+            });
+        }
+    }
+
+    public void SetDebugMode(bool mode)
+    {
+        _debugMode = mode;
+    }
+
+    public void SendHeartBeat(ClientPacket clientPacket)
+    {
+        SendToClient(clientPacket);
     }
 }

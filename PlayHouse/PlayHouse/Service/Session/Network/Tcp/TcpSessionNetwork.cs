@@ -7,7 +7,7 @@ using PlayHouse.Utils;
 
 namespace PlayHouse.Service.Session.Network.tcp;
 
-internal class XTcpSession(TcpServer server, ISessionListener sessionListener) : TcpSession(server), ISession
+internal class XTcpSession(TcpServer server, ISessionDispatcher sessionDispatcher) : TcpSession(server), ISession
 {
     private readonly RingBuffer _buffer = new(1024 * 4, PacketConst.MaxPacketSize);
     private readonly LOG<XTcpSession> _log = new();
@@ -38,7 +38,7 @@ internal class XTcpSession(TcpServer server, ISessionListener sessionListener) :
         {
             _log.Debug(() => $"TCP session OnConnected - [Sid:{GetSid()}]");
             var remoteEndpoint = Socket.RemoteEndPoint?.ToString() ?? string.Empty;
-            sessionListener.OnConnect(GetSid(), this,remoteEndpoint);
+            sessionDispatcher.OnConnect(GetSid(), this,remoteEndpoint);
 
         }
         catch (Exception e)
@@ -52,7 +52,7 @@ internal class XTcpSession(TcpServer server, ISessionListener sessionListener) :
         try
         {
             _log.Debug(() => $"TCP session OnDisConnected - [Sid:{GetSid()}]");
-            sessionListener.OnDisconnect(GetSid());
+            sessionDispatcher.OnDisconnect(GetSid());
         }
         catch (Exception e)
         {
@@ -75,7 +75,7 @@ internal class XTcpSession(TcpServer server, ISessionListener sessionListener) :
             foreach (var packet in packets)
             {
                 _log.Trace(() => $"OnReceive from:client - [packetInfo:{packet.Header}]");
-                sessionListener.OnReceive(GetSid(), packet);
+                sessionDispatcher.OnReceive(GetSid(), packet);
             }
 
         }
@@ -104,11 +104,11 @@ internal class TcpSessionServer : TcpServer
 {
     private readonly LOG<TcpSessionServer> _log = new();
 
-    private readonly ISessionListener _sessionListener;
+    private readonly ISessionDispatcher _sessionDispatcher;
 
-    public TcpSessionServer(string address, int port, ISessionListener sessionListener) : base(address, port)
+    public TcpSessionServer(string address, int port, ISessionDispatcher sessionDispatcher) : base(address, port)
     {
-        _sessionListener = sessionListener;
+        _sessionDispatcher = sessionDispatcher;
 
         OptionNoDelay = true;
         OptionReuseAddress = true;
@@ -121,7 +121,7 @@ internal class TcpSessionServer : TcpServer
 
     protected override TcpSession CreateSession()
     {
-        return new XTcpSession(this, _sessionListener);
+        return new XTcpSession(this, _sessionDispatcher);
     }
 
     protected override void OnStarted()
@@ -130,11 +130,11 @@ internal class TcpSessionServer : TcpServer
     }
 }
 
-internal class TcpSessionNetwork(SessionOption sessionOption, ISessionListener sessionListener)
+internal class TcpSessionNetwork(SessionOption sessionOption, ISessionDispatcher sessionDispatcher)
     : ISessionNetwork
 {
     private readonly LOG<TcpSessionNetwork> _log = new();
-    private readonly TcpSessionServer _tcpSessionServer = new("0.0.0.0", sessionOption.SessionPort, sessionListener);
+    private readonly TcpSessionServer _tcpSessionServer = new("0.0.0.0", sessionOption.SessionPort, sessionDispatcher);
 
     public void Start()
     {

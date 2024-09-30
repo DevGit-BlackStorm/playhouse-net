@@ -7,4 +7,6 @@ public class SessionOption
     public List<string> Urls { get; set; } = new();
     public int SessionPort { get; set; } = 0;
     public bool UseWebSocket { get; set; } = false;
+
+    public Func<ISessionUser>? SessionUserFactory = null;
 }
