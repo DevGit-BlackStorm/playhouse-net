@@ -52,7 +52,7 @@ internal class SessionServerDispatcher : ISessionDispatcher
         ResultValue = "onDisconnect";
     }
 
-    public void SendToClient(ISession session, RoutePacket routePacket)
+    public void SendToClient(ISession session, ClientPacket packet)
     {
     }
 }
