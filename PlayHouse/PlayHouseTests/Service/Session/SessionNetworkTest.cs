@@ -12,7 +12,7 @@ using Xunit;
 
 namespace PlayHouseTests.Service.Session;
 
-internal class SessionServerListener : ISessionListener
+internal class SessionServerDispatcher : ISessionDispatcher
 {
     private ISession? _session;
     public bool UseWebSocket { get; set; }
@@ -51,6 +51,10 @@ internal class SessionServerListener : ISessionListener
     {
         ResultValue = "onDisconnect";
     }
+
+    public void SendToClient(ISession session, ClientPacket packet)
+    {
+    }
 }
 
 [Collection("SessionNetworkTest")]
@@ -72,12 +76,12 @@ public class SessionNetworkTest
 
         foreach (var useWebSocket in useWebSocketArray)
         {
-            SessionServerListener serverListener = new() { UseWebSocket = useWebSocket };
+            SessionServerDispatcher serverDispatcher = new() { UseWebSocket = useWebSocket };
             var port = IpFinder.FindFreePort();
 
             var sessionNetwork =
                 new SessionNetwork(new SessionOption { UseWebSocket = useWebSocket, SessionPort = port },
-                    serverListener);
+                    serverDispatcher);
 
             var serverThread = new Thread(() =>
             {
@@ -99,7 +103,7 @@ public class SessionNetworkTest
             connector.Connect();
 
             await Task.Delay(100);
-            serverListener.ResultValue.Should().Be("onConnect");
+            serverDispatcher.ResultValue.Should().Be("onConnect");
 
 
             var replyPacket =
@@ -124,7 +128,7 @@ public class SessionNetworkTest
             connector.Disconnect();
 
             await Task.Delay(100);
-            serverListener.ResultValue.Should().Be("onDisconnect");
+            serverDispatcher.ResultValue.Should().Be("onDisconnect");
 
             sessionNetwork.Stop();
             await timer.DisposeAsync();

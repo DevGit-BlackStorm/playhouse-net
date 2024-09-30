@@ -50,7 +50,7 @@ public class SessionClientTest : IDisposable
     public void WithoutAuthenticate_SendPacket_SocketShouldBeDisconnected()
     {
         var sessionClient = new SessionActor(_idSession, _sid, _serviceCenter, _session, _clientCommunicator, _urls,
-            _reqCache,string.Empty);
+            _reqCache,string.Empty,null,new SessionServerDispatcher());
         var clientPacket = new ClientPacket(new Header(_idApi), new EmptyPayload());
         sessionClient.Dispatch(clientPacket);
         Mock.Get(_session).Verify(s => s.ClientDisconnect(), Times.Once());
@@ -64,7 +64,7 @@ public class SessionClientTest : IDisposable
         _urls.Add($"{_idApi}:{messageId}");
 
         var sessionClient = new SessionActor(_idSession, _sid, _serviceCenter, _session, _clientCommunicator, _urls,
-            _reqCache,string.Empty);
+            _reqCache,string.Empty, null, new SessionServerDispatcher());
         var clientPacket = new ClientPacket(new Header(_idApi, messageId), new EmptyPayload());
         sessionClient.Dispatch(clientPacket);
 
@@ -85,7 +85,7 @@ public class SessionClientTest : IDisposable
         var routePacket = RoutePacket.SessionOf(_sid, RoutePacket.Of(message), true, true);
 
         var sessionClient = new SessionActor(_idSession, _sid, _serviceCenter, _session, _clientCommunicator, _urls,
-            _reqCache, string.Empty);
+            _reqCache, string.Empty, null, new SessionServerDispatcher());
         await sessionClient.DispatchAsync(routePacket);
 
         sessionClient.IsAuthenticated.Should().BeTrue();

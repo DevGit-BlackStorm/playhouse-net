@@ -90,4 +90,6 @@ public interface IApiBackendSender : IApiCommonSender
 
 public interface ISessionSender : ISender
 {
+    void SendToClient(IPacket packet);
+    void ReplyToClient(IPacket packet);
 }

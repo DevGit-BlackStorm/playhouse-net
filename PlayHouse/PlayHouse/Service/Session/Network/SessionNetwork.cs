@@ -8,15 +8,15 @@ internal class SessionNetwork
 {
     private readonly ISessionNetwork _sessionNetwork;
 
-    public SessionNetwork(SessionOption sessionOption, ISessionListener sessionListener)
+    public SessionNetwork(SessionOption sessionOption, ISessionDispatcher sessionDispatcher)
     {
         if (sessionOption.UseWebSocket)
         {
-            _sessionNetwork = new WsSessionNetwork(sessionOption, sessionListener);
+            _sessionNetwork = new WsSessionNetwork(sessionOption, sessionDispatcher);
         }
         else
         {
-            _sessionNetwork = new TcpSessionNetwork(sessionOption, sessionListener);
+            _sessionNetwork = new TcpSessionNetwork(sessionOption, sessionDispatcher);
         }
     }
 
