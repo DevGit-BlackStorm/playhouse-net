@@ -32,7 +32,8 @@ internal class XTcpSession(TcpServer server, ISessionDispatcher sessionDispatche
         return Socket.Handle.ToInt64();
     }
 
-    protected override void OnConnected()
+    //protected override void OnConnected()
+    protected  override void OnConnecting()
     {
         try
         {
@@ -74,7 +75,7 @@ internal class XTcpSession(TcpServer server, ISessionDispatcher sessionDispatche
             
             foreach (var packet in packets)
             {
-                _log.Trace(() => $"OnReceive from:client - [packetInfo:{packet.Header}]");
+                _log.Trace(() => $"OnReceive from:client - [sid:{GetSid()},packetInfo:{packet.Header}]");
                 sessionDispatcher.OnReceive(GetSid(), packet);
             }
 

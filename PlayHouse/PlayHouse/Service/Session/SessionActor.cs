@@ -131,7 +131,7 @@ internal class SessionActor
     {
         try
         {
-            _log.Trace(() => $"From:client - [accountId:{AccountId},packetInfo:{clientPacket.Header}]");
+            _log.Trace(() => $"From:client - [sid:{Sid},accountId:{AccountId},packetInfo:{clientPacket.Header}]");
 
             var serviceId = clientPacket.ServiceId;
             var msgId = clientPacket.MsgId;
@@ -377,6 +377,10 @@ internal class SessionActor
 
     public void UserPost(ClientPacket clientPacket)
     {
+        //_sessionSender.SetClientRequestMsgSeq(clientPacket.MsgSeq);
+        //using var routePacket = clientPacket.ToRoutePacket();
+        //_sessionSender.ReplyToClient(routePacket.ToContentsPacket());
+
         _sessionUserQueue.Enqueue(clientPacket);
         if (_isSessionUserQueueUsing.CompareAndSet(false, true))
         {

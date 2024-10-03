@@ -39,7 +39,6 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
     public void Disconnect(string endpoint)
     {
 
-        
 
         //if (_disconnected.Contains(endpoint))
         //{
@@ -72,12 +71,13 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
 
     public void Send(string endpoint, RoutePacket routePacket)
     {
+        _log.Trace(() => $"before send queue:{endpoint} - [accountId:{routePacket.AccountId},packetInfo:{routePacket.RouteHeader}]");
 
-        if (_connected.Contains(endpoint) == false)
-        {
-            _log.Error(() => $"socket is not connected : [target endpoint:{endpoint},target msgId:{routePacket.MsgId}]");
-            return;
-        }
+        //if (_connected.Contains(endpoint) == false)
+        //{
+        //    _log.Error(() => $"socket is not connected : [accountId:{routePacket.AccountId},target endpoint:{endpoint},target msgId:{routePacket.MsgId}]");
+        //    return;
+        //}
 
         _queue.Enqueue(() =>
         {
@@ -85,7 +85,7 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
             {
                 using (routePacket)
                 {
-                    _log.Trace(() => $"sendTo:{endpoint} - [packetInfo:{routePacket.RouteHeader}]");
+                    _log.Trace(() => $"sendTo:{endpoint} - [accountId:{routePacket.AccountId},packetInfo:{routePacket.RouteHeader}]");
                     playSocket.Send(endpoint, routePacket);
                 }
             }
@@ -93,10 +93,11 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
             {
                 _log.Error(
                     () =>
-                        $"socket send error : [target endpoint:{endpoint},target msgId:{routePacket.MsgId}] - {e.Message}"
+                        $"socket send error : [target endpoint:{endpoint},target msgId:{routePacket.MsgId},accountId:{routePacket.AccountId}] - {e.Message}"
                 );
             }
         });
+
     }
 
     public void Communicate()
@@ -118,6 +119,7 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
                 }
             }
 
+            //Thread.Yield();
             Thread.Sleep(ConstOption.ThreadSleep);
         }
     }

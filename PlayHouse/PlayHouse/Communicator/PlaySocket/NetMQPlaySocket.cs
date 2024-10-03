@@ -64,7 +64,6 @@ internal class NetMqPlaySocket : IPlaySocket
         {
             return;
         }
-
         _socket.Disconnect(endpoint);
     }
 
@@ -111,6 +110,7 @@ internal class NetMqPlaySocket : IPlaySocket
 
         using (routePacket)
         {
+
             var message = new NetMQMessage();
             var payload = routePacket.Payload;
 
@@ -135,7 +135,6 @@ internal class NetMqPlaySocket : IPlaySocket
                 }
             }
 
-
             message.Append(new NetMQFrame(Encoding.UTF8.GetBytes(endpoint)));
             var routerHeaderMsg = routePacket.RouteHeader.ToMsg();
 
@@ -151,10 +150,5 @@ internal class NetMqPlaySocket : IPlaySocket
                 _log.Error(() => $"PostAsync fail to {endpoint}, MsgName:{routePacket.MsgId}");
             }
         }
-    }
-
-    public void Dispose()
-    {
-        throw new NotImplementedException();
     }
 }

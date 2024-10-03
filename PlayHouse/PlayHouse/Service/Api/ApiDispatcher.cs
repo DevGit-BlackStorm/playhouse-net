@@ -8,6 +8,7 @@ using Playhouse.Protocol;
 using PlayHouse.Service.Api.Reflection;
 using PlayHouse.Service.Shared;
 using PlayHouse.Utils;
+using System.Diagnostics;
 
 namespace PlayHouse.Service.Api;
 
@@ -118,6 +119,9 @@ internal class ApiDispatcher
         //    return;
         //}
 
+        //Stopwatch sw = Stopwatch.StartNew();
+
+        
         if (routePacket.IsBackend())
         {
             await _apiReflection.CallBackendMethodAsync(routePacket.ToContentsPacket(), apiSender);
@@ -126,5 +130,13 @@ internal class ApiDispatcher
         {
             await _apiReflection.CallMethodAsync(routePacket.ToContentsPacket(), apiSender);
         }
+
+        //sw.Stop();
+        //if (sw.ElapsedMilliseconds > 1000)
+        //{
+        //    _log.Info(() => $"msgId:{routePacket.MsgId},elapsedTime:{sw.ElapsedMilliseconds}");
+        //}
+        
+        
     }
 }

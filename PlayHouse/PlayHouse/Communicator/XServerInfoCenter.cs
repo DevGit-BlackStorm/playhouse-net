@@ -1,5 +1,7 @@
 ﻿using PlayHouse.Production.Shared;
 using System.Collections.Immutable;
+using System.Diagnostics;
+using PlayHouse.Utils;
 
 namespace PlayHouse.Communicator;
 
@@ -10,6 +12,7 @@ internal class XServerInfoCenter(bool debugMode) : IServerInfoCenter
 {
     private int _offset;
     private ImmutableList<XServerInfo> _serverInfoList = ImmutableList<XServerInfo>.Empty;
+    private LOG<XServerCommunicator> _log = new();
 
     public IReadOnlyList<XServerInfo> Update(IReadOnlyList<XServerInfo> serverList)
     {
@@ -43,7 +46,7 @@ internal class XServerInfoCenter(bool debugMode) : IServerInfoCenter
         {
             throw new CommunicatorException.NotExistServerInfo($"target endpoint:{endpoint} , ServerInfo is not exist");
         }
-
+        
         return serverInfo;
     }
 

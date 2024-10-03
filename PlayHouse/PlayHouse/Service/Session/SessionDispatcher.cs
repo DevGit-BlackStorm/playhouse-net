@@ -129,23 +129,23 @@ internal class SessionDispatcher : ISessionDispatcher
     private static void TimerCallback(object? o)
     {
         //todo 임시로 idle disconnect 끔
-        //var dispacher = (SessionDispatcher)o!;
-        // 여기에 타이머 만료 시 실행할 코드 작성
-        //var keysToRemove =
-        //    dispacher._sessionActors.Where(k => k.Value.IsIdleState(dispacher._sessionOption.ClientIdleTimeoutMSec))
-        //        .Select(k => k.Key).ToList();
+       // var dispacher = (SessionDispatcher)o!;
+       // //여기에 타이머 만료 시 실행할 코드 작성
+       //var keysToRemove =
+       //    dispacher._sessionActors.Where(k => k.Value.IsIdleState(dispacher._sessionOption.ClientIdleTimeoutMSec))
+       //        .Select(k => k.Key).ToList();
 
-        //foreach (var key in keysToRemove)
-        //{
-        //    SessionActor? client;
-        //    dispacher._sessionActors.Remove(key, out client);
-        //    if (client != null)
-        //    {
-        //        dispacher._log.Debug(() =>
-        //            $"idle client disconnect - [sid:{client.Sid},accountId:{client.AccountId},idleTime:{client.IdleTime()}]");
-        //        client.ClientDisconnect();
-        //    }
-        //}
+       // foreach (var key in keysToRemove)
+       // {
+       //     SessionActor? client;
+       //     dispacher._sessionActors.Remove(key, out client);
+       //     if (client != null)
+       //     {
+       //         dispacher._log.Debug(() =>
+       //             $"idle client disconnect - [sid:{client.Sid},accountId:{client.AccountId},idleTime:{client.IdleTime()}]");
+       //         client.ClientDisconnect();
+       //     }
+       // }
     }
 
 
