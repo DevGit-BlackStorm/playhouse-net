@@ -8,39 +8,34 @@ namespace PlayHouse.Service.Api;
 
 public class ApiServer : IServer
 {
-    private readonly ApiOption _apiOption;
-    private readonly PlayhouseOption _commonOption;
     private readonly Communicator.Communicator? _communicator;
 
     public ApiServer(
         PlayhouseOption commonOption,
         ApiOption apiOption)
     {
-        _commonOption = commonOption;
-        _apiOption = apiOption;
 
         var communicatorOption = new CommunicatorOption.Builder()
-            .SetIp(_commonOption.Ip)
-            .SetPort(_commonOption.Port)
-            .SetServiceProvider(_commonOption.ServiceProvider)
-            .SetShowQps(_commonOption.ShowQps)
-            .SetNodeId(_commonOption.NodeId)
-            .SetPacketProducer(_commonOption.PacketProducer)
+            .SetIp(commonOption.Ip)
+            .SetPort(commonOption.Port)
+            .SetServiceProvider(commonOption.ServiceProvider)
+            .SetShowQps(commonOption.ShowQps)
+            .SetNodeId(commonOption.NodeId)
+            .SetPacketProducer(commonOption.PacketProducer)
             .Build();
 
         var bindEndpoint = communicatorOption.BindEndpoint;
-        var serviceId = _commonOption.ServiceId;
+        var serviceId = commonOption.ServiceId;
 
+        PooledBuffer.Init(commonOption.MaxBufferPoolSize);
 
-        PooledBuffer.Init(_commonOption.MaxBufferPoolSize);
-
-        var requestCache = new RequestCache(_commonOption.RequestTimeoutSec);
+        var requestCache = new RequestCache(commonOption.RequestTimeoutSec);
         var serverInfoCenter = new XServerInfoCenter(commonOption.DebugMode);
 
         var communicateClient =
             new XClientCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(), bindEndpoint));
 
-        var service = new ApiService(serviceId, _apiOption, requestCache, communicateClient,
+        var service = new ApiService(serviceId, apiOption, requestCache, communicateClient,
             communicatorOption.ServiceProvider);
 
         _communicator = new Communicator.Communicator(
