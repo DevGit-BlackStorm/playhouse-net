@@ -31,7 +31,7 @@ internal class XWsSession(WsSessionServer server, ISessionDispatcher sessionDisp
         return (int)Socket.Handle;
     }
 
-    protected override void OnConnected()
+    protected override void OnConnecting()
     {
         try
         {

@@ -32,7 +32,6 @@ internal class XTcpSession(TcpServer server, ISessionDispatcher sessionDispatche
         return Socket.Handle.ToInt64();
     }
 
-    //protected override void OnConnected()
     protected  override void OnConnecting()
     {
         try
