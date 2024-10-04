@@ -1,16 +1,16 @@
-﻿using System.Collections.Specialized;
-using System.Runtime.Caching;
-using PlayHouse.Communicator.Message;
+﻿using System.Collections.Concurrent;
 using Playhouse.Protocol;
+using PlayHouse.Communicator.Message;
 using PlayHouse.Service.Shared;
 using PlayHouse.Utils;
 
 namespace PlayHouse.Communicator;
-
 internal class ReplyObject(
     ReplyCallback? callback = null,
     TaskCompletionSource<RoutePacket>? taskCompletionSource = null)
 {
+    private readonly DateTime _requestTime = DateTime.UtcNow;
+
     public void OnReceive(RoutePacket routePacket)
     {
         if (callback != null)
@@ -20,7 +20,6 @@ internal class ReplyObject(
                 callback?.Invoke(routePacket.ErrorCode, CPacket.Of(routePacket));
             }
         }
-
 
         if (routePacket.ErrorCode == 0)
         {
@@ -37,55 +36,72 @@ internal class ReplyObject(
         taskCompletionSource?.SetException(new PlayHouseException($"request has exception - errorCode:{errorCode}",
             errorCode));
     }
+    
+    public bool IsExpired(int timeoutMs)
+    {
+        var difference = DateTime.UtcNow - _requestTime;
+        return difference.TotalMilliseconds > timeoutMs;
+    }
 }
 
 internal class RequestCache
 {
     private readonly LOG<RequestCache> _log = new();
-    private readonly CacheItemPolicy _policy;
     private readonly AtomicShort _sequence = new();
-    private MemoryCache _cache;
+    private readonly ConcurrentDictionary<int, ReplyObject> _cache = new();
+    private readonly int _timeout;
 
     public RequestCache(int timeout)
     {
-        _policy = new CacheItemPolicy();
-        if (timeout > 0)
+        _timeout = timeout;
+        var thread = new Thread(() =>
         {
-            _policy.SlidingExpiration = TimeSpan.FromSeconds(timeout);
-        }
+            CheckExpire();
+            Thread.Sleep(1000);
+        });
 
-        // Set a callback to be called when the cache item is removed
-        _policy.RemovedCallback = args =>
-        {
-            if (args.RemovedReason == CacheEntryRemovedReason.Expired)
-            {
-                var replyObject = (ReplyObject)args.CacheItem.Value;
-                replyObject.Throw((int)BaseErrorCode.RequestTimeout);
-            }
-        };
-
-        var cacheSettings = new NameValueCollection
-        {
-            { "CacheMemoryLimitMegabytes", "10" },
-            { "PhysicalMemoryLimitPercentage", "1" }
-        };
-        _cache = new MemoryCache("RequestCache", cacheSettings);
+        thread.Start();
     }
 
+    private void CheckExpire()
+    {
+        if (_timeout > 0)
+        {
+            List<int> keysToDelete = new();
+
+            foreach (var item in _cache)
+            {
+                if (item.Value.IsExpired(_timeout))
+                {
+                    var replyObject = item.Value;
+                    replyObject.Throw((int)BaseErrorCode.RequestTimeout);
+                    keysToDelete.Add(item.Key);
+                }
+            }
+
+            foreach (var key in keysToDelete)
+            {
+                Remove(key);
+            }
+        }
+    }
     public ushort GetSequence()
     {
         return _sequence.IncrementAndGet();
     }
 
+    private void Remove(int seq)
+    {
+        _cache.TryRemove(seq, out var _);
+    }
     public void Put(int seq, ReplyObject replyObject)
     {
-        var cacheItem = new CacheItem(seq.ToString(), replyObject);
-        MemoryCache.Default.Add(cacheItem, _policy);
+        _cache[seq] = replyObject;
     }
 
     public ReplyObject? Get(int seq)
     {
-        return (ReplyObject?)MemoryCache.Default.Get(seq.ToString());
+        return _cache.GetValueOrDefault(seq);
     }
 
     public void OnReply(RoutePacket routePacket)
@@ -93,13 +109,12 @@ internal class RequestCache
         try
         {
             int msgSeq = routePacket.Header.MsgSeq;
-            var key = msgSeq.ToString();
-            var replyObject = (ReplyObject?)MemoryCache.Default.Get(key);
+            var replyObject = Get(msgSeq);
 
             if (replyObject != null)
             {
                 replyObject.OnReceive(routePacket);
-                MemoryCache.Default.Remove(key);
+                Remove(msgSeq);
             }
             else
             {

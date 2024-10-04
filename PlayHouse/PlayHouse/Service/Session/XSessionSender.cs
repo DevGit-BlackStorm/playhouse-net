@@ -45,6 +45,16 @@ internal class XSessionSender(
         sessionDispatcher.SendToClient(session, routePacket.ToClientPacket());
     }
 
+    public void SendToClient(ClientPacket packet)
+    {
+        sessionDispatcher.SendToClient(session,packet);
+    }
+
+    public void RelayToClient(ClientPacket packet)
+    {
+        session.Send(packet); 
+    }
+
     public void ReplyToClient(IPacket packet)
     {
         var routePacket = RoutePacket.Of(packet);

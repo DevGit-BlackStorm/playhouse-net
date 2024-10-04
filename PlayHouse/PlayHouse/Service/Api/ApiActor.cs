@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using PlayHouse.Communicator;
 using PlayHouse.Communicator.Message;
 using Playhouse.Protocol;
@@ -114,7 +115,14 @@ internal class ApiActor(
                 {
                     using (routePacket)
                     {
+                        //Stopwatch sw = Stopwatch.StartNew();
                         await DispatchAsync(routePacket);
+                        //sw.Stop();
+                        //if (sw.ElapsedMilliseconds > 1000)
+                        //{
+                        //    _log.Info(() => $"msgId:{routePacket.MsgId},elapsedTime:{sw.ElapsedMilliseconds}");
+                        //}
+                        
                     }
                 }
 
@@ -122,4 +130,5 @@ internal class ApiActor(
             });
         }
     }
+
 }

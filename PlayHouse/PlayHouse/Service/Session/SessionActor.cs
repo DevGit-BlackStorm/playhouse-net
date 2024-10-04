@@ -36,7 +36,6 @@ internal class StageIndexGenerator
 internal class SessionActor
 {
     private readonly LOG<SessionActor> _log = new();
-    //private readonly PooledByteBuffer _heartbeatBuffer = new(100);
 
     private readonly AtomicBoolean _isMsgQueueUsing = new(false);
     private readonly ConcurrentQueue<RoutePacket> _msgQueue = new();
@@ -131,7 +130,7 @@ internal class SessionActor
     {
         try
         {
-            _log.Trace(() => $"From:client - [accountId:{AccountId},packetInfo:{clientPacket.Header}]");
+            _log.Trace(() => $"From:client - [sid:{Sid},accountId:{AccountId},packetInfo:{clientPacket.Header}]");
 
             var serviceId = clientPacket.ServiceId;
             var msgId = clientPacket.MsgId;
@@ -153,7 +152,7 @@ internal class SessionActor
                 //RoutePacket.WriteClientPacketBytes(packet, ringBuffer);
                 //NetMQFrame frame = new NetMQFrame(ringBuffer.Buffer(), ringBuffer.Count);
                 //packet.Payload = new FramePayload(frame);
-                //SendToClient(packet);
+                //RelayToClient(packet);
                 //return;
 
                 if (_signInUrIs.Contains(uri))
@@ -172,18 +171,6 @@ internal class SessionActor
             _log.Error(() => $"{ex.Message}");
         }
     }
-
-    //public void SendHeartBeat(ClientPacket clientPacket)
-    //{
-
-    ////    //_log.Trace(() => $"send heartbeat - [packet:{clientPacket.Header}]");
-    ////    //_heartbeatBuffer.Clear();
-    ////    //RoutePacket.WriteClientPacketBytes(clientPacket, _heartbeatBuffer);
-    ////    //var reply = new ClientPacket(clientPacket.Header, new PooledBytePayload(_heartbeatBuffer));
-    ////    SendToClient(reply);
-
-        
-    //}
 
     private IServerInfo FindSuitableServer(ushort serviceId, string endpoint)
     {
@@ -316,7 +303,7 @@ internal class SessionActor
         }
         else
         {
-            SendToClient(packet.ToClientPacket());
+            RelayToClient(packet.ToClientPacket());
         }
 
         await Task.CompletedTask;
@@ -331,12 +318,12 @@ internal class SessionActor
         }
     }
 
-    private void SendToClient(ClientPacket clientPacket)
+    private void RelayToClient(ClientPacket clientPacket)
     {
         using (clientPacket)
         {
             _log.Trace(() => $"sendTo:client - [accountId:{AccountId},packetInfo:{clientPacket.Header}]");
-            _session.Send(clientPacket);
+            _sessionSender.RelayToClient(clientPacket);
         }
     }
 
@@ -352,7 +339,7 @@ internal class SessionActor
             return false;
         }
 
-        if (idleTime <= 0)
+        if (idleTime == 0)
         {
             return false;
         }
@@ -364,11 +351,6 @@ internal class SessionActor
 
         return false;
     }
-
-    //internal void UpdateHeartBeatTime()
-    //{
-    //    _lastUpdateTime = DateTime.UtcNow;
-    //}
 
     internal long IdleTime()
     {
@@ -414,8 +396,8 @@ internal class SessionActor
         _debugMode = mode;
     }
 
-    public void SendHeartBeat(ClientPacket clientPacket)
+    public void SendHeartBeat(ClientPacket packet)
     {
-        SendToClient(clientPacket);
+        _sessionSender.SendToClient(packet);
     }
 }

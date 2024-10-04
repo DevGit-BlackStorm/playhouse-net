@@ -5,7 +5,7 @@ namespace PlayHouse.Service.Api.Reflection;
 
 internal class ApiReflection(IServiceProvider serviceProvider ,ApiControllAspectifyManager aspectifyManager)
 {
-    private AsyncLocal<IServiceProvider> _localProvider = new();
+    private readonly AsyncLocal<IServiceProvider> _localProvider = new();
     private readonly ApiHandleReflectionInvoker _apiReflectionInvoker = new(serviceProvider,
         aspectifyManager.Get(),
         aspectifyManager.GetBackend());
