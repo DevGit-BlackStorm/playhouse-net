@@ -84,7 +84,7 @@ internal class SessionDispatcher : ISessionDispatcher
                 _sessionOption.Urls,
                 _requestCache,
                 remoteIp,
-                _sessionOption.SessionUserFactory?.Invoke(),
+                _sessionOption.SessionUserFactory,
                 this
                 );
         }

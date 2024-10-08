@@ -4,5 +4,5 @@ namespace PlayHouse.Production.Session;
 
 public interface ISessionUser
 {
-    Task OnDispatch(IPacket packet,ISessionSender sender);
+    Task OnDispatch(IPacket packet);
 }

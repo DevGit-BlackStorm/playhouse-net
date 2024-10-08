@@ -10,7 +10,6 @@ using PlayHouse.Service.Shared;
 using PlayHouse.Utils;
 
 namespace PlayHouse.Service.Session;
-
 internal class TargetAddress(string endpoint, long stageId)
 {
     public string Endpoint { get; } = endpoint;
@@ -43,7 +42,6 @@ internal class SessionActor
     private readonly AtomicBoolean _isSessionUserQueueUsing = new(false);
     private readonly ConcurrentQueue<ClientPacket> _sessionUserQueue = new();
 
-
     private readonly Dictionary<long, TargetAddress> _playEndpoints = new();
     private readonly IServerInfoCenter _serviceInfoCenter;
     private readonly ISession _session;
@@ -67,7 +65,7 @@ internal class SessionActor
         List<string> urls,
         RequestCache reqCache,
         string remoteIp,
-        ISessionUser? sessionUser,
+        Func<ISessionSender, ISessionUser>? sessionUserFactory,
         ISessionDispatcher sessionDispatcher
     )
     {
@@ -80,7 +78,7 @@ internal class SessionActor
 
         _signInUrIs.UnionWith(urls);
         _remoteIp = remoteIp;
-        _sessionUser = sessionUser;
+        _sessionUser = sessionUserFactory?.Invoke(_sessionSender);
     }
 
     public bool IsAuthenticated { get; private set; }
@@ -372,7 +370,7 @@ internal class SessionActor
                         using var routePacket = clientPacket.ToRoutePacket();
                         if (_sessionUser != null)
                         {
-                            await _sessionUser.OnDispatch(routePacket.ToContentsPacket(), _sessionSender);
+                            await _sessionUser.OnDispatch(routePacket.ToContentsPacket());
                         }
                         else
                         {

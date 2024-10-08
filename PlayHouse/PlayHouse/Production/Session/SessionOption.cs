@@ -1,4 +1,6 @@
-﻿namespace PlayHouse.Production.Session;
+﻿using PlayHouse.Production.Shared;
+
+namespace PlayHouse.Production.Session;
 
 public class SessionOption
 {
@@ -8,5 +10,5 @@ public class SessionOption
     public int SessionPort { get; set; } = 0;
     public bool UseWebSocket { get; set; } = false;
 
-    public Func<ISessionUser>? SessionUserFactory = null;
+    public Func<ISessionSender,ISessionUser>? SessionUserFactory = null;
 }
