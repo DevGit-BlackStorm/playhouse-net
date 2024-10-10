@@ -25,7 +25,7 @@ internal class XServerCommunicator(IPlaySocket playSocket) : IServerCommunicator
             {
                 try
                 {
-                    _log.Trace(() => $"recvFrom:{packet.RouteHeader.From} - [accountId:{packet.AccountId},packetInfo:${packet.RouteHeader}]");
+                    _log.Trace(() => $"recvFrom:{packet.RouteHeader.From} - [accountId:{packet.AccountId.ToString():accountId},packetInfo:${packet.RouteHeader}]");
 
                     _listener!.OnReceive(packet);
                 }

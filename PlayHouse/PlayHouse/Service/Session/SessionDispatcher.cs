@@ -142,7 +142,7 @@ internal class SessionDispatcher : ISessionDispatcher
             if (client != null)
             {
                 dispatcher._log.Debug(() =>
-                    $"idle client disconnect - [sid:{client.Sid},accountId:{client.AccountId},idleTime:{client.IdleTime()}]");
+                    $"idle client disconnect - [sid:{client.Sid},accountId:{client.AccountId.ToString():accountId},idleTime:{client.IdleTime()}]");
                 client.ClientDisconnect();
             }
         }

@@ -55,7 +55,6 @@ internal class SessionActor
     private readonly Stopwatch _lastUpdateTime = new();
     private readonly string _remoteIp;
     private readonly ISessionUser? _sessionUser;
-
     public SessionActor(
         ushort serviceId,
         long sid,
@@ -128,7 +127,8 @@ internal class SessionActor
     {
         try
         {
-            _log.Trace(() => $"From:client - [sid:{Sid},accountId:{AccountId},packetInfo:{clientPacket.Header}]");
+
+            _log.Trace(() => $"From:client - [sid:{Sid},accountId:{AccountId.ToString():accountId},packetInfo:{clientPacket.Header}]");
 
             var serviceId = clientPacket.ServiceId;
             var msgId = clientPacket.MsgId;
@@ -257,6 +257,7 @@ internal class SessionActor
     {
         var msgId = packet.MsgId;
         var isBase = packet.IsBase();
+        var accountId = AccountId.ToString();
 
         if (isBase)
         {
@@ -265,12 +266,12 @@ internal class SessionActor
                 var authenticateMsg = AuthenticateMsg.Parser.ParseFrom(packet.Span);
                 var apiEndpoint = packet.RouteHeader.From;
                 Authenticate((ushort)authenticateMsg.ServiceId, apiEndpoint, authenticateMsg.AccountId);
-                _log.Debug(() => $"session authenticated - [accountId:{AccountId}]");
+                _log.Debug(() => $"session authenticated - [accountId:{accountId:accountId}]");
             }
             else if (msgId == SessionCloseMsg.Descriptor.Name)
             {
                 _session.ClientDisconnect();
-                _log.Debug(() => $"force session close - [accountId:{AccountId}]");
+                _log.Debug(() => $"force session close - [accountId:{accountId:accountId}]");
             }
             else if (msgId == JoinStageInfoUpdateReq.Descriptor.Name)
             {
@@ -288,7 +289,7 @@ internal class SessionActor
             {
                 var stageId = LeaveStageMsg.Parser.ParseFrom(packet.Span).StageId;
                 ClearRoomInfo(stageId);
-                _log.Debug(() => $"stage info clear - [accountId: {AccountId}, stageId: {stageId}]");
+                _log.Debug(() => $"stage info clear - [accountId:{accountId:accountId}, stageId: {stageId}]");
             }
             else if (msgId == RemoteIpReq.Descriptor.Name)
             {
@@ -320,7 +321,7 @@ internal class SessionActor
     {
         using (clientPacket)
         {
-            _log.Trace(() => $"sendTo:client - [accountId:{AccountId},packetInfo:{clientPacket.Header}]");
+            _log.Trace(() => $"sendTo:client - [accountId:{AccountId.ToString():accountId},packetInfo:{clientPacket.Header}]");
             _sessionSender.RelayToClient(clientPacket);
         }
     }

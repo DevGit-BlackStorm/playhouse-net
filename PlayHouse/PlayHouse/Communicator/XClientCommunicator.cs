@@ -71,7 +71,7 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
 
     public void Send(string endpoint, RoutePacket routePacket)
     {
-        _log.Trace(() => $"before send queue:{endpoint} - [accountId:{routePacket.AccountId},packetInfo:{routePacket.RouteHeader}]");
+        _log.Trace(() => $"before send queue:{endpoint} - [accountId:{routePacket.AccountId.ToString():accountId},packetInfo:{routePacket.RouteHeader}]");
 
         //if (_connected.Contains(endpoint) == false)
         //{
@@ -85,7 +85,7 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
             {
                 using (routePacket)
                 {
-                    _log.Trace(() => $"sendTo:{endpoint} - [accountId:{routePacket.AccountId},packetInfo:{routePacket.RouteHeader}]");
+                    _log.Trace(() => $"sendTo:{endpoint} - [accountId:{routePacket.AccountId.ToString():accountId},packetInfo:{routePacket.RouteHeader}]");
                     playSocket.Send(endpoint, routePacket);
                 }
             }
@@ -93,7 +93,7 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
             {
                 _log.Error(
                     () =>
-                        $"socket send error : [target endpoint:{endpoint},target msgId:{routePacket.MsgId},accountId:{routePacket.AccountId}] - {e.Message}"
+                        $"socket send error : [target endpoint:{endpoint},target msgId:{routePacket.MsgId},accountId:{routePacket.AccountId.ToString():accountId}] - {e.Message}"
                 );
             }
         });
