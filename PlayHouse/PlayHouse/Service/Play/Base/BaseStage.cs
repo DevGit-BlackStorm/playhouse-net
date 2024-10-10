@@ -205,7 +205,7 @@ internal class BaseStage
             }
             else
             {
-                _log.Error(() => $"user is not exist - [accountId:{accountId}]");
+                _log.Error(() => $"user is not exist - [accountId:{accountId.ToString():accountId}]");
             }
         }
         catch (Exception e)

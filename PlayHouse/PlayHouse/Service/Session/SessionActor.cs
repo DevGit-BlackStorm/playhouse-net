@@ -257,7 +257,7 @@ internal class SessionActor
     {
         var msgId = packet.MsgId;
         var isBase = packet.IsBase();
-        var accountId = AccountId.ToString();
+        
 
         if (isBase)
         {
@@ -266,12 +266,12 @@ internal class SessionActor
                 var authenticateMsg = AuthenticateMsg.Parser.ParseFrom(packet.Span);
                 var apiEndpoint = packet.RouteHeader.From;
                 Authenticate((ushort)authenticateMsg.ServiceId, apiEndpoint, authenticateMsg.AccountId);
-                _log.Debug(() => $"session authenticated - [accountId:{accountId:accountId}]");
+                _log.Debug(() => $"session authenticated - [accountId:{AccountId.ToString():accountId}]");
             }
             else if (msgId == SessionCloseMsg.Descriptor.Name)
             {
                 _session.ClientDisconnect();
-                _log.Debug(() => $"force session close - [accountId:{accountId:accountId}]");
+                _log.Debug(() => $"force session close - [accountId:{AccountId.ToString():accountId}]");
             }
             else if (msgId == JoinStageInfoUpdateReq.Descriptor.Name)
             {
@@ -283,13 +283,13 @@ internal class SessionActor
                 _sessionSender.Reply(XPacket.Of(new JoinStageInfoUpdateRes()));
 
                 _log.Debug(() =>
-                    $"stageInfo updated - [accountId:{AccountId},playEndpoint:{playEndpoint},stageId:{stageId}");
+                    $"stageInfo updated - [accountId:{AccountId.ToString():accountId},playEndpoint:{playEndpoint},stageId:{stageId}");
             }
             else if (msgId == LeaveStageMsg.Descriptor.Name)
             {
                 var stageId = LeaveStageMsg.Parser.ParseFrom(packet.Span).StageId;
                 ClearRoomInfo(stageId);
-                _log.Debug(() => $"stage info clear - [accountId:{accountId:accountId}, stageId: {stageId}]");
+                _log.Debug(() => $"stage info clear - [accountId:{AccountId.ToString():accountId}, stageId: {stageId}]");
             }
             else if (msgId == RemoteIpReq.Descriptor.Name)
             {
