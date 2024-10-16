@@ -50,7 +50,7 @@ public class ReflectionInstance(Type type, IEnumerable<AspectifyAttribute> filte
         await using var scope = serviceProvider.CreateAsyncScope();
         var targetInstance = scope.ServiceProvider.GetRequiredService(Type);
         var invocation = new Invocation(targetInstance, targetMethod.Method, arguments, targetMethod.Filters,
-            ServiceProvider);
+            scope.ServiceProvider);
         await invocation.Proceed();
     }
 
@@ -60,7 +60,7 @@ public class ReflectionInstance(Type type, IEnumerable<AspectifyAttribute> filte
         await using var scope = serviceProvider.CreateAsyncScope();
         var targetInstance = scope.ServiceProvider.GetRequiredService(Type);
         var invocation = new Invocation(targetInstance, targetMethod.Method, arguments, targetMethod.Filters,
-            ServiceProvider);
+            scope.ServiceProvider);
         await invocation.Proceed();
         return invocation.ReturnValue!;
     }
