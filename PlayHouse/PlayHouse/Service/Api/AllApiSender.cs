@@ -18,9 +18,9 @@ internal class AllApiSender(ushort serviceId, IClientCommunicator clientCommunic
     public string SessionEndpoint => CurrentHeader?.From ?? "";
     public long Sid => CurrentHeader?.Sid ?? 0L;
 
-    public void Authenticate(long accountId)
+    public async Task AuthenticateAsync(long accountId)
     {
-        var message = new AuthenticateMsg
+        var message = new AuthenticateMsgReq
         {
             ServiceId = ServiceId,
             AccountId = accountId
@@ -28,7 +28,8 @@ internal class AllApiSender(ushort serviceId, IClientCommunicator clientCommunic
 
         if (CurrentHeader != null)
         {
-            SendToBaseSession(CurrentHeader.From, CurrentHeader.Sid, RoutePacket.Of(message));
+            //SendToBaseSession(CurrentHeader.From, CurrentHeader.Sid, RoutePacket.Of(message));
+            await RequestToBaseSession(CurrentHeader.From, CurrentHeader.Sid, RoutePacket.Of(message));
         }
         else
         {

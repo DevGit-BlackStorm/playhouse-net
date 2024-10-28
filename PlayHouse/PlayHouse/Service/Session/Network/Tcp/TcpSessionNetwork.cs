@@ -12,6 +12,7 @@ internal class XTcpSession(TcpServer server, ISessionDispatcher sessionDispatche
     private readonly RingBuffer _buffer = new(1024 * 4, PacketConst.MaxPacketSize);
     private readonly LOG<XTcpSession> _log = new();
     private readonly PacketParser _packetParser = new();
+    private readonly long _sid = SocketIdGenerator.IdGenerator.NextId();
 
     public void ClientDisconnect()
     {
@@ -28,8 +29,7 @@ internal class XTcpSession(TcpServer server, ISessionDispatcher sessionDispatche
 
     private long GetSid()
     {
-        
-        return Socket.Handle.ToInt64();
+        return _sid;
     }
 
     protected  override void OnConnecting()

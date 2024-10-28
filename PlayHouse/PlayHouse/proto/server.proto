@@ -36,9 +36,13 @@ message ServerInfoMsg{
   int32 actor_count = 6;
 }
 
-message AuthenticateMsg {
+message AuthenticateMsgReq {
   int32 service_id = 1;
   int64 account_id = 2;
+}
+
+message AuthenticateMsgRes {
+  
 }
 
 message SessionCloseMsg {

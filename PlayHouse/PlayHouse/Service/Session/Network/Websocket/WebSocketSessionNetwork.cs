@@ -12,7 +12,7 @@ internal class XWsSession(WsSessionServer server, ISessionDispatcher sessionDisp
     private readonly RingBuffer _buffer = new(1024 * 4, PacketConst.MaxPacketSize);
     private readonly LOG<XWsSession> _log = new();
     private readonly PacketParser _packetParser = new();
-
+    private readonly long _sid = SocketIdGenerator.IdGenerator.NextId();
     public void ClientDisconnect()
     {
         base.Disconnect();
@@ -26,9 +26,9 @@ internal class XWsSession(WsSessionServer server, ISessionDispatcher sessionDisp
         }
     }
 
-    private int GetSid()
+    private long GetSid()
     {
-        return (int)Socket.Handle;
+        return _sid;
     }
 
     protected override void OnConnecting()
