@@ -20,10 +20,18 @@ internal class AllApiSender(ushort serviceId, IClientCommunicator clientCommunic
 
     public async Task AuthenticateAsync(long accountId)
     {
+        var serverInfo = ControlContext.SystemPanel.GetServerInfo();
+        var apiEndpoint = serverInfo.GetBindEndpoint();
+
+        await AuthenticateAsync(accountId, apiEndpoint);
+    }
+    public async Task AuthenticateAsync(long accountId,string apiEndpoint)
+    {
         var message = new AuthenticateMsgReq
         {
             ServiceId = ServiceId,
-            AccountId = accountId
+            AccountId = accountId,
+            ApiEndpoint = apiEndpoint
         };
 
         if (CurrentHeader != null)
