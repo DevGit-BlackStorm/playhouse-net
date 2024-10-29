@@ -264,7 +264,7 @@ internal class SessionActor
             if (msgId == AuthenticateMsgReq.Descriptor.Name)
             {
                 var authenticateMsg = AuthenticateMsgReq.Parser.ParseFrom(packet.Span);
-                var apiEndpoint = packet.RouteHeader.From;
+                var apiEndpoint = authenticateMsg.ApiEndpoint;
                 Authenticate((ushort)authenticateMsg.ServiceId, apiEndpoint, authenticateMsg.AccountId);
                 _sessionSender.Reply(XPacket.Of(new AuthenticateMsgRes()));
 
