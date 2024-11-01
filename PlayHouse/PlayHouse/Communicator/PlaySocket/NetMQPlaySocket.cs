@@ -80,7 +80,7 @@ internal class NetMqPlaySocket : IPlaySocket
     public RoutePacket? Receive()
     {
         var message = new NetMQMessage();
-        if (_socket.TryReceiveMultipartMessage(ref message))
+        if (_socket.TryReceiveMultipartMessage(TimeSpan.FromSeconds(1), ref message))
         {
             if (message.Count() < 3)
             {

@@ -22,10 +22,9 @@ internal class SessionDispatcher : ISessionDispatcher
     private readonly SessionOption _sessionOption;
     private readonly Timer _timer;
 
-    private readonly ConcurrentQueue<KeyValuePair<ISession, ClientPacket>> _sendQueueToClient = new();
+    private readonly BlockingCollection<KeyValuePair<ISession, ClientPacket>> _sendQueueToClient = new();
     private readonly PooledByteBuffer _buffer = new(ConstOption.MaxPacketSize);
     private readonly Thread _sendThread ;
-    private bool _running = true;
 
     public SessionDispatcher(
         ushort serviceId,
@@ -50,25 +49,22 @@ internal class SessionDispatcher : ISessionDispatcher
 
     private void SendingPacket()
     {
-        while (_running)
+        // _sendQueueToClient.CompleteAdding() 가 호출되기 전까지 루프
+        foreach (var result in _sendQueueToClient.GetConsumingEnumerable())
         {
-            while (_sendQueueToClient.TryDequeue(out var result))
-            {
-                ISession session = result.Key;
-                ClientPacket packet = result.Value;
+            ISession session = result.Key;
+            ClientPacket packet = result.Value;
 
-                _buffer.Clear();
-                RoutePacket.WriteClientPacketBytes(packet,_buffer);
-                session.Send(new ClientPacket(packet.Header,new PooledBytePayload(_buffer)));
+            _buffer.Clear();
+            RoutePacket.WriteClientPacketBytes(packet,_buffer);
+            session.Send(new ClientPacket(packet.Header,new PooledBytePayload(_buffer)));
 
-            }
-            Thread.Sleep(ConstOption.ThreadSleep);
         }
     }
 
     public void SendToClient(ISession session, ClientPacket packet)
     {
-        _sendQueueToClient.Enqueue(new KeyValuePair<ISession, ClientPacket>(session,packet));
+        _sendQueueToClient.Add(new KeyValuePair<ISession, ClientPacket>(session,packet));
     }
 
     public void OnConnect(long sid, ISession session,string remoteIp)
@@ -121,7 +117,7 @@ internal class SessionDispatcher : ISessionDispatcher
     {
         _sessionNetwork.Stop();
         _timer.Dispose();
-        _running = false;
+        _sendQueueToClient.CompleteAdding();
         _sendThread.Join();
     }
 
