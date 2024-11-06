@@ -10,8 +10,7 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
     private readonly HashSet<string> _connected = new();
     //private readonly HashSet<string> _disconnected = new();
     private readonly LOG<XClientCommunicator> _log = new();
-    private readonly ConcurrentQueue<Action> _queue = new();
-    private bool _running = true;
+    private readonly BlockingCollection<Action> _queue = new();
 
     public void Connect(string endpoint)
     {
@@ -20,7 +19,7 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
             return;
         }
 
-        _queue.Enqueue(() =>
+        _queue.Add(() =>
         {
             try
             {
@@ -66,7 +65,7 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
 
     public void Stop()
     {
-        _running = false;
+        _queue.CompleteAdding();
     }
 
     public void Send(string endpoint, RoutePacket routePacket)
@@ -79,7 +78,7 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
         //    return;
         //}
 
-        _queue.Enqueue(() =>
+        _queue.Add(() =>
         {
             try
             {
@@ -102,25 +101,24 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
 
     public void Communicate()
     {
-        while (_running)
-        {
-            //var action = _jobBucket.Get();
-            while (_queue.TryDequeue(out var action))
-            {
-                try
-                {
-                    action.Invoke();
-                }
-                catch (Exception e)
-                {
-                    _log.Error(
-                        () => $"{playSocket.Id()} Error during communication - {e.Message}"
-                    );
-                }
-            }
+        //var action = _jobBucket.Get();
 
-            //Thread.Yield();
-            Thread.Sleep(ConstOption.ThreadSleep);
+        // _queue.CompleteAdding() 가 호출되기 전까지 루프
+        foreach (var action in _queue.GetConsumingEnumerable())
+        {
+            try
+            {
+                action.Invoke();
+            }
+            catch (Exception e)
+            {
+                _log.Error(
+                    () => $"{playSocket.Id()} Error during communication - {e.Message}"
+                );
+            }
         }
+
+        //Thread.Yield();
+        //Thread.Sleep(ConstOption.ThreadSleep);
     }
 }
