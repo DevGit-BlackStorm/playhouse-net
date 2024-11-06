@@ -31,8 +31,10 @@ internal sealed class PacketParser
                 throw new Exception("BodySizeOver");
             }
 
+            int checkSizeOfMsg = buffer.PeekByte(buffer.MoveIndex(buffer.ReaderIndex, + 4 + 2));
+
             // If the remaining buffer is smaller than the expected packet size, wait for more data
-            if (buffer.Count < bodySize + PacketConst.MinPacketSize)
+            if (buffer.Count < bodySize + checkSizeOfMsg + PacketConst.MinPacketSize)
             {
                 break;
             }
