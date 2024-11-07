@@ -108,11 +108,11 @@ internal class SessionActor
         {
             var serverInfo = FindSuitableServer(_authenticateServiceId, _authServerEndpoint);
             var disconnectPacket = RoutePacket.Of(new DisconnectNoticeMsg());
-            _sessionSender.SendToBaseApi(serverInfo.GetBindEndpoint(), AccountId, disconnectPacket);
+            _sessionSender.SendToBaseApi(serverInfo.GetBindEndpoint(), Sid,AccountId, disconnectPacket);
             foreach (var targetId in _playEndpoints.Values)
             {
                 IServerInfo targetServer = _serviceInfoCenter.FindServer(targetId.Endpoint);
-                _sessionSender.SendToBaseStage(targetServer.GetBindEndpoint(), targetId.StageId, AccountId,
+                _sessionSender.SendToBaseStage(targetServer.GetBindEndpoint(), Sid,targetId.StageId, AccountId,
                     disconnectPacket);
             }
         }
