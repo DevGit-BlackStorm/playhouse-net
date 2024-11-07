@@ -230,7 +230,7 @@ internal class XSender(ushort serviceId, IClientCommunicator clientCommunicator,
         return reqCache.GetSequence();
     }
 
-    public void RelayToApi(string apiEndpoint, int sid, RoutePacket packet, ushort msgSeq)
+    public void RelayToApi(string apiEndpoint, long sid, RoutePacket packet, ushort msgSeq)
     {
         var routePacket = RoutePacket.ApiOf(packet, false, false);
         routePacket.RouteHeader.Sid = sid;
@@ -238,17 +238,19 @@ internal class XSender(ushort serviceId, IClientCommunicator clientCommunicator,
         ClientCommunicator.Send(apiEndpoint, routePacket);
     }
 
-    public void SendToBaseApi(string apiEndpoint, long accountId, RoutePacket packet)
+    public void SendToBaseApi(string apiEndpoint, long sid, long accountId, RoutePacket packet)
     {
         var routePacket = RoutePacket.ApiOf(packet, true, true);
+        routePacket.RouteHeader.Sid = sid;
         routePacket.RouteHeader.AccountId = accountId;
 
         ClientCommunicator.Send(apiEndpoint, routePacket);
     }
 
-    public void SendToBaseStage(string playEndpoint, long stageId, long accountId, RoutePacket packet)
+    public void SendToBaseStage(string playEndpoint, long sid, long stageId, long accountId, RoutePacket packet)
     {
         var routePacket = RoutePacket.StageOf(stageId, accountId, packet, true, true);
+        routePacket.RouteHeader.Sid = sid;
         ClientCommunicator.Send(playEndpoint, routePacket);
     }
 
