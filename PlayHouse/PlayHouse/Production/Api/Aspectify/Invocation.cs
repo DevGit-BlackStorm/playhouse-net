@@ -50,8 +50,7 @@ public class Invocation(
     object target,
     MethodInfo method,
     object[] arguments,
-    List<AspectifyAttribute> interceptors,
-    IServiceProvider serviceProvider)
+    List<AspectifyAttribute> interceptors)
 {
     private static readonly ConcurrentDictionary<string, Func<object, object[], object>> _compiledInvokers = new();
     private int _currentInterceptorIndex = -1;
