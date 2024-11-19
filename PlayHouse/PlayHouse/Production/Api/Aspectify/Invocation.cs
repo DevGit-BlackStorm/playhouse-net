@@ -50,12 +50,15 @@ public class Invocation(
     object target,
     MethodInfo method,
     object[] arguments,
-    List<AspectifyAttribute> interceptors)
+    List<AspectifyAttribute> interceptors,
+    IServiceProvider serviceProvider)
 {
     private static readonly ConcurrentDictionary<string, Func<object, object[], object>> _compiledInvokers = new();
     private int _currentInterceptorIndex = -1;
     public dynamic? ReturnValue { get; private set; }
     public object[] Arguments => arguments;
+    public MethodInfo Method { get; } = method;
+    public IServiceProvider ServiceProvider { get; } = serviceProvider;
     public async Task Proceed()
     {
         _currentInterceptorIndex++;
@@ -65,23 +68,23 @@ public class Invocation(
         }
         else
         {
-            var returnType = method.ReturnType;
+            var returnType = Method.ReturnType;
 
             if (returnType == typeof(Task))
             {
                 // 반환 타입이 void (async)
-                await (Task)InvokeMethod(target, method, arguments)!;
+                await (Task)InvokeMethod(target, Method, arguments)!;
             }
             else if (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>))
             {
                 // 반환 타입이 Task<T>
-                var result = await (dynamic)InvokeMethod(target, method, arguments)!;
+                var result = await (dynamic)InvokeMethod(target, Method, arguments)!;
                 ReturnValue = result;
             }
             else
             {
                 // 반환 타입이 일반 값
-                ReturnValue = InvokeMethod(target, method, arguments);
+                ReturnValue = InvokeMethod(target, Method, arguments);
             }
         }
     }
