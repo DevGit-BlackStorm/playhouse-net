@@ -40,7 +40,7 @@ public class ReflectionInstance(Type type, IEnumerable<AspectifyAttribute> filte
     public Type Type { get; set; } = type;
 
     public IEnumerable<AspectifyAttribute> Filters { get; set; } = filters;
-    public IServiceProvider ServiceProvider { get; set; } = serviceProvider;
+    //public IServiceProvider ServiceProvider { get; set; } = serviceProvider;
 
     public string Name => Type.FullName!;
 
@@ -49,8 +49,7 @@ public class ReflectionInstance(Type type, IEnumerable<AspectifyAttribute> filte
     {
         await using var scope = serviceProvider.CreateAsyncScope();
         var targetInstance = scope.ServiceProvider.GetRequiredService(Type);
-        var invocation = new Invocation(targetInstance, targetMethod.Method, arguments, targetMethod.Filters,
-            scope.ServiceProvider);
+        var invocation = new Invocation(targetInstance, targetMethod.Method, arguments, targetMethod.Filters);
         await invocation.Proceed();
     }
 
@@ -59,8 +58,7 @@ public class ReflectionInstance(Type type, IEnumerable<AspectifyAttribute> filte
     {
         await using var scope = serviceProvider.CreateAsyncScope();
         var targetInstance = scope.ServiceProvider.GetRequiredService(Type);
-        var invocation = new Invocation(targetInstance, targetMethod.Method, arguments, targetMethod.Filters,
-            scope.ServiceProvider);
+        var invocation = new Invocation(targetInstance, targetMethod.Method, arguments, targetMethod.Filters);
         await invocation.Proceed();
         return invocation.ReturnValue!;
     }
