@@ -419,7 +419,7 @@ internal class RoutePacket : IBasePacket
         {
             throw new Exception($"body size is over : {bodySize}");
         }
-        
+
 
         if (bodySize < PacketConst.MinCompressionSize)
         {
@@ -435,7 +435,7 @@ internal class RoutePacket : IBasePacket
         else
         {
             var originalSize = bodySize;
-            var compressed = Lz4Holder.Instance.Compress(clientPacket.Payload.DataSpan);
+            var compressed = Lz4Holder.Instance.Compress(body.Span);
             bodySize = compressed.Length;
 
             buffer.WriteInt32(bodySize);
@@ -447,10 +447,10 @@ internal class RoutePacket : IBasePacket
 
 
             buffer.WriteInt32(originalSize); // 압축했을경우 원래 사이즈
-            buffer.Write( Lz4Holder.Instance.Compress(clientPacket.Payload.DataSpan));
+            buffer.Write(compressed);
         }
 
-        
+
     }
 
 
