@@ -4,6 +4,7 @@ using PlayHouse.Production.Shared;
 using Playhouse.Protocol;
 using PlayHouse.Service.Shared;
 using PlayHouse.Service.Session.Network;
+using PlayHouse.Utils;
 
 namespace PlayHouse.Communicator.Message;
 
@@ -49,13 +50,8 @@ public class Header
     }
 }
 
-public class RouteHeader
+public class RouteHeader(Header header)
 {
-    public RouteHeader(Header header)
-    {
-        Header = header;
-    }
-
     public RouteHeader(RouteHeaderMsg headerMsg)
         : this(Header.Of(headerMsg.HeaderMsg))
     {
@@ -68,7 +64,7 @@ public class RouteHeader
         StageId = headerMsg.StageId;
     }
 
-    public Header Header { get; }
+    public Header Header { get; } = header;
     public long Sid { get; set; }
     public bool IsSystem { get; set; }
     public bool IsBase { get; set; }
@@ -437,18 +433,25 @@ internal class RoutePacket : IBasePacket
 
         buffer.WriteInt32(bodySize);
         buffer.WriteInt16(clientPacket.ServiceId);
-        //buffer.Write((byte)msgIdLength);
         buffer.Write(clientPacket.MsgId);
         buffer.WriteInt16(clientPacket.MsgSeq);
         buffer.WriteInt64(clientPacket.Header.StageId);
         buffer.WriteInt16(clientPacket.Header.ErrorCode);
-        buffer.Write(clientPacket.Payload.DataSpan);
+
+        if (PacketConst.MinCompressionSize > bodySize)
+        {
+            buffer.WriteInt32(0); //압축안함을 의미
+            buffer.Write(clientPacket.Payload.DataSpan);
+        }
+        else
+        {
+            buffer.WriteInt32(bodySize); // 압축했을경우 원래 사이즈
+            buffer.Write( LZ4.Compress(clientPacket.Payload.DataSpan));
+        }
+
+        
     }
 
-    //public  ReplyPacket ToReplyPacket()
-    //{
-    //    return new  ReplyPacket(RouteHeader.Header.ErrorCode,RouteHeader.MsgId,MovePayload()); 
-    //}
 
     internal IPacket ToContentsPacket()
     {
