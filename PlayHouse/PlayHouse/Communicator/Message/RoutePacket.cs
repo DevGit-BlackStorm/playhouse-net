@@ -431,22 +431,33 @@ internal class RoutePacket : IBasePacket
         }
         
 
-        buffer.WriteInt32(bodySize);
-        buffer.WriteInt16(clientPacket.ServiceId);
-        buffer.Write(clientPacket.MsgId);
-        buffer.WriteInt16(clientPacket.MsgSeq);
-        buffer.WriteInt64(clientPacket.Header.StageId);
-        buffer.WriteInt16(clientPacket.Header.ErrorCode);
-
-        if (PacketConst.MinCompressionSize > bodySize)
+        if (bodySize < PacketConst.MinCompressionSize)
         {
+            buffer.WriteInt32(bodySize);
+            buffer.WriteInt16(clientPacket.ServiceId);
+            buffer.Write(clientPacket.MsgId);
+            buffer.WriteInt16(clientPacket.MsgSeq);
+            buffer.WriteInt64(clientPacket.Header.StageId);
+            buffer.WriteInt16(clientPacket.Header.ErrorCode);
             buffer.WriteInt32(0); //압축안함을 의미
             buffer.Write(clientPacket.Payload.DataSpan);
         }
         else
         {
-            buffer.WriteInt32(bodySize); // 압축했을경우 원래 사이즈
-            buffer.Write( LZ4.Compress(clientPacket.Payload.DataSpan));
+            var originalSize = bodySize;
+            var compressed = Lz4.Compress(clientPacket.Payload.DataSpan);
+            bodySize = compressed.Length;
+
+            buffer.WriteInt32(bodySize);
+            buffer.WriteInt16(clientPacket.ServiceId);
+            buffer.Write(clientPacket.MsgId);
+            buffer.WriteInt16(clientPacket.MsgSeq);
+            buffer.WriteInt64(clientPacket.Header.StageId);
+            buffer.WriteInt16(clientPacket.Header.ErrorCode);
+
+
+            buffer.WriteInt32(originalSize); // 압축했을경우 원래 사이즈
+            buffer.Write( Lz4.Compress(clientPacket.Payload.DataSpan));
         }
 
         

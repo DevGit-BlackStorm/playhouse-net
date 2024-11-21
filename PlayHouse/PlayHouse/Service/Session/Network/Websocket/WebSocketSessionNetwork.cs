@@ -62,13 +62,8 @@ internal class XWsSession(WsSessionServer server, ISessionDispatcher sessionDisp
     {
         try
         {
-            List<ClientPacket> packets;
-
-            lock (_buffer)
-            {
-                _buffer.Write(buffer, offset, size);
-                packets = _packetParser.Parse(_buffer);
-            }
+            _buffer.Write(buffer, offset, size);
+            List<ClientPacket> packets = _packetParser.Parse(_buffer);
 
             foreach (var packet in packets)
             {
