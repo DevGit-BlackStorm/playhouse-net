@@ -7,22 +7,13 @@ using PlayHouse.Utils;
 
 namespace PlayHouse.Communicator.Message;
 
-public class Header
+public class Header(ushort serviceId = 0, string msgId = "", ushort msgSeq = 0, ushort errorCode = 0, long stageId = 0)
 {
-    public Header(ushort serviceId = 0, string msgId = "", ushort msgSeq = 0, ushort errorCode = 0, long stageId = 0)
-    {
-        ServiceId = serviceId;
-        MsgId = msgId;
-        ErrorCode = errorCode;
-        MsgSeq = msgSeq;
-        StageId = stageId;
-    }
-
-    public ushort ServiceId { get; set; }
-    public string MsgId { get; set; }
-    public ushort MsgSeq { get; set; }
-    public ushort ErrorCode { get; set; }
-    public long StageId { get; set; }
+    public ushort ServiceId { get; set; } = serviceId;
+    public string MsgId { get; set; } = msgId;
+    public ushort MsgSeq { get; set; } = msgSeq;
+    public ushort ErrorCode { get; set; } = errorCode;
+    public long StageId { get; set; } = stageId;
 
     public static Header Of(HeaderMsg headerMsg)
     {
@@ -438,13 +429,13 @@ internal class RoutePacket : IBasePacket
             buffer.WriteInt16(clientPacket.MsgSeq);
             buffer.WriteInt64(clientPacket.Header.StageId);
             buffer.WriteInt16(clientPacket.Header.ErrorCode);
-            buffer.WriteInt32(0); //압축안함을 의미
+            buffer.WriteInt32(0); //압축안함
             buffer.Write(clientPacket.Payload.DataSpan);
         }
         else
         {
             var originalSize = bodySize;
-            var compressed = Lz4.Compress(clientPacket.Payload.DataSpan);
+            var compressed = Lz4Holder.Instance.Compress(clientPacket.Payload.DataSpan);
             bodySize = compressed.Length;
 
             buffer.WriteInt32(bodySize);
@@ -456,7 +447,7 @@ internal class RoutePacket : IBasePacket
 
 
             buffer.WriteInt32(originalSize); // 압축했을경우 원래 사이즈
-            buffer.Write( Lz4.Compress(clientPacket.Payload.DataSpan));
+            buffer.Write( Lz4Holder.Instance.Compress(clientPacket.Payload.DataSpan));
         }
 
         
