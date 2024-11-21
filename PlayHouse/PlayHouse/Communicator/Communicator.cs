@@ -173,7 +173,7 @@ internal class Communicator : ICommunicateListener
             option.ServiceProvider);
 
 
-        LZ4.Init(PacketConst.MinCompressionSize);
+        Lz4.Init(PacketConst.MinCompressionSize);
 
         ControlContext.Init(_sender, _systemPanel);
         PacketProducer.Init(_option.PacketProducer!);
