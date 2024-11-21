@@ -171,9 +171,7 @@ internal class Communicator : ICommunicateListener
             );
         _systemDispatcher = new SystemDispatcher(_serviceId, _requestCache, _clientCommunicator, _systemPanel,
             option.ServiceProvider);
-
-
-        Lz4Holder.Instance.Init(PacketConst.MaxPacketSize);
+        
         ControlContext.Init(_sender, _systemPanel);
         PacketProducer.Init(_option.PacketProducer!);
     }
