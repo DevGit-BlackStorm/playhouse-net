@@ -3,6 +3,7 @@ using PlayHouse.Communicator.Message;
 using PlayHouse.Communicator.PlaySocket;
 using PlayHouse.Production.Shared;
 using Playhouse.Protocol;
+using PlayHouse.Service.Session.Network;
 using PlayHouse.Service.Shared;
 using PlayHouse.Utils;
 
@@ -116,28 +117,6 @@ public class CommunicatorOption
             _packetProducer = producer;
             return this;
         }
-
-        //internal Builder SetAddressServerServiceId(ushort updateServerServiceId)
-        //{
-        //    if (updateServerServiceId <= 0)
-        //    {
-        //        throw new Exception("invalid updateServerServiceId");
-        //    }
-
-        //    _addressServerId = updateServerServiceId;
-        //    return this;
-        //}
-
-        //internal Builder SetAddressServerEndpoints(List<string> addressServerEndpoints)
-        //{
-        //    if (addressServerEndpoints == null || addressServerEndpoints.Count == 0)
-        //    {
-        //        throw new Exception("no registered addressServerEndpoint");
-        //    }
-
-        //    _addressServerEndpoints = addressServerEndpoints.Select(e => $"tcp://{e}").ToList();
-        //    return this;
-        //}
     }
 }
 
@@ -193,6 +172,9 @@ internal class Communicator : ICommunicateListener
         _systemDispatcher = new SystemDispatcher(_serviceId, _requestCache, _clientCommunicator, _systemPanel,
             option.ServiceProvider);
 
+
+        LZ4.Init(PacketConst.MinCompressionSize);
+
         ControlContext.Init(_sender, _systemPanel);
         PacketProducer.Init(_option.PacketProducer!);
     }
@@ -207,6 +189,8 @@ internal class Communicator : ICommunicateListener
 
     public void Start()
     {
+
+
         var bindEndpoint = _option.BindEndpoint;
         _systemPanel.Communicator = this;
 
