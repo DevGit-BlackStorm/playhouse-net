@@ -198,7 +198,7 @@ internal class SessionDispatcher : ISessionDispatcher
             if (!_sessionActors.TryGetValue(sessionId, out var sessionClient))
             {
                 var result = routePacket;
-                _log.Error(() =>
+                _log.Debug(() =>
                     $"sessionId is already disconnected - [sessionId:{sessionId},packetInfo:{result.RouteHeader}]");
             }
             else
