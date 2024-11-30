@@ -15,7 +15,7 @@ internal class CreateJoinStageCmd(PlayDispatcher dispatcher) : IBaseStageCmd
         var joinStagePacket = CPacket.Of(request.JoinPayloadId, request.JoinPayload);
         var accountId = routePacket.AccountId;
         var stageId = routePacket.StageId;
-        var sessionEndpoint = request.SessionEndpoint;
+        var sessionEndpoint = request.SessionNid;
         var sid = request.Sid;
         var apiEndpoint = routePacket.RouteHeader.From;
 

@@ -13,7 +13,7 @@ internal class JoinStageCmd(PlayDispatcher dispatcher) : IBaseStageCmd
     {
         var request = JoinStageReq.Parser.ParseFrom(routePacket.Span);
         var accountId = routePacket.AccountId;
-        var sessionEndpoint = request.SessionEndpoint;
+        var sessionEndpoint = request.SessionNid;
         var sid = request.Sid;
         var packet = CPacket.Of(request.PayloadId, request.Payload);
         var apiEndpoint = routePacket.RouteHeader.From;

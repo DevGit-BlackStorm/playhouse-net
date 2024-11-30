@@ -8,7 +8,7 @@ namespace PlayHouse.Communicator;
 internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
 {
     private readonly HashSet<string> _connected = new();
-    //private readonly HashSet<string> _disconnected = new();
+    private readonly HashSet<string> _disconnected = new();
     private readonly LOG<XClientCommunicator> _log = new();
     private readonly BlockingCollection<Action> _queue = new();
 
@@ -37,12 +37,26 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
 
     public void Disconnect(string endpoint)
     {
+        
+        if (_disconnected.Contains(endpoint))
+        {
+            return;
+        }
 
-
-        //if (_disconnected.Contains(endpoint))
-        //{
-        //    return;
-        //}
+        try
+        {
+            playSocket.Disconnect(endpoint);
+            _log.Info(() => $"disconnected with {endpoint}");
+        }
+        catch (Exception ex)
+        {
+            _log.Error(() => $"disconnect error - endpoint:{endpoint}, error:{ex.Message}");
+        }
+        finally
+        {
+            _connected.Remove(endpoint);
+            _disconnected.Add(endpoint);
+        }
 
         //_queue.Enqueue(() =>
         //{
@@ -68,9 +82,9 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
         _queue.CompleteAdding();
     }
 
-    public void Send(string endpoint, RoutePacket routePacket)
+    public void Send(int nid, RoutePacket routePacket)
     {
-        _log.Trace(() => $"before send queue:{endpoint} - [accountId:{routePacket.AccountId.ToString():accountId},packetInfo:{routePacket.RouteHeader}]");
+        _log.Trace(() => $"before send queue:{nid} - [accountId:{routePacket.AccountId.ToString():accountId},packetInfo:{routePacket.RouteHeader}]");
 
         //if (_connected.Contains(endpoint) == false)
         //{
@@ -84,15 +98,15 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
             {
                 using (routePacket)
                 {
-                    _log.Trace(() => $"sendTo:{endpoint} - [accountId:{routePacket.AccountId.ToString():accountId},packetInfo:{routePacket.RouteHeader}]");
-                    playSocket.Send(endpoint, routePacket);
+                    _log.Trace(() => $"sendTo: nid:{nid} - [accountId:{routePacket.AccountId.ToString():accountId},packetInfo:{routePacket.RouteHeader}]");
+                    playSocket.Send(nid, routePacket);
                 }
             }
             catch (Exception e)
             {
                 _log.Error(
                     () =>
-                        $"socket send error : [target endpoint:{endpoint},target msgId:{routePacket.MsgId},accountId:{routePacket.AccountId.ToString():accountId}] - {e.Message}"
+                        $"socket send error : [target nid:{nid},target msgId:{routePacket.MsgId},accountId:{routePacket.AccountId.ToString():accountId}] - {e.Message}"
                 );
             }
         });
@@ -113,7 +127,7 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
             catch (Exception e)
             {
                 _log.Error(
-                    () => $"{playSocket.Id()} Error during communication - {e.Message}"
+                    () => $"{playSocket.EndPoint()} Error during communication - {e.Message}"
                 );
             }
         }

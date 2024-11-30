@@ -39,7 +39,7 @@ public class CacheTests
     {
         var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-        XServerInfo serverInfo = new(endpoint1, ServiceType.SESSION, (ushort)ServiceType.SESSION, ServerState.RUNNING,
+        XServerInfo serverInfo = new(endpoint1, 1,ServiceType.SESSION, (ushort)ServiceType.SESSION, ServerState.RUNNING,
             0, timestamp);
 
         serverInfo.TimeOver().Should().BeFalse();

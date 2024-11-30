@@ -1,22 +1,22 @@
 ﻿using CommonLib;
 using FluentAssertions;
 using Org.Ulalax.Playhouse.Protocol;
+using PlayHouse.Communicator;
 using PlayHouse.Communicator.Message;
 using PlayHouse.Communicator.PlaySocket;
 using Playhouse.Protocol;
 using Xunit;
 
-namespace PlayHouse.Communicator.Socket.Tests;
+namespace PlayHouseTests.Communicator.Socket;
 
 [Collection("NetMQPlaySocketTests")]
 public class NetMQPlaySocketTests : IDisposable
 {
-    private readonly string clientBindEndpoint = "";
-    private readonly NetMqPlaySocket? clientSocket;
+    private readonly NetMqPlaySocket? _clientSocket;
 
-    private readonly string serverBindEndpoint = "";
-
-    private readonly NetMqPlaySocket? serverSocket;
+    private readonly NetMqPlaySocket? _serverSocket;
+    private const int ServerNid = 1;
+    private const int ClientNid = 2;
 
     public NetMQPlaySocketTests()
     {
@@ -26,36 +26,36 @@ public class NetMQPlaySocketTests : IDisposable
         var serverPort = IpFinder.FindFreePort();
         var clientPort = IpFinder.FindFreePort();
 
-        serverBindEndpoint = $"tcp://{localIp}:{serverPort}";
-        clientBindEndpoint = $"tcp://{localIp}:{clientPort}";
+        var serverBindEndpoint = $"tcp://{localIp}:{serverPort}";
+        var clientBindEndpoint = $"tcp://{localIp}:{clientPort}";
+        
+        _serverSocket = new NetMqPlaySocket(new SocketConfig(ServerNid, serverBindEndpoint,new PlaySocketConfig()));
+        _clientSocket = new NetMqPlaySocket(new SocketConfig(ClientNid, clientBindEndpoint,new PlaySocketConfig()));
 
-        serverSocket = new NetMqPlaySocket(new SocketConfig(), serverBindEndpoint);
-        clientSocket = new NetMqPlaySocket(new SocketConfig(), clientBindEndpoint);
+        _serverSocket.Bind();
+        _clientSocket.Bind();
 
-        serverSocket.Bind();
-        clientSocket.Bind();
-
-        clientSocket.Connect(serverBindEndpoint);
+        _clientSocket.Connect(serverBindEndpoint);
 
         Thread.Sleep(200);
     }
 
     public void Dispose()
     {
-        clientSocket!.Close();
-        serverSocket!.Close();
+        _clientSocket!.Close();
+        _serverSocket!.Close();
     }
 
     [Fact]
-    public void Send_Emtpy_Frame()
+    public void Send_Empty_Frame()
     {
         var sendRoutePacket = RoutePacket.Of(RouteHeader.Of(new HeaderMsg()), new EmptyPayload());
-        clientSocket!.Send(serverBindEndpoint, sendRoutePacket);
+        _clientSocket!.Send(ServerNid, sendRoutePacket);
 
         RoutePacket? recvPacket = null;
         while (recvPacket != null)
         {
-            recvPacket = serverSocket!.Receive();
+            recvPacket = _serverSocket!.Receive();
         }
     }
 
@@ -81,18 +81,18 @@ public class NetMQPlaySocketTests : IDisposable
         var sendRoutePacket = RoutePacket.Of(routeHeader, new ProtoPayload(message));
 
 
-        clientSocket!.Send(serverBindEndpoint, sendRoutePacket);
+        _clientSocket!.Send(ServerNid, sendRoutePacket);
 
         RoutePacket? receiveRoutePacket = null;
         while (receiveRoutePacket == null)
         {
-            receiveRoutePacket = serverSocket!.Receive();
+            receiveRoutePacket = _serverSocket!.Receive();
             Thread.Sleep(10);
         }
 
 
         receiveRoutePacket.RouteHeader.Header.ToMsg().Should().Be(header);
-        receiveRoutePacket.RouteHeader.From.Should().Be(clientBindEndpoint);
+        receiveRoutePacket.RouteHeader.From.Should().Be(ClientNid);
 
         var receiveBody = TestMsg.Parser.ParseFrom(receiveRoutePacket.Span);
 

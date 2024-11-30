@@ -3,7 +3,6 @@ using PlayHouse.Communicator.Message;
 using PlayHouse.Communicator.PlaySocket;
 using PlayHouse.Production.Shared;
 using Playhouse.Protocol;
-using PlayHouse.Service.Session.Network;
 using PlayHouse.Service.Shared;
 using PlayHouse.Utils;
 
@@ -11,32 +10,33 @@ namespace PlayHouse.Communicator;
 
 public class CommunicatorOption
 {
-    private CommunicatorOption(
+    public CommunicatorOption(
         string bindEndpoint,
         IServiceProvider serviceProvider,
         bool showQps,
-        int nodeId,
+        int nid,
         Func<string, IPayload, ushort, IPacket> packetProducer
     )
     {
         BindEndpoint = bindEndpoint;
         ShowQps = showQps;
-        NodeId = nodeId;
+        Nid = nid;
         ServiceProvider = serviceProvider;
         PacketProducer = packetProducer;
     }
 
     public string BindEndpoint { get; }
     public bool ShowQps { get; }
-    public int NodeId { get; }
+    public int Nid { get; }
     public IServiceProvider ServiceProvider { get; }
     public Func<string, IPayload, ushort, IPacket>? PacketProducer { get; }
 
 
     public class Builder
     {
-        private string _Ip = string.Empty;
-        private int _nodeId;
+        private string _identify = string.Empty;
+        private string _ip = string.Empty;
+        private int _nid;
         private Func<string, IPayload, ushort, IPacket>? _packetProducer;
         private int _port;
         private IServiceProvider? _serviceProvider;
@@ -44,7 +44,7 @@ public class CommunicatorOption
 
         public Builder SetIp(string ip)
         {
-            _Ip = ip;
+            _ip = ip;
             return this;
         }
 
@@ -61,6 +61,12 @@ public class CommunicatorOption
             return this;
         }
 
+        public Builder SetIdentify(string identify)
+        {
+            _identify = identify;
+            return this;
+        }
+
         public Builder SetServiceProvider(IServiceProvider? serviceProvider)
         {
             _serviceProvider = serviceProvider;
@@ -71,9 +77,9 @@ public class CommunicatorOption
         public CommunicatorOption Build()
         {
             var localIp = IpFinder.FindLocalIp();
-            if (_Ip != string.Empty)
+            if (_ip != string.Empty)
             {
-                localIp = _Ip;
+                localIp = _ip;
             }
 
 
@@ -93,20 +99,20 @@ public class CommunicatorOption
                 bindEndpoint,
                 _serviceProvider!,
                 _showQps,
-                _nodeId,
+                _nid,
                 _packetProducer
             );
         }
 
-        public Builder SetNodeId(int nodeId)
+        public Builder SetNid(int nid)
         {
-            if (nodeId >= 0 && nodeId < 4096)
+            if (nid >= 1 && nid < 4096)
             {
-                _nodeId = nodeId;
+                _nid = nid;
             }
             else
             {
-                throw new Exception("invalid nodeId , ");
+                throw new Exception($"invalid nid (nid should be 1 ~ 4095 ) - [nid:{nid}] ");
             }
 
             return this;
@@ -140,6 +146,7 @@ internal class Communicator : ICommunicateListener
 
     public Communicator(
         CommunicatorOption option,
+        PlaySocketConfig config,
         RequestCache requestCache,
         XServerInfoCenter serverInfoCenter,
         IService service,
@@ -154,11 +161,11 @@ internal class Communicator : ICommunicateListener
         _serviceId = _service.ServiceId;
 
         _serverCommunicator =
-            new XServerCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(), _option.BindEndpoint));
+            new XServerCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(option.Nid,option.BindEndpoint, config)));
         _performanceTester = new PerformanceTester(_option.ShowQps);
         _messageLoop = new MessageLoop(_serverCommunicator, _clientCommunicator);
         _sender = new XSender(_serviceId, _clientCommunicator, _requestCache);
-        _systemPanel = new XSystemPanel(_serverInfoCenter, _clientCommunicator, _option.NodeId, _option.BindEndpoint);
+        _systemPanel = new XSystemPanel(_serverInfoCenter, _clientCommunicator, _option.Nid);
 
         var systemController = _option.ServiceProvider.GetRequiredService<ISystemController>();
 

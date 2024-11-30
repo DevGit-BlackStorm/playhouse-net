@@ -4,65 +4,58 @@ using Playhouse.Protocol;
 
 namespace PlayHouse.Communicator;
 
-internal class XServerInfo : IServerInfo
+internal class XServerInfo(
+    string bindEndpoint,
+    int nid,
+    ServiceType serviceType,
+    ushort serviceId,
+    ServerState serverState,
+    int actorCount,
+    long lastUpdate)
+    : IServerInfo
 {
-    private readonly string _bindEndpoint = string.Empty;
-    private readonly ushort _serviceId;
-    private readonly ServiceType _serviceType;
-    private int _actorCount;
-    private long _lastUpdate;
-    private ServerState _serverState;
-
-    public XServerInfo(
-        string bindEndpoint,
-        ServiceType serviceType,
-        ushort serviceId,
-        ServerState state,
-        int actorCount,
-        long lastUpdate)
-    {
-        _bindEndpoint = bindEndpoint;
-        _serviceType = serviceType;
-        _serviceId = serviceId;
-        _serverState = state;
-        _actorCount = actorCount;
-        _lastUpdate = lastUpdate;
-    }
+    private int _nid = nid;
 
     public string GetBindEndpoint()
     {
-        return _bindEndpoint;
+        return bindEndpoint;
+    }
+
+    public int GetNid()
+    {
+        return _nid;
     }
 
     public ServiceType GetServiceType()
     {
-        return _serviceType;
+        return serviceType;
     }
 
     public ushort GetServiceId()
     {
-        return _serviceId;
+        return serviceId;
     }
 
     public ServerState GetState()
     {
-        return _serverState;
+        return serverState;
     }
 
     public long GetLastUpdate()
     {
-        return _lastUpdate;
+        return lastUpdate;
     }
 
     public int GetActorCount()
     {
-        return _actorCount;
+        return actorCount;
     }
 
     public static XServerInfo Of(string bindEndpoint, IService service)
     {
         return new XServerInfo(
             bindEndpoint,
+            service.Nid,
             service.GetServiceType(),
             service.ServiceId,
             service.GetServerState(),
@@ -75,6 +68,7 @@ internal class XServerInfo : IServerInfo
     {
         return new XServerInfo(
             infoMsg.Endpoint,
+            infoMsg.Nid,
             Enum.Parse<ServiceType>(infoMsg.ServiceType),
             (ushort)infoMsg.ServiceId,
             Enum.Parse<ServerState>(infoMsg.ServerState),
@@ -85,6 +79,7 @@ internal class XServerInfo : IServerInfo
 
     public static XServerInfo Of(
         string bindEndpoint,
+        int nid,
         ServiceType serviceType,
         ushort serviceId,
         ServerState state,
@@ -93,6 +88,7 @@ internal class XServerInfo : IServerInfo
     {
         return new XServerInfo(
             bindEndpoint,
+            nid,
             serviceType,
             serviceId,
             state,
@@ -104,6 +100,7 @@ internal class XServerInfo : IServerInfo
     {
         return new XServerInfo(
             serverInfo.GetBindEndpoint(),
+            serverInfo.GetNid(),
             serverInfo.GetServiceType(),
             serverInfo.GetServiceId(),
             serverInfo.GetState(),
@@ -115,36 +112,36 @@ internal class XServerInfo : IServerInfo
     {
         return new ServerInfoMsg
         {
-            ServiceType = _serviceType.ToString(),
-            ServiceId = _serviceId,
-            Endpoint = _bindEndpoint,
-            ServerState = _serverState.ToString(),
-            Timestamp = _lastUpdate,
-            ActorCount = _actorCount
+            ServiceType = serviceType.ToString(),
+            ServiceId = serviceId,
+            Endpoint = bindEndpoint,
+            ServerState = serverState.ToString(),
+            Timestamp = lastUpdate,
+            ActorCount = actorCount
         };
     }
 
     public bool TimeOver()
     {
-        return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - _lastUpdate > 60000;
+        return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - lastUpdate > 60000;
     }
 
-    public bool Update(XServerInfo serverInfo)
+    public void Update(XServerInfo serverInfo)
     {
-        var stateChanged = GetState != serverInfo.GetState;
+        //var stateChanged = GetState != serverInfo.GetState;
 
-        _serverState = serverInfo.GetState();
+        serverState = serverInfo.GetState();
 
-        _lastUpdate = serverInfo.GetLastUpdate();
+        lastUpdate = serverInfo.GetLastUpdate();
 
-        _actorCount = serverInfo.GetActorCount();
+        actorCount = serverInfo.GetActorCount();
 
-        return stateChanged;
+        _nid = serverInfo._nid;
     }
 
     public bool IsValid()
     {
-        return _serverState == ServerState.RUNNING ;
+        return serverState == ServerState.RUNNING ;
     }
 
     public byte[] ToByteArray()
@@ -156,7 +153,7 @@ internal class XServerInfo : IServerInfo
     {
         if (TimeOver())
         {
-            _serverState = ServerState.DISABLE;
+            serverState = ServerState.DISABLE;
             return true;
         }
 
@@ -172,11 +169,11 @@ internal class XServerInfo : IServerInfo
 
     internal void SetState(ServerState state)
     {
-        _serverState = state;
+        serverState = state;
     }
 
     internal void SetLastUpdate(long updatTime)
     {
-        _lastUpdate = updatTime;
+        lastUpdate = updatTime;
     }
 }

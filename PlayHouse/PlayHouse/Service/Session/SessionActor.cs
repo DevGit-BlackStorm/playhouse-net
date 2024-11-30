@@ -10,9 +10,9 @@ using PlayHouse.Service.Shared;
 using PlayHouse.Utils;
 
 namespace PlayHouse.Service.Session;
-internal class TargetAddress(string endpoint, long stageId)
+internal class TargetAddress(int nid, long stageId)
 {
-    public string Endpoint { get; } = endpoint;
+    public int Nid { get; } = nid;
     public long StageId { get; } = stageId;
 }
 
@@ -50,7 +50,7 @@ internal class SessionActor
     private readonly HashSet<string> _signInUrIs = new();
     private readonly TargetServiceCache _targetServiceCache;
     private ushort _authenticateServiceId;
-    private string _authServerEndpoint = "";
+    private int _authServerNid;
     private bool _debugMode;
     private readonly Stopwatch _lastUpdateTime = new();
     private readonly string _remoteIp;
@@ -87,32 +87,32 @@ internal class SessionActor
     internal long Sid { get; }
 
 
-    private void Authenticate(ushort serviceId, string apiEndpoint, long accountId)
+    private void Authenticate(ushort serviceId, int apiNid, long accountId)
     {
         AccountId = accountId;
         IsAuthenticated = true;
         _authenticateServiceId = serviceId;
-        _authServerEndpoint = apiEndpoint;
+        _authServerNid = apiNid;
 
         _lastUpdateTime.Start();
     }
 
-    private void UpdateStageInfo(string playEndpoint, long stageId)
+    private void UpdateStageInfo(int playNid, long stageId)
     {
-        _playEndpoints[stageId] = new TargetAddress(playEndpoint, stageId);
+        _playEndpoints[stageId] = new TargetAddress(playNid, stageId);
     }
 
     public void Disconnect()
     {
         if (IsAuthenticated)
         {
-            var serverInfo = FindSuitableServer(_authenticateServiceId, _authServerEndpoint);
+            var serverInfo = FindSuitableServer(_authenticateServiceId, _authServerNid);
             var disconnectPacket = RoutePacket.Of(new DisconnectNoticeMsg());
-            _sessionSender.SendToBaseApi(serverInfo.GetBindEndpoint(), Sid,AccountId, disconnectPacket);
+            _sessionSender.SendToBaseApi(serverInfo.GetNid(), Sid,AccountId, disconnectPacket);
             foreach (var targetId in _playEndpoints.Values)
             {
-                IServerInfo targetServer = _serviceInfoCenter.FindServer(targetId.Endpoint);
-                _sessionSender.SendToBaseStage(targetServer.GetBindEndpoint(), Sid,targetId.StageId, AccountId,
+                IServerInfo targetServer = _serviceInfoCenter.FindServer(targetId.Nid);
+                _sessionSender.SendToBaseStage(targetServer.GetNid(), Sid,targetId.StageId, AccountId,
                     disconnectPacket);
             }
         }
@@ -170,9 +170,9 @@ internal class SessionActor
         }
     }
 
-    private IServerInfo FindSuitableServer(ushort serviceId, string endpoint)
+    private IServerInfo FindSuitableServer(ushort serviceId, int nid)
     {
-        IServerInfo serverInfo = _serviceInfoCenter.FindServer(endpoint);
+        IServerInfo serverInfo = _serviceInfoCenter.FindServer(nid);
         if (serverInfo.GetState() != ServerState.RUNNING)
         {
             serverInfo = _serviceInfoCenter.FindServerByAccountId(serviceId, AccountId);
@@ -185,21 +185,21 @@ internal class SessionActor
     {
         var type = _targetServiceCache.FindTypeBy(serviceId);
 
-        IServerInfo? serverInfo = null;
+        IServerInfo? serverInfo;
 
         switch (type)
         {
             case ServiceType.API:
-                if (string.IsNullOrEmpty(_authServerEndpoint))
+                if (_authServerNid == 0)
                 {
                     serverInfo = _serviceInfoCenter.FindRoundRobinServer(serviceId);
                 }
                 else
                 {
-                    serverInfo = FindSuitableServer(serviceId, _authServerEndpoint);
+                    serverInfo = FindSuitableServer(serviceId, _authServerNid);
                 }
 
-                _sessionSender.RelayToApi(serverInfo.GetBindEndpoint(), Sid, AccountId, clientPacket);
+                _sessionSender.RelayToApi(serverInfo.GetNid(), Sid, AccountId, clientPacket);
                 break;
 
             case ServiceType.Play:
@@ -210,8 +210,8 @@ internal class SessionActor
                 }
                 else
                 {
-                    serverInfo = _serviceInfoCenter.FindServer(targetId.Endpoint);
-                    _sessionSender.RelayToStage(serverInfo.GetBindEndpoint(), targetId.StageId, Sid, AccountId,
+                    serverInfo = _serviceInfoCenter.FindServer(targetId.Nid);
+                    _sessionSender.RelayToStage(serverInfo.GetNid(), targetId.StageId, Sid, AccountId,
                         clientPacket);
                 }
 
@@ -264,8 +264,8 @@ internal class SessionActor
             if (msgId == AuthenticateMsgReq.Descriptor.Name)
             {
                 var authenticateMsg = AuthenticateMsgReq.Parser.ParseFrom(packet.Span);
-                var apiEndpoint = authenticateMsg.ApiEndpoint;
-                Authenticate((ushort)authenticateMsg.ServiceId, apiEndpoint, authenticateMsg.AccountId);
+                var apiNid = authenticateMsg.ApiNid;
+                Authenticate((ushort)authenticateMsg.ServiceId, apiNid, authenticateMsg.AccountId);
                 _sessionSender.Reply(XPacket.Of(new AuthenticateMsgRes()));
 
                 _log.Debug(() => $"session authenticated - [accountId:{AccountId.ToString():accountId}]");
@@ -278,7 +278,7 @@ internal class SessionActor
             else if (msgId == JoinStageInfoUpdateReq.Descriptor.Name)
             {
                 var joinStageMsg = JoinStageInfoUpdateReq.Parser.ParseFrom(packet.Span);
-                var playEndpoint = joinStageMsg.PlayEndpoint;
+                var playEndpoint = joinStageMsg.PlayNid;
                 var stageId = joinStageMsg.StageId;
                 UpdateStageInfo(playEndpoint, stageId);
 

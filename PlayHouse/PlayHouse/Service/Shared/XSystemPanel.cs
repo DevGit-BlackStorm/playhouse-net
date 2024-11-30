@@ -6,12 +6,11 @@ namespace PlayHouse.Service.Shared;
 internal class XSystemPanel(
     IServerInfoCenter serverInfoCenter,
     IClientCommunicator clientCommunicator,
-    int NodeId,
-    string bindEndpoint)
+    int nid)
     : ISystemPanel
 {
     private readonly IClientCommunicator _clientCommunicator = clientCommunicator;
-    private readonly UniqueIdGenerator _uniqueIdGenerator = new(NodeId);
+    private readonly UniqueIdGenerator _uniqueIdGenerator = new(nid);
 
     public Communicator.Communicator? Communicator { get; set; }
 
@@ -25,9 +24,9 @@ internal class XSystemPanel(
         return serverInfoCenter.FindServerByAccountId(serviceId, accountId);
     }
 
-    public IServerInfo GetServerInfoByEndpoint(string endpoint)
+    public IServerInfo GetServerInfoByEndpoint(int nid)
     {
-        return serverInfoCenter.FindServer(endpoint);
+        return serverInfoCenter.FindServer(nid);
     }
 
     public IList<IServerInfo> GetServers()
@@ -62,6 +61,6 @@ internal class XSystemPanel(
 
     public IServerInfo GetServerInfo()
     {
-        return serverInfoCenter.FindServer(bindEndpoint);
+        return serverInfoCenter.FindServer(nid);
     }
 }

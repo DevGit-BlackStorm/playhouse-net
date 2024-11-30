@@ -1,4 +1,5 @@
 ﻿using PlayHouse.Communicator.Message;
+using PlayHouse.Communicator.PlaySocket;
 
 namespace PlayHouse.Production.Shared;
 
@@ -11,9 +12,9 @@ public class PlayhouseOption
     public IServiceProvider? ServiceProvider { get; set; }
     public int RequestTimeoutSec { get; set; } = 5;
     public bool ShowQps { get; set; }
-    public int NodeId { get; set; } // 0~ 4096
-
+    public int Nid { get; set; } // 1~ 4095
     public bool DebugMode { get; set; }
 
+    public PlaySocketConfig PlaySocketConfig { get; set; } = new();
     public Func<string, IPayload, ushort, IPacket>? PacketProducer { get; set; }
 }

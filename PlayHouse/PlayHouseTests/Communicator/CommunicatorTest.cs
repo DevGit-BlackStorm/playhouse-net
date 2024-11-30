@@ -22,6 +22,8 @@ internal class TestListener : ICommunicateListener
 [Collection("ZSocketCommunicateTest")]
 public class CommunicatorTest
 {
+    private const int SessionNid = 1;
+    private const int ApiNid = 2;
     public CommunicatorTest()
     {
         PooledBuffer.Init();
@@ -34,16 +36,17 @@ public class CommunicatorTest
 
         var sessionPort = IpFinder.FindFreePort();
         var sessionEndpoint = $"tcp://{localIp}:{sessionPort}";
-        var sessionServer = new XServerCommunicator(new NetMqPlaySocket(new SocketConfig(), sessionEndpoint));
-        var sessionClient = new XClientCommunicator(new NetMqPlaySocket(new SocketConfig(), sessionEndpoint));
+
+        var sessionServer = new XServerCommunicator(new NetMqPlaySocket(new SocketConfig(SessionNid, sessionEndpoint, new PlaySocketConfig())));
+        var sessionClient = new XClientCommunicator(new NetMqPlaySocket(new SocketConfig(SessionNid, sessionEndpoint, new PlaySocketConfig())));
 
         var sessionListener = new TestListener();
         sessionServer.Bind(sessionListener);
 
         var apiPort = IpFinder.FindFreePort();
         var apiEndpoint = $"tcp://{localIp}:{apiPort}";
-        var apiServer = new XServerCommunicator(new NetMqPlaySocket(new SocketConfig(), apiEndpoint));
-        var apiClient = new XClientCommunicator(new NetMqPlaySocket(new SocketConfig(), apiEndpoint));
+        var apiServer = new XServerCommunicator(new NetMqPlaySocket(new SocketConfig(ApiNid, apiEndpoint, new PlaySocketConfig())));
+        var apiClient = new XClientCommunicator(new NetMqPlaySocket(new SocketConfig(ApiNid, apiEndpoint, new PlaySocketConfig())));
 
         var apiListener = new TestListener();
         apiServer.Bind(apiListener);
@@ -69,7 +72,7 @@ public class CommunicatorTest
         Thread.Sleep(100);
 
         var message = new HeaderMsg();
-        sessionClient.Send(apiEndpoint, RoutePacket.ClientOf((ushort)ServiceType.SESSION, 0, new TestPacket(message)));
+        sessionClient.Send(ApiNid, RoutePacket.ClientOf((ushort)ServiceType.SESSION, 0, new TestPacket(message)));
 
         Thread.Sleep(200);
 
@@ -85,7 +88,7 @@ public class CommunicatorTest
 
         //string messageId = "TestMsgId";
         var messageId = TestMsg.Descriptor.Name;
-        apiClient.Send(sessionEndpoint, RoutePacket.ClientOf((ushort)ServiceType.API, 0, new TestPacket(messageId)));
+        apiClient.Send(SessionNid, RoutePacket.ClientOf((ushort)ServiceType.API, 0, new TestPacket(messageId)));
 
         Thread.Sleep(200);
 
