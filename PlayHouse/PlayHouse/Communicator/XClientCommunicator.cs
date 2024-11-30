@@ -45,17 +45,18 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
 
         try
         {
-            playSocket.Disconnect(endpoint);
-            _log.Info(() => $"disconnected with {endpoint}");
+            if (_connected.Contains(endpoint))
+            {
+                playSocket.Disconnect(endpoint);
+                _log.Info(() => $"disconnected with {endpoint}");
+                _connected.Remove(endpoint);
+                _disconnected.Add(endpoint);
+            }
+            
         }
         catch (Exception ex)
         {
             _log.Error(() => $"disconnect error - endpoint:{endpoint}, error:{ex.Message}");
-        }
-        finally
-        {
-            _connected.Remove(endpoint);
-            _disconnected.Add(endpoint);
         }
 
         //_queue.Enqueue(() =>
