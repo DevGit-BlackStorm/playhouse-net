@@ -24,7 +24,7 @@ internal class XSystemPanel(
         return serverInfoCenter.FindServerByAccountId(serviceId, accountId);
     }
 
-    public IServerInfo GetServerInfoByEndpoint(int nid)
+    public IServerInfo GetServerInfoByNid(int nid)
     {
         return serverInfoCenter.FindServer(nid);
     }
