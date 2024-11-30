@@ -5,19 +5,19 @@ namespace PlayHouse.Service.Play;
 
 internal class XActorSender(
     long accountId,
-    string sessionEndpoint,
+    int sessionNid,
     long sid,
-    string endpoint,
+    int endpoint,
     BaseStage baseStage,
     IServerInfoCenter serverInfoCenter)
     : IActorSender
 {
-    public string SessionEndpoint()
+    public int SessionNid()
     {
-        return sessionEndpoint;
+        return sessionNid;
     }
 
-    public string ApiEndpoint()
+    public int ApiNid()
     {
         return endpoint;
     }
@@ -34,12 +34,12 @@ internal class XActorSender(
 
     public void LeaveStage()
     {
-        baseStage.LeaveStage(accountId, sessionEndpoint, sid);
+        baseStage.LeaveStage(accountId, sessionNid, sid);
     }
 
     public void SendToClient(IPacket packet)
     {
-        baseStage.StageSender.SendToClient(sessionEndpoint, sid, packet);
+        baseStage.StageSender.SendToClient(sessionNid, sid, packet);
     }
 
     public void SendToApi(IPacket packet)
@@ -50,7 +50,7 @@ internal class XActorSender(
             serverInfo = serverInfoCenter.FindServerByAccountId(serverInfo.GetServiceId(), accountId);
         }
 
-        baseStage.StageSender.SendToApi(serverInfo.GetBindEndpoint(), accountId, packet);
+        baseStage.StageSender.SendToApi(serverInfo.GetNid(), accountId, packet);
     }
 
     public async Task<IPacket> RequestToApi(IPacket packet)
@@ -61,7 +61,7 @@ internal class XActorSender(
             serverInfo = serverInfoCenter.FindServerByAccountId(serverInfo.GetServiceId(), accountId);
         }
 
-        return await baseStage.StageSender.RequestToApi(serverInfo.GetBindEndpoint(), accountId, packet);
+        return await baseStage.StageSender.RequestToApi(serverInfo.GetNid(), accountId, packet);
     }
 
     public async Task<IPacket> AsyncToApi(IPacket packet)
@@ -72,13 +72,13 @@ internal class XActorSender(
             serverInfo = serverInfoCenter.FindServerByAccountId(serverInfo.GetServiceId(), accountId);
         }
 
-        return await baseStage.StageSender.AsyncToApi(serverInfo.GetBindEndpoint(), accountId, packet);
+        return await baseStage.StageSender.AsyncToApi(serverInfo.GetNid(), accountId, packet);
     }
 
-    public void Update(string sessionEndpoint1, long sid1, string apiEndpoint)
+    public void Update(int sessionNetworkId, long sid1, int apiNid)
     {
-        sessionEndpoint = sessionEndpoint1;
+        sessionNid = sessionNetworkId;
         sid = sid1;
-        endpoint = apiEndpoint;
+        endpoint = apiNid;
     }
 }

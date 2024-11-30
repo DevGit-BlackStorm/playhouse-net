@@ -31,7 +31,7 @@ internal class XServerCommunicator(IPlaySocket playSocket) : IServerCommunicator
                 }
                 catch (Exception e)
                 {
-                    _log.Error(() => $"{playSocket.Id()} Error during communication - {e.Message}");
+                    _log.Error(() => $"{playSocket.EndPoint()} Error during communication - {e.Message}");
                 }
 
                 packet = playSocket.Receive();

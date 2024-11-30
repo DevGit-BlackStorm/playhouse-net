@@ -5,7 +5,7 @@ public interface ISystemPanel
     IServerInfo GetServerInfo();
     IServerInfo GetServerInfoBy(ushort serviceId);
     IServerInfo GetServerInfoBy(ushort serviceId, long accountId);
-    IServerInfo GetServerInfoByEndpoint(string endpoint);
+    IServerInfo GetServerInfoByEndpoint(int nid);
     IList<IServerInfo> GetServers();
     void Pause();
     void Resume();

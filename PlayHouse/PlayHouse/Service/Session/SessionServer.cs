@@ -1,4 +1,5 @@
 ﻿using CommonLib;
+using Google.Protobuf.WellKnownTypes;
 using PlayHouse.Communicator;
 using PlayHouse.Communicator.PlaySocket;
 using PlayHouse.Production.Session;
@@ -9,9 +10,7 @@ namespace PlayHouse.Service.Session;
 
 public class SessionServer : IServer
 {
-    private readonly PlayhouseOption _commonOption;
     private readonly Communicator.Communicator _communicator;
-    private readonly SessionOption _sessionOption;
 
     public SessionServer(PlayhouseOption commonOption, SessionOption sessionOption)
     {
@@ -20,41 +19,41 @@ public class SessionServer : IServer
             commonOption.PacketProducer = (msgId, payload, msgSeq) => new EmptyPacket();
         }
 
-        _commonOption = commonOption;
-        _sessionOption = sessionOption;
 
         var communicatorOption = new CommunicatorOption.Builder()
-            .SetIp(_commonOption.Ip)
-            .SetPort(_commonOption.Port)
-            .SetServiceProvider(_commonOption.ServiceProvider)
-            .SetShowQps(_commonOption.ShowQps)
-            .SetNodeId(_commonOption.NodeId)
-            .SetPacketProducer(_commonOption.PacketProducer)
+            .SetIp(commonOption.Ip)
+            .SetPort(commonOption.Port)
+            .SetServiceProvider(commonOption.ServiceProvider)
+            .SetShowQps(commonOption.ShowQps)
+            .SetNid(commonOption.Nid)
+            .SetPacketProducer(commonOption.PacketProducer)
             .Build();
 
-        PooledBuffer.Init(_commonOption.MaxBufferPoolSize);
+        PooledBuffer.Init(commonOption.MaxBufferPoolSize);
 
+        var nid = communicatorOption.Nid;
         var bindEndpoint = communicatorOption.BindEndpoint;
-        var serviceId = _commonOption.ServiceId;
-
+        var serviceId = commonOption.ServiceId;
+        var playSocketOption = commonOption.PlaySocketConfig;
         var communicateClient =
-            new XClientCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(), bindEndpoint));
-
-        var requestCache = new RequestCache(_commonOption.RequestTimeoutSec);
+        new XClientCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(nid, bindEndpoint, commonOption.PlaySocketConfig)));
+        var requestCache = new RequestCache(commonOption.RequestTimeoutSec);
 
         var serverInfoCenter = new XServerInfoCenter(commonOption.DebugMode);
 
         var sessionService = new SessionService(
             serviceId,
-            _sessionOption,
+            nid,
+            sessionOption,
             serverInfoCenter,
             communicateClient,
             requestCache,
-            _commonOption.ShowQps
+            commonOption.ShowQps
         );
 
         _communicator = new Communicator.Communicator(
             communicatorOption,
+            playSocketOption,
             requestCache,
             serverInfoCenter,
             sessionService,

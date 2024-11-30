@@ -18,90 +18,116 @@ internal class XServerInfoCenter(bool debugMode) : IServerInfoCenter
     {
         if (serverList.Count == 0)
         {
-            return Volatile.Read(ref _serverInfoList);
+            return _serverInfoList;
         }
 
-        foreach (var xServerInfo in serverList)
+        // 기존 리스트를 복사 (수정 가능한 List로 변환)
+        var currentList = _serverInfoList.ToList();
+
+        foreach (var incomingServer in serverList)
         {
-            if (!debugMode)
+            // 기존 서버 정보와 동일한 Endpoint를 가진 서버 검색
+            var existingServer = currentList.FirstOrDefault(x => x.GetBindEndpoint() == incomingServer.GetBindEndpoint());
+
+            if (existingServer != null)
             {
-                xServerInfo.CheckTimeout();
+                // 기존 서버 정보 업데이트
+                existingServer.Update(incomingServer);
+            }
+            else
+            {
+                // 새 서버 추가
+                currentList.Add(incomingServer);
             }
         }
 
-        var newList = serverList.OrderBy(x => x.GetBindEndpoint()).ToImmutableList();
+        if (!debugMode)
+        {
+            foreach (var server in currentList)
+            {
+                server.CheckTimeout();
+            }
+        }
 
-        // Volatile.Write를 사용하여 원자적으로 리스트 교체
-        Volatile.Write(ref _serverInfoList, newList);
+        // 정렬 후 ImmutableList로 변환
+        var newList = currentList.OrderBy(x => x.GetBindEndpoint()).ToImmutableList();
 
-        return Volatile.Read(ref _serverInfoList);
+        // 기존 리스트를 원자적으로 교체
+        _serverInfoList = newList;
+
+        return _serverInfoList;
     }
 
-    public XServerInfo FindServer(string endpoint)
+
+
+    public XServerInfo FindServer(int nid)
     {
-        var serverInfo = Volatile.Read(ref _serverInfoList)
-            .FirstOrDefault(e => e.IsValid() && e.GetBindEndpoint() == endpoint);
+        // 최신 _serverInfoList를 직접 읽어 사용
+        var serverInfo = _serverInfoList
+            .FirstOrDefault(e => e.IsValid() && e.GetNid() == nid);
 
         if (serverInfo == null)
         {
-            throw new CommunicatorException.NotExistServerInfo($"target endpoint:{endpoint} , ServerInfo is not exist");
+            throw new CommunicatorException.NotExistServerInfo($"target nid:{nid}, ServerInfo is not exist");
         }
-        
+
         return serverInfo;
     }
 
     public XServerInfo FindRoundRobinServer(ushort serviceId)
     {
-        var list = Volatile.Read(ref _serverInfoList)
+        // 최신 _serverInfoList를 직접 읽어 사용
+        var list = _serverInfoList
             .Where(x => x.IsValid() && x.GetServiceId() == serviceId)
             .ToList();
 
         if (!list.Any())
         {
-            throw new CommunicatorException.NotExistServerInfo($"serviceId:{serviceId} , ServerInfo is not exist");
+            throw new CommunicatorException.NotExistServerInfo($"serviceId:{serviceId}, ServerInfo is not exist");
         }
 
+        // Round-robin 방식으로 다음 서버 선택
         var next = Interlocked.Increment(ref _offset);
-        if (next < 0)
-        {
-            next *= -1;
-        }
-
-        var index = next % list.Count;
+        var index = Math.Abs(next) % list.Count; // 음수 방지
         return list[index];
     }
 
     public IReadOnlyList<XServerInfo> GetServerList()
     {
-        return Volatile.Read(ref _serverInfoList);
+        // 최신 _serverInfoList를 직접 반환
+        return _serverInfoList;
     }
 
     public XServerInfo FindServerByAccountId(ushort serviceId, long accountId)
     {
-        var list = Volatile.Read(ref _serverInfoList)
+        // 최신 _serverInfoList를 직접 읽어 사용
+        var list = _serverInfoList
             .Where(e => e.IsValid() && e.GetServiceId() == serviceId)
             .ToList();
 
         if (list.Count == 0)
         {
-            throw new CommunicatorException.NotExistServerInfo($"serviceId:{serviceId} , ServerInfo is not exist");
+            throw new CommunicatorException.NotExistServerInfo($"serviceId:{serviceId}, ServerInfo is not exist");
         }
 
+        // Account ID를 기준으로 리스트에서 서버 선택
         var index = (int)(accountId % list.Count);
         return list[index];
     }
 
     public ServiceType FindServerType(ushort serviceId)
     {
-        var list = Volatile.Read(ref _serverInfoList)
+        // 최신 _serverInfoList를 직접 읽어 사용
+        var list = _serverInfoList
             .Where(info => info.GetServiceId() == serviceId)
             .ToList();
 
         if (list.Count == 0)
         {
-            throw new CommunicatorException.NotExistServerInfo($"serviceId:{serviceId} , ServerInfo is not exist");
+            throw new CommunicatorException.NotExistServerInfo($"serviceId:{serviceId}, ServerInfo is not exist");
         }
 
         return list.First().GetServiceType();
     }
+
 }

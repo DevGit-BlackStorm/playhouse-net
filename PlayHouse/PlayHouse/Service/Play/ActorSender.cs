@@ -5,8 +5,8 @@ namespace PlayHouse.Service.Play;
 public interface IActorSender
 {
     long AccountId();
-    string SessionEndpoint();
-    string ApiEndpoint();
+    int SessionNid();
+    int ApiNid();
     long Sid();
     void LeaveStage();
 

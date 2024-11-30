@@ -22,7 +22,7 @@ internal class PlayDispatcher : IPlayDispatcher
     private readonly IClientCommunicator _clientCommunicator;
     private readonly LOG<PlayDispatcher> _log = new();
     private readonly PlayOption _playOption;
-    private readonly string _publicEndpoint;
+    private readonly int _nid;
     private readonly RequestCache _requestCache;
     private readonly XSender _sender;
     private readonly IServerInfoCenter _serverInfoCenter;
@@ -34,14 +34,14 @@ internal class PlayDispatcher : IPlayDispatcher
         IClientCommunicator clientCommunicator,
         RequestCache requestCache,
         IServerInfoCenter serverInfoCenter,
-        string publicEndpoint,
+        int nid,
         PlayOption playOption)
     {
         _serviceId = serviceId;
         _clientCommunicator = clientCommunicator;
         _requestCache = requestCache;
         _serverInfoCenter = serverInfoCenter;
-        _publicEndpoint = publicEndpoint;
+        _nid = nid;
 
         _timerManager = new TimerManager(this);
         _sender = new XSender(serviceId, clientCommunicator, requestCache);
@@ -99,16 +99,10 @@ internal class PlayDispatcher : IPlayDispatcher
         _baseUsers.Remove(accountId, out _);
     }
 
-    private string Endpoint()
-    {
-        return _publicEndpoint;
-    }
-
-
     private BaseStage MakeBaseRoom(long stageId)
     {
         var stageSender = new XStageSender(_serviceId, stageId, this, _clientCommunicator, _requestCache);
-        var sessionUpdater = new XSessionUpdater(Endpoint(), stageSender);
+        var sessionUpdater = new XSessionUpdater(_nid, stageSender);
         var baseStage = new BaseStage(stageId, this, _clientCommunicator, _requestCache, _serverInfoCenter,
             sessionUpdater, stageSender);
         _baseRooms[stageId] = baseStage;

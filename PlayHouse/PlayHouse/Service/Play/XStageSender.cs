@@ -89,12 +89,12 @@ internal class XStageSender(
         dispatcher.OnPost(packet2);
     }
 
-    public override void SendToClient(string sessionEndpoint, long sid, IPacket packet)
+    public override void SendToClient(int sessionNid, long sid, IPacket packet)
     {
         PacketContext.AsyncCore.Add(SendTarget.Client, 0, packet);
 
         var routePacket = RoutePacket.ClientOf(ServiceId, sid, packet, StageId);
-        ClientCommunicator.Send(sessionEndpoint, routePacket);
+        ClientCommunicator.Send(sessionNid, routePacket);
     }
 
     public void AsyncBlock(AsyncPreCallback preCallback, AsyncPostCallback? postCallback = null)

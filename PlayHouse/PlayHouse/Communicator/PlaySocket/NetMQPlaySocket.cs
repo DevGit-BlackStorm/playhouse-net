@@ -11,24 +11,25 @@ namespace PlayHouse.Communicator.PlaySocket;
 internal class NetMqPlaySocket : IPlaySocket
 {
     private readonly string _bindEndpoint;
+    private readonly int _nid;
     private readonly PooledByteBuffer _buffer = new(ConstOption.MaxPacketSize);
     private readonly LOG<NetMqPlaySocket> _log = new();
     private readonly RouterSocket _socket = new();
 
-    public NetMqPlaySocket(SocketConfig socketConfig, string bindEndpoint)
+    public NetMqPlaySocket(SocketConfig socketConfig)
     {
-        _bindEndpoint = bindEndpoint;
-
-        _socket.Options.Identity = Encoding.UTF8.GetBytes(_bindEndpoint);
+        _bindEndpoint = socketConfig.BindEndpoint;
+        _nid = socketConfig.Nid;
+        _socket.Options.Identity = BitConverter.GetBytes(socketConfig.Nid);
         _socket.Options.DelayAttachOnConnect = true; // immediate
         _socket.Options.RouterHandover = true;
-        _socket.Options.Backlog = socketConfig.BackLog;
-        _socket.Options.Linger = TimeSpan.FromMilliseconds(socketConfig.Linger);
+        _socket.Options.Backlog = socketConfig.PlaySocketConfig.BackLog;
+        _socket.Options.Linger = TimeSpan.FromMilliseconds(socketConfig.PlaySocketConfig.Linger);
         _socket.Options.TcpKeepalive = true;
-        _socket.Options.SendBuffer = socketConfig.SendBufferSize;
-        _socket.Options.ReceiveBuffer = socketConfig.ReceiveBufferSize;
-        _socket.Options.ReceiveHighWatermark = socketConfig.ReceiveHighWatermark;
-        _socket.Options.SendHighWatermark = socketConfig.SendHighWatermark;
+        _socket.Options.SendBuffer = socketConfig.PlaySocketConfig.SendBufferSize;
+        _socket.Options.ReceiveBuffer = socketConfig.PlaySocketConfig.ReceiveBufferSize;
+        _socket.Options.ReceiveHighWatermark = socketConfig.PlaySocketConfig.ReceiveHighWatermark;
+        _socket.Options.SendHighWatermark = socketConfig.PlaySocketConfig.SendHighWatermark;
         _socket.Options.RouterMandatory = true;
     }
 
@@ -40,31 +41,32 @@ internal class NetMqPlaySocket : IPlaySocket
         }
 
         _socket.Bind(_bindEndpoint);
-        _log.Info(() => $"socket bind {_bindEndpoint}");
+        _log.Info(() => $"socket bind - [bindEndpoint:{_bindEndpoint},nid:{_nid}]");
     }
+
 
     public void Close()
     {
         _socket.Close();
     }
 
-    public void Connect(string endpoint)
+    public void Connect(string endPoint)
     {
         if (TestOption.IsUnitTest)
         {
             return;
         }
 
-        _socket.Connect(endpoint);
+        _socket.Connect(endPoint);
     }
 
-    public void Disconnect(string endpoint)
+    public void Disconnect(string endPoint)
     {
         if (TestOption.IsUnitTest)
         {
             return;
         }
-        _socket.Disconnect(endpoint);
+        _socket.Disconnect(endPoint);
     }
 
     public string GetBindEndpoint()
@@ -72,9 +74,14 @@ internal class NetMqPlaySocket : IPlaySocket
         return _bindEndpoint;
     }
 
-    public string Id()
+    public string EndPoint()
     {
         return _bindEndpoint;
+    }
+
+    public int Nid()
+    {
+        return _nid;
     }
 
     public RoutePacket? Receive()
@@ -88,7 +95,7 @@ internal class NetMqPlaySocket : IPlaySocket
                 return null;
             }
 
-            var target = Encoding.UTF8.GetString(message[0].Buffer);
+            var target = BitConverter.ToInt32(message[0].Buffer);
             var header = RouteHeaderMsg.Parser.ParseFrom(message[1].Buffer);
             //PooledBufferPayload payload = new(new (message[2].Buffer));
             var payload = new FramePayload(message[2]);
@@ -101,7 +108,7 @@ internal class NetMqPlaySocket : IPlaySocket
         return null;
     }
 
-    public void Send(string endpoint, RoutePacket routePacket)
+    public void Send(int nid, RoutePacket routePacket)
     {
         if (TestOption.IsUnitTest)
         {
@@ -135,7 +142,7 @@ internal class NetMqPlaySocket : IPlaySocket
                 }
             }
 
-            message.Append(new NetMQFrame(Encoding.UTF8.GetBytes(endpoint)));
+            message.Append(new NetMQFrame(BitConverter.GetBytes(nid)));
             var routerHeaderMsg = routePacket.RouteHeader.ToMsg();
 
             var headerSize = routerHeaderMsg.CalculateSize();
@@ -147,7 +154,7 @@ internal class NetMqPlaySocket : IPlaySocket
 
             if (!_socket.TrySendMultipartMessage(message))
             {
-                _log.Error(() => $"PostAsync fail to {endpoint}, MsgName:{routePacket.MsgId}");
+                _log.Error(() => $"PostAsync fail to -  [nid:{nid}, MsgName:{routePacket.MsgId}]");
             }
         }
     }

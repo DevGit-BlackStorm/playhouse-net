@@ -1,11 +1,8 @@
 ﻿namespace PlayHouse.Communicator.PlaySocket;
 
-public class SocketConfig
+public class SocketConfig(int nid,string bindEndpoint, PlaySocketConfig playSocketConfig)
 {
-    public int BackLog { get; internal set; } = 1000;
-    public int Linger { get; internal set; } = 0;
-    public int SendBufferSize { get; internal set; } = 1024 * 1024;
-    public int ReceiveBufferSize { get; internal set; } = 1024 * 1024;
-    public int SendHighWatermark { get; internal set; } = 1000000;
-    public int ReceiveHighWatermark { get; internal set; } = 1000000;
+    public PlaySocketConfig PlaySocketConfig { get; set; } = playSocketConfig;
+    public int Nid { get; internal set; } = nid;
+    public string BindEndpoint { get; internal set; } = bindEndpoint;
 }

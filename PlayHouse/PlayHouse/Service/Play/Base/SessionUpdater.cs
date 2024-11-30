@@ -5,21 +5,21 @@ namespace PlayHouse.Service.Play.Base;
 
 public interface ISessionUpdater
 {
-    public Task UpdateStageInfo(string sessionEndpoint, long sid);
+    public Task UpdateStageInfo(int sessionNid, long sid);
 }
 
-internal class XSessionUpdater(string playEndpoint, XStageSender stageSender) : ISessionUpdater
+internal class XSessionUpdater(int playEndpoint, XStageSender stageSender) : ISessionUpdater
 {
-    public async Task UpdateStageInfo(string sessionEndpoint, long sid)
+    public async Task UpdateStageInfo(int sessionNid, long sid)
     {
         var joinStageInfoUpdateReq = new JoinStageInfoUpdateReq
         {
             StageId = stageSender.StageId,
-            PlayEndpoint = playEndpoint
+            PlayNid = playEndpoint
         };
 
         using var res =
-            await stageSender.RequestToBaseSession(sessionEndpoint, sid, RoutePacket.Of(joinStageInfoUpdateReq));
+            await stageSender.RequestToBaseSession(sessionNid, sid, RoutePacket.Of(joinStageInfoUpdateReq));
         var result = JoinStageInfoUpdateRes.Parser.ParseFrom(res.Span);
         //return result.StageId;
     }

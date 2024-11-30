@@ -32,7 +32,7 @@ public class SessionClientTest : IDisposable
 
         _serviceCenter.Update(new List<XServerInfo>
         {
-            XServerInfo.Of("tcp://127.0.0.1:0021", ServiceType.API, _idApi, ServerState.RUNNING, 21,
+            XServerInfo.Of("tcp://127.0.0.1:0021",_idApi, ServiceType.API, _idApi, ServerState.RUNNING, 21,
                 DateTimeOffset.Now.ToUnixTimeMilliseconds())
         });
 
@@ -68,7 +68,7 @@ public class SessionClientTest : IDisposable
         var clientPacket = new ClientPacket(new Header(_idApi, messageId), new EmptyPayload());
         sessionClient.Dispatch(clientPacket);
 
-        Mock.Get(_clientCommunicator).Verify(c => c.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()), Times.Once());
+        Mock.Get(_clientCommunicator).Verify(c => c.Send(It.IsAny<int>(), It.IsAny<RoutePacket>()), Times.Once());
     }
 
     [Fact]

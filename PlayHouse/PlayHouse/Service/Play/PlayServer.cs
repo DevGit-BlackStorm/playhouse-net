@@ -18,25 +18,27 @@ public class PlayServer : IServer
             .SetPort(commonOption.Port)
             .SetServiceProvider(commonOption.ServiceProvider)
             .SetShowQps(commonOption.ShowQps)
-            .SetNodeId(commonOption.NodeId)
+            .SetNid(commonOption.Nid)
             .SetPacketProducer(commonOption.PacketProducer)
             .Build();
 
+        var nid = communicatorOption.Nid;
         var bindEndpoint = communicatorOption.BindEndpoint;
         var serviceId = commonOption.ServiceId;
 
         PooledBuffer.Init(commonOption.MaxBufferPoolSize);
-
+        var playSocketConfig = commonOption.PlaySocketConfig;
         var communicateClient =
-            new XClientCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(), bindEndpoint));
+            new XClientCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(nid, bindEndpoint, playSocketConfig)));
 
         var requestCache = new RequestCache(commonOption.RequestTimeoutSec);
         var serverInfoCenter = new XServerInfoCenter(commonOption.DebugMode);
-        var playService = new PlayService(serviceId, bindEndpoint, playOption, communicateClient, requestCache,
+        var playService = new PlayService(serviceId,nid, playOption, communicateClient, requestCache,
             serverInfoCenter);
 
         _communicator = new Communicator.Communicator(
             communicatorOption,
+            playSocketConfig,
             requestCache,
             serverInfoCenter,
             playService,

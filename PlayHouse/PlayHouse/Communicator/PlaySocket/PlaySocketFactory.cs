@@ -2,8 +2,8 @@
 
 internal abstract class PlaySocketFactory
 {
-    public static IPlaySocket CreatePlaySocket(SocketConfig config, string bindEndpoint)
+    public static IPlaySocket CreatePlaySocket(SocketConfig config)
     {
-        return new NetMqPlaySocket(config, bindEndpoint);
+        return new NetMqPlaySocket(config);
     }
 }

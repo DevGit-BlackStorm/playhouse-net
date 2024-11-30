@@ -18,25 +18,25 @@ public class ServerInfoCenterFuncSpecTest
         _curTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         _serverList = new List<XServerInfo>
         {
-            XServerInfo.Of("tcp://127.0.0.1:0001", ServiceType.API, (ushort)ServiceType.API, ServerState.RUNNING, 1,
+            XServerInfo.Of("tcp://127.0.0.1:0001",1, ServiceType.API, (ushort)ServiceType.API, ServerState.RUNNING, 1,
                 _curTime),
-            XServerInfo.Of("tcp://127.0.0.1:0002", ServiceType.Play, (ushort)ServiceType.Play, ServerState.RUNNING, 1,
+            XServerInfo.Of("tcp://127.0.0.1:0002",2, ServiceType.Play, (ushort)ServiceType.Play, ServerState.RUNNING, 1,
                 _curTime),
-            XServerInfo.Of("tcp://127.0.0.1:0003", ServiceType.SESSION, (ushort)ServiceType.SESSION,
+            XServerInfo.Of("tcp://127.0.0.1:0003",3, ServiceType.SESSION, (ushort)ServiceType.SESSION,
                 ServerState.RUNNING, 1, _curTime),
 
-            XServerInfo.Of("tcp://127.0.0.1:0011", ServiceType.API, (ushort)ServiceType.API, ServerState.RUNNING, 11,
+            XServerInfo.Of("tcp://127.0.0.1:0011",11, ServiceType.API, (ushort)ServiceType.API, ServerState.RUNNING, 11,
                 _curTime),
-            XServerInfo.Of("tcp://127.0.0.1:0012", ServiceType.Play, (ushort)ServiceType.Play, ServerState.RUNNING, 11,
+            XServerInfo.Of("tcp://127.0.0.1:0012",12, ServiceType.Play, (ushort)ServiceType.Play, ServerState.RUNNING, 11,
                 _curTime),
-            XServerInfo.Of("tcp://127.0.0.1:0013", ServiceType.SESSION, (ushort)ServiceType.SESSION,
+            XServerInfo.Of("tcp://127.0.0.1:0013",13, ServiceType.SESSION, (ushort)ServiceType.SESSION,
                 ServerState.RUNNING, 11, _curTime),
 
-            XServerInfo.Of("tcp://127.0.0.1:0021", ServiceType.API, (ushort)ServiceType.API, ServerState.RUNNING, 21,
+            XServerInfo.Of("tcp://127.0.0.1:0021",21, ServiceType.API, (ushort)ServiceType.API, ServerState.RUNNING, 21,
                 _curTime),
-            XServerInfo.Of("tcp://127.0.0.1:0022", ServiceType.Play, (ushort)ServiceType.Play, ServerState.RUNNING, 21,
+            XServerInfo.Of("tcp://127.0.0.1:0022",22, ServiceType.Play, (ushort)ServiceType.Play, ServerState.RUNNING, 21,
                 _curTime),
-            XServerInfo.Of("tcp://127.0.0.1:0023", ServiceType.SESSION, (ushort)ServiceType.SESSION,
+            XServerInfo.Of("tcp://127.0.0.1:0023",23, ServiceType.SESSION, (ushort)ServiceType.SESSION,
                 ServerState.RUNNING, 21, _curTime)
         };
     }
@@ -50,13 +50,13 @@ public class ServerInfoCenterFuncSpecTest
 
         var update = new List<XServerInfo>
         {
-            XServerInfo.Of("tcp://127.0.0.1:0001", ServiceType.API, (ushort)ServiceType.API, ServerState.DISABLE, 11,
+            XServerInfo.Of("tcp://127.0.0.1:0001",1, ServiceType.API, (ushort)ServiceType.API, ServerState.DISABLE, 11,
                 _curTime)
         };
 
         updatedList = _serverInfoCenter.Update(update);
 
-        updatedList.Should().HaveCount(1);
+        updatedList.Should().HaveCount(9);
     }
 
     [Fact]
@@ -66,14 +66,14 @@ public class ServerInfoCenterFuncSpecTest
 
         var update = new List<XServerInfo>
         {
-            XServerInfo.Of("tcp://127.0.0.1:0011", ServiceType.API, (ushort)ServiceType.API, ServerState.RUNNING, 1,
+            XServerInfo.Of("tcp://127.0.0.1:0011", 11,ServiceType.API, (ushort)ServiceType.API, ServerState.RUNNING, 10,
                 _curTime - 61000)
         };
 
         var updatedList = _serverInfoCenter.Update(update);
 
-        updatedList.Should().HaveCount(1);
-        updatedList[0].GetState().Should().Be(ServerState.DISABLE);
+        updatedList.Should().HaveCount(9);
+        updatedList.First(e=>e.GetBindEndpoint() == "tcp://127.0.0.1:0011").GetState().Should().Be(ServerState.DISABLE);
     }
 
     [Fact]
@@ -81,13 +81,13 @@ public class ServerInfoCenterFuncSpecTest
     {
         _serverInfoCenter.Update(_serverList);
 
-        var findServerEndpoint = "tcp://127.0.0.1:0021";
-        var serverInfo = _serverInfoCenter.FindServer(findServerEndpoint);
+        var findServerNid = 21;
+        var serverInfo = _serverInfoCenter.FindServer(findServerNid);
 
-        serverInfo.GetBindEndpoint().Should().Be(findServerEndpoint);
+        serverInfo.GetNid().Should().Be(findServerNid);
         serverInfo.GetState().Should().Be(ServerState.RUNNING);
 
-        Action act = () => _serverInfoCenter.FindServer("");
+        Action act = () => _serverInfoCenter.FindServer(0);
         act.Should().Throw<CommunicatorException.NotExistServerInfo>();
     }
 

@@ -20,11 +20,10 @@ public class ApiServer : IServer
             .SetPort(commonOption.Port)
             .SetServiceProvider(commonOption.ServiceProvider)
             .SetShowQps(commonOption.ShowQps)
-            .SetNodeId(commonOption.NodeId)
+            .SetNid(commonOption.Nid)
             .SetPacketProducer(commonOption.PacketProducer)
             .Build();
 
-        var bindEndpoint = communicatorOption.BindEndpoint;
         var serviceId = commonOption.ServiceId;
 
         PooledBuffer.Init(commonOption.MaxBufferPoolSize);
@@ -32,14 +31,19 @@ public class ApiServer : IServer
         var requestCache = new RequestCache(commonOption.RequestTimeoutSec);
         var serverInfoCenter = new XServerInfoCenter(commonOption.DebugMode);
 
-        var communicateClient =
-            new XClientCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(), bindEndpoint));
+        var nid = communicatorOption.Nid;
+        var bindEndpoint = communicatorOption.BindEndpoint;
+        var playSocketConfig = commonOption.PlaySocketConfig;
 
-        var service = new ApiService(serviceId, apiOption, requestCache, communicateClient,
+        var communicateClient =
+            new XClientCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(nid, bindEndpoint, playSocketConfig)));
+
+        var service = new ApiService(serviceId,nid, apiOption, requestCache, communicateClient,
             communicatorOption.ServiceProvider);
 
         _communicator = new Communicator.Communicator(
             communicatorOption,
+            playSocketConfig,
             requestCache,
             serverInfoCenter,
             service,

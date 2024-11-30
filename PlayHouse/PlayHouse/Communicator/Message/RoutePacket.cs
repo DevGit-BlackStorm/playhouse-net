@@ -63,7 +63,7 @@ public class RouteHeader(Header header)
     public long AccountId { get; set; }
     public long StageId { get; set; }
 
-    public string From { get; set; } = "";
+    public int From { get; set; } = 0;
 
     public bool IsToClient { get; set; }
 

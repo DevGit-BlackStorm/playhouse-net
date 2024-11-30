@@ -12,6 +12,8 @@ public enum ServerState
 public interface IServerInfo
 {
     string GetBindEndpoint();
+
+    int GetNid();
     ServiceType GetServiceType();
     ushort GetServiceId();
     ServerState GetState();

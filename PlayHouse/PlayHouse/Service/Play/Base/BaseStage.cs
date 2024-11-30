@@ -120,14 +120,14 @@ internal class BaseStage
     }
 
 
-    public async Task<(ushort errorCode, IPacket reply)> Join(long accountId, string sessionEndpoint, long sid,
-        string apiEndpoint, IPacket packet)
+    public async Task<(ushort errorCode, IPacket reply)> Join(long accountId, int sessionNid, long sid,
+        int apiNid, IPacket packet)
     {
         var baseUser = _dispatcher.FindUser(accountId);
 
         if (baseUser == null)
         {
-            var userSender = new XActorSender(accountId, sessionEndpoint, sid, apiEndpoint, this, _serverInfoCenter);
+            var userSender = new XActorSender(accountId, sessionNid, sid, apiNid, this, _serverInfoCenter);
             var user = _dispatcher.CreateContentUser(StageSender.StageType, userSender);
             baseUser = new BaseActor(user, userSender);
             await baseUser.Actor.OnCreate();
@@ -135,7 +135,7 @@ internal class BaseStage
         }
         else
         {
-            baseUser.ActorSender.Update(sessionEndpoint, sid, apiEndpoint);
+            baseUser.ActorSender.Update(sessionNid, sid, apiNid);
         }
 
         var (errorCode, reply) = await _stage!.OnJoinStage(baseUser.Actor, packet);
@@ -146,7 +146,7 @@ internal class BaseStage
         }
         else
         {
-            await _sessionUpdater.UpdateStageInfo(sessionEndpoint, sid);
+            await _sessionUpdater.UpdateStageInfo(sessionNid, sid);
         }
 
         return (errorCode, reply);
@@ -163,12 +163,14 @@ internal class BaseStage
         StageSender.Reply(packet);
     }
 
-    public void LeaveStage(long accountId, string sessionEndpoint, long sid)
+    public void LeaveStage(long accountId, int sessionNid, long sid)
     {
         _dispatcher.RemoveUser(accountId);
-        var request = new LeaveStageMsg();
-        request.StageId = _stageId;
-        StageSender.SendToBaseSession(sessionEndpoint, sid, RoutePacket.Of(request));
+        var request = new LeaveStageMsg
+        {
+            StageId = _stageId
+        };
+        StageSender.SendToBaseSession(sessionNid, sid, RoutePacket.Of(request));
     }
 
     public void CancelTimer(long timerId)

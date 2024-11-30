@@ -16,7 +16,7 @@ internal class XApiCommonSender : XSender, IApiCommonSender
 
     public long AccountId => CurrentHeader?.AccountId ?? 0;
 
-    public async Task<CreateStageResult> CreateStage(string playEndpoint, string stageType, long stageId,
+    public async Task<CreateStageResult> CreateStage(int playNid, string stageType, long stageId,
         IPacket packet)
     {
         var req = new CreateStageReq
@@ -26,7 +26,7 @@ internal class XApiCommonSender : XSender, IApiCommonSender
             Payload = ByteString.CopyFrom(packet.Payload.DataSpan)
         };
 
-        using var reply = await RequestToBaseStage(playEndpoint, stageId, 0, RoutePacket.Of(req));
+        using var reply = await RequestToBaseStage(playNid, stageId, 0, RoutePacket.Of(req));
 
         var res = CreateStageRes.Parser.ParseFrom(reply.Span);
 

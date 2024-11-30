@@ -19,19 +19,18 @@ namespace PlayHouseTests.Service.Play;
 
 public class StageTest
 {
-    private readonly string _bindEndpoint = "tcp://127.0.0.1:8777";
+    private readonly int _nid = 8777;
 
-    private readonly List<RoutePacket> _resultList = new();
+    private readonly List<RoutePacket> _resultList = [];
 
     //private readonly long _testStageId = 0;
-    private readonly string _sessionEndpoint = "tcp://127.0.0.1:5555";
+    private readonly int _sessionNid = 5555;
     private readonly string _stageType = "dungeon";
     private readonly long _accountId = 0;
     private readonly Mock<IClientCommunicator> _clientCommunicator;
     private readonly IStage _contentStage = Mock.Of<IStage>();
     private readonly BaseStage _stage;
     private readonly long _stageId = 0;
-    private readonly XStageSender _xStageSender;
 
 
     public StageTest()
@@ -55,25 +54,25 @@ public class StageTest
         //    reqCache,
         //    Mock.Of<IServerInfoCenter>()
         //);
-        var playDispacher = new PlayDispatcher(2, _clientCommunicator.Object, reqCache, serverInfoCenter, _bindEndpoint,
+        var playDispatcher = new PlayDispatcher(2, _clientCommunicator.Object, reqCache, serverInfoCenter, _nid,
             playOption);
-        playDispacher.Start();
-        _xStageSender = new XStageSender(2, _stageId, playDispacher, _clientCommunicator.Object, reqCache);
+        playDispatcher.Start();
+        var xStageSender = new XStageSender(2, _stageId, playDispatcher, _clientCommunicator.Object, reqCache);
 
-        var sessionUpdator = new Mock<ISessionUpdater>();
+        var sessionUpdater = new Mock<ISessionUpdater>();
 
-        sessionUpdator.Setup(updator => updator.UpdateStageInfo(It.IsAny<string>(), It.IsAny<int>()))
+        sessionUpdater.Setup(updater => updater.UpdateStageInfo(It.IsAny<int>(), It.IsAny<int>()))
             .Returns(Task.FromResult(1));
 
 
         _stage = new BaseStage(
             _stageId,
-            playDispacher,
+            playDispatcher,
             _clientCommunicator.Object,
             reqCache,
             serverInfoCenter,
-            sessionUpdator.Object,
-            _xStageSender
+            sessionUpdater.Object,
+            xStageSender
         );
 
         PacketProducer.Init((msgId, payload, msgSeq) => new TestPacket(msgId, payload, msgSeq));
@@ -96,8 +95,8 @@ public class StageTest
         //PacketProducer.Init((msgId, payload, msgSeq) => new TestPacket(msgId, payload, msgSeq));
 
         var result = new List<RoutePacket>();
-        _clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
-            .Callback<string, RoutePacket>((sid, packet) => result.Add(packet));
+        _clientCommunicator.Setup(x => x.Send(It.IsAny<int>(), It.IsAny<RoutePacket>()))
+            .Callback<int, RoutePacket>((sid, packet) => result.Add(packet));
 
         // when
         _stage.Post(CreateRoomPacket(_stageType));
@@ -121,8 +120,8 @@ public class StageTest
         PacketContext.AsyncCore.Init();
 
         var result = new List<RoutePacket>();
-        _clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
-            .Callback<string, RoutePacket>((sid, packet) => result.Add(packet));
+        _clientCommunicator.Setup(x => x.Send(It.IsAny<int>(), It.IsAny<RoutePacket>()))
+            .Callback<int, RoutePacket>((sid, packet) => result.Add(packet));
 
         // when
         _stage.Post(CreateRoomPacket("invalid type"));
@@ -140,8 +139,8 @@ public class StageTest
         //PacketProducer.Init((msgId, payload, msgSeq) => new TestPacket(msgId, payload, msgSeq));
 
         var result = new List<RoutePacket>();
-        _clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
-            .Callback<string, RoutePacket>((sid, packet) => result.Add(packet));
+        _clientCommunicator.Setup(x => x.Send(It.IsAny<int>(), It.IsAny<RoutePacket>()))
+            .Callback<int, RoutePacket>((sid, packet) => result.Add(packet));
 
         var createJoinRoom = CreateJoinRoomPacket(_stageType, _stageId, _accountId);
         _stage.Post(createJoinRoom);
@@ -169,8 +168,8 @@ public class StageTest
         CreateRoomWithSuccess();
 
         var result = new List<RoutePacket>();
-        _clientCommunicator.Setup(x => x.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
-            .Callback<string, RoutePacket>((sid, packet) => result.Add(packet));
+        _clientCommunicator.Setup(x => x.Send(It.IsAny<int>(), It.IsAny<RoutePacket>()))
+            .Callback<int, RoutePacket>((sid, packet) => result.Add(packet));
 
         var createJoinRoom = CreateJoinRoomPacket(_stageType, _stageId, _accountId);
         // Act
@@ -216,7 +215,7 @@ public class StageTest
     {
         var packet = RoutePacket.Of(new JoinStageReq
         {
-            SessionEndpoint = _sessionEndpoint,
+            SessionNid = _sessionNid,
             Sid = 1,
             PayloadId = "1",
             Payload = ByteString.Empty
@@ -231,7 +230,7 @@ public class StageTest
         var req = new CreateJoinStageReq
         {
             StageType = stageType,
-            SessionEndpoint = _sessionEndpoint,
+            SessionNid = _sessionNid,
             Sid = 1,
             CreatePayloadId = "1",
             CreatePayload = ByteString.Empty,
@@ -247,8 +246,8 @@ public class StageTest
     private void CreateRoomWithSuccess()
     {
         var result = new List<RoutePacket>();
-        _clientCommunicator.Setup(c => c.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()))
-            .Callback<string, RoutePacket>((sid, packet) => result.Add(packet));
+        _clientCommunicator.Setup(c => c.Send(It.IsAny<int>(), It.IsAny<RoutePacket>()))
+            .Callback<int, RoutePacket>((sid, packet) => result.Add(packet));
 
         _stage.Post(CreateRoomPacket(_stageType));
         Thread.Sleep(100);
