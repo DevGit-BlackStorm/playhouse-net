@@ -50,7 +50,7 @@ internal class SessionActor
     private readonly HashSet<string> _signInUrIs = new();
     private readonly TargetServiceCache _targetServiceCache;
     private ushort _authenticateServiceId;
-    private int _authServerNid;
+    private int _authServerNid = ServiceConst.DefaultNid;
     private bool _debugMode;
     private readonly Stopwatch _lastUpdateTime = new();
     private readonly string _remoteIp;
@@ -190,7 +190,7 @@ internal class SessionActor
         switch (type)
         {
             case ServiceType.API:
-                if (_authServerNid == 0)
+                if (_authServerNid == ServiceConst.DefaultNid)
                 {
                     serverInfo = _serviceInfoCenter.FindRoundRobinServer(serviceId);
                 }

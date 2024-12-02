@@ -15,7 +15,7 @@ internal class AllApiSender(ushort serviceId, IClientCommunicator clientCommunic
         return CurrentHeader?.From ?? 0;
     }
 
-    public int SessionNid => CurrentHeader?.From ?? 0;
+    public int SessionNid => CurrentHeader?.From ?? ServiceConst.DefaultNid;
     public long Sid => CurrentHeader?.Sid ?? 0L;
 
     public async Task AuthenticateAsync(long accountId)
