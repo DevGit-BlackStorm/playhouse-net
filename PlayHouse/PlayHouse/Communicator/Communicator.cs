@@ -8,33 +8,22 @@ using PlayHouse.Utils;
 
 namespace PlayHouse.Communicator;
 
-public class CommunicatorOption
+public class CommunicatorOption(
+    string bindEndpoint,
+    IServiceProvider serviceProvider,
+    bool showQps,
+    int nid,
+    Func<string, IPayload, ushort, IPacket> packetProducer)
 {
-    public CommunicatorOption(
-        string bindEndpoint,
-        IServiceProvider serviceProvider,
-        bool showQps,
-        int nid,
-        Func<string, IPayload, ushort, IPacket> packetProducer
-    )
-    {
-        BindEndpoint = bindEndpoint;
-        ShowQps = showQps;
-        Nid = nid;
-        ServiceProvider = serviceProvider;
-        PacketProducer = packetProducer;
-    }
-
-    public string BindEndpoint { get; }
-    public bool ShowQps { get; }
-    public int Nid { get; }
-    public IServiceProvider ServiceProvider { get; }
-    public Func<string, IPayload, ushort, IPacket>? PacketProducer { get; }
+    public string BindEndpoint { get; } = bindEndpoint;
+    public bool ShowQps { get; } = showQps;
+    public int Nid { get; } = nid;
+    public IServiceProvider ServiceProvider { get; } = serviceProvider;
+    public Func<string, IPayload, ushort, IPacket>? PacketProducer { get; } = packetProducer;
 
 
     public class Builder
     {
-        private string _identify = string.Empty;
         private string _ip = string.Empty;
         private int _nid;
         private Func<string, IPayload, ushort, IPacket>? _packetProducer;
@@ -58,12 +47,6 @@ public class CommunicatorOption
         public Builder SetShowQps(bool showQps)
         {
             _showQps = showQps;
-            return this;
-        }
-
-        public Builder SetIdentify(string identify)
-        {
-            _identify = identify;
             return this;
         }
 
@@ -106,13 +89,13 @@ public class CommunicatorOption
 
         public Builder SetNid(int nid)
         {
-            if (nid >= 1 && nid < 4096)
+            if (nid is >= 0 and < 4096)
             {
                 _nid = nid;
             }
             else
             {
-                throw new Exception($"invalid nid (nid should be 1 ~ 4095 ) - [nid:{nid}] ");
+                throw new Exception($"invalid nid (nid should be 0 ~ 4095 ) - [nid:{nid}] ");
             }
 
             return this;
@@ -136,9 +119,7 @@ internal class Communicator : ICommunicateListener
     private readonly PerformanceTester _performanceTester;
     private readonly RequestCache _requestCache;
 
-    private readonly XSender _sender;
     private readonly XServerCommunicator _serverCommunicator;
-    private readonly XServerInfoCenter _serverInfoCenter;
     private readonly IService _service;
     private readonly ushort _serviceId;
     private readonly SystemDispatcher _systemDispatcher;
@@ -155,7 +136,6 @@ internal class Communicator : ICommunicateListener
     {
         _option = option;
         _requestCache = requestCache;
-        _serverInfoCenter = serverInfoCenter;
         _service = service;
         _clientCommunicator = clientCommunicator;
         _serviceId = _service.ServiceId;
@@ -164,14 +144,14 @@ internal class Communicator : ICommunicateListener
             new XServerCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(option.Nid,option.BindEndpoint, config)));
         _performanceTester = new PerformanceTester(_option.ShowQps);
         _messageLoop = new MessageLoop(_serverCommunicator, _clientCommunicator);
-        _sender = new XSender(_serviceId, _clientCommunicator, _requestCache);
-        _systemPanel = new XSystemPanel(_serverInfoCenter, _clientCommunicator, _option.Nid);
+        var sender = new XSender(_serviceId, _clientCommunicator, _requestCache);
+        _systemPanel = new XSystemPanel(serverInfoCenter, _clientCommunicator, _option.Nid);
 
         var systemController = _option.ServiceProvider.GetRequiredService<ISystemController>();
 
         _addressResolver = new ServerAddressResolver(
             _option.BindEndpoint,
-            _serverInfoCenter,
+            serverInfoCenter,
             _clientCommunicator,
             _service,
             systemController
@@ -179,7 +159,7 @@ internal class Communicator : ICommunicateListener
         _systemDispatcher = new SystemDispatcher(_serviceId, _requestCache, _clientCommunicator, _systemPanel,
             option.ServiceProvider);
         
-        ControlContext.Init(_sender, _systemPanel);
+        ControlContext.Init(sender, _systemPanel);
         PacketProducer.Init(_option.PacketProducer!);
     }
 
