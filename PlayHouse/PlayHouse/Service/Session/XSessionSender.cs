@@ -15,7 +15,7 @@ internal class XSessionSender(
     : XSender(serviceId, clientCommunicator, reqCache), ISessionSender
 {
     private ushort _msgSeq;
-    public void RelayToStage(int playNid, long stageId, long sid, long accountId, ClientPacket packet)
+    public void RelayToStage(string playNid, long stageId, long sid, long accountId, ClientPacket packet)
     {
         var routePacket = RoutePacket.ApiOf(packet.ToRoutePacket(), false, false);
         routePacket.RouteHeader.StageId = stageId;
@@ -26,7 +26,7 @@ internal class XSessionSender(
         ClientCommunicator.Send(playNid, routePacket);
     }
 
-    public void RelayToApi(int apiNid, long sid, long accountId, ClientPacket packet)
+    public void RelayToApi(string apiNid, long sid, long accountId, ClientPacket packet)
     {
         var routePacket = RoutePacket.ApiOf(packet.ToRoutePacket(), false, false);
         routePacket.RouteHeader.Sid = sid;

@@ -16,7 +16,7 @@ internal class XApiCommonSender : XSender, IApiCommonSender
 
     public long AccountId => CurrentHeader?.AccountId ?? 0;
 
-    public async Task<CreateStageResult> CreateStage(int playNid, string stageType, long stageId,
+    public async Task<CreateStageResult> CreateStage(string playNid, string stageType, long stageId,
         IPacket packet)
     {
         var req = new CreateStageReq

@@ -3,6 +3,7 @@ using PlayHouse.Communicator;
 using PlayHouse.Communicator.PlaySocket;
 using PlayHouse.Production.Play;
 using PlayHouse.Production.Shared;
+using PlayHouse.Service.Shared;
 
 namespace PlayHouse.Service.Play;
 
@@ -18,13 +19,16 @@ public class PlayServer : IServer
             .SetPort(commonOption.Port)
             .SetServiceProvider(commonOption.ServiceProvider)
             .SetShowQps(commonOption.ShowQps)
-            .SetNid(commonOption.Nid)
+            .SetServiceId(commonOption.ServiceId)
+            .SetServerId(commonOption.ServerId)
             .SetPacketProducer(commonOption.PacketProducer)
             .Build();
 
-        var nid = communicatorOption.Nid;
+        
         var bindEndpoint = communicatorOption.BindEndpoint;
         var serviceId = commonOption.ServiceId;
+        var serverId = communicatorOption.ServerId;
+        var nid = communicatorOption.Nid; 
 
         PooledBuffer.Init(commonOption.MaxBufferPoolSize);
         var playSocketConfig = commonOption.PlaySocketConfig;
@@ -33,7 +37,7 @@ public class PlayServer : IServer
 
         var requestCache = new RequestCache(commonOption.RequestTimeoutSec);
         var serverInfoCenter = new XServerInfoCenter(commonOption.DebugMode);
-        var playService = new PlayService(serviceId,nid, playOption, communicateClient, requestCache,
+        var playService = new PlayService(serviceId,serverId,nid, playOption, communicateClient, requestCache,
             serverInfoCenter);
 
         _communicator = new Communicator.Communicator(

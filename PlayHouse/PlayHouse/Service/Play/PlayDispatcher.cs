@@ -22,7 +22,7 @@ internal class PlayDispatcher : IPlayDispatcher
     private readonly IClientCommunicator _clientCommunicator;
     private readonly LOG<PlayDispatcher> _log = new();
     private readonly PlayOption _playOption;
-    private readonly int _nid;
+    private readonly string _nid;
     private readonly RequestCache _requestCache;
     private readonly XSender _sender;
     private readonly IServerInfoCenter _serverInfoCenter;
@@ -34,7 +34,7 @@ internal class PlayDispatcher : IPlayDispatcher
         IClientCommunicator clientCommunicator,
         RequestCache requestCache,
         IServerInfoCenter serverInfoCenter,
-        int nid,
+        string nid,
         PlayOption playOption)
     {
         _serviceId = serviceId;

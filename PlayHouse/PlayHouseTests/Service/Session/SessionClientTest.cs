@@ -14,9 +14,11 @@ namespace PlayHouseTests.Service.Session;
 public class SessionClientTest : IDisposable
 {
     private readonly IClientCommunicator _clientCommunicator;
-    private readonly ushort _idApi = 2;
 
+    private readonly ushort _idApi = 2;
     private readonly ushort _idSession = 1;
+    private readonly int _serverId = 1;
+    
     private readonly RequestCache _reqCache;
     private readonly IServerInfoCenter _serviceCenter;
     private readonly ISession _session;
@@ -30,9 +32,11 @@ public class SessionClientTest : IDisposable
 
         _serviceCenter = new XServerInfoCenter(false);
 
+        var apiNid = $"{_idApi}:{_serverId}";
+
         _serviceCenter.Update(new List<XServerInfo>
         {
-            XServerInfo.Of("tcp://127.0.0.1:0021",_idApi, ServiceType.API, _idApi, ServerState.RUNNING, 21,
+            XServerInfo.Of("tcp://127.0.0.1:0021",_idApi,_serverId,apiNid, ServiceType.API,  ServerState.RUNNING, 21,
                 DateTimeOffset.Now.ToUnixTimeMilliseconds())
         });
 
@@ -68,7 +72,7 @@ public class SessionClientTest : IDisposable
         var clientPacket = new ClientPacket(new Header(_idApi, messageId), new EmptyPayload());
         sessionClient.Dispatch(clientPacket);
 
-        Mock.Get(_clientCommunicator).Verify(c => c.Send(It.IsAny<int>(), It.IsAny<RoutePacket>()), Times.Once());
+        Mock.Get(_clientCommunicator).Verify(c => c.Send(It.IsAny<string>(), It.IsAny<RoutePacket>()), Times.Once());
     }
 
     [Fact]

@@ -8,7 +8,8 @@ namespace PlayHouse.Service.Play;
 
 internal class PlayService(
     ushort serviceId,
-    int nid,
+    int serverId,
+    string nid,
     PlayOption playOption,
     IClientCommunicator clientCommunicator,
     RequestCache requestCache,
@@ -21,7 +22,8 @@ internal class PlayService(
 
     private readonly AtomicEnum<ServerState> _state = new(ServerState.DISABLE);
     public ushort ServiceId { get; } = serviceId;
-    public int Nid { get; } = nid;
+    public int ServerId { get; } = serverId;
+    public string Nid { get; } = nid;
     public void OnStart()
     {
         _state.Set(ServerState.RUNNING);

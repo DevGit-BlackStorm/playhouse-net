@@ -10,9 +10,9 @@ using PlayHouse.Service.Shared;
 using PlayHouse.Utils;
 
 namespace PlayHouse.Service.Session;
-internal class TargetAddress(int nid, long stageId)
+internal class TargetAddress(string nid, long stageId)
 {
-    public int Nid { get; } = nid;
+    public string Nid { get; } = nid;
     public long StageId { get; } = stageId;
 }
 
@@ -50,7 +50,7 @@ internal class SessionActor
     private readonly HashSet<string> _signInUrIs = new();
     private readonly TargetServiceCache _targetServiceCache;
     private ushort _authenticateServiceId;
-    private int _authServerNid = ServiceConst.DefaultNid;
+    private string _authServerNid = ServiceConst.DefaultNid;
     private bool _debugMode;
     private readonly Stopwatch _lastUpdateTime = new();
     private readonly string _remoteIp;
@@ -87,7 +87,7 @@ internal class SessionActor
     internal long Sid { get; }
 
 
-    private void Authenticate(ushort serviceId, int apiNid, long accountId)
+    private void Authenticate(ushort serviceId, string apiNid, long accountId)
     {
         AccountId = accountId;
         IsAuthenticated = true;
@@ -97,7 +97,7 @@ internal class SessionActor
         _lastUpdateTime.Start();
     }
 
-    private void UpdateStageInfo(int playNid, long stageId)
+    private void UpdateStageInfo(string playNid, long stageId)
     {
         _playEndpoints[stageId] = new TargetAddress(playNid, stageId);
     }
@@ -170,7 +170,7 @@ internal class SessionActor
         }
     }
 
-    private IServerInfo FindSuitableServer(ushort serviceId, int nid)
+    private IServerInfo FindSuitableServer(ushort serviceId, string nid)
     {
         IServerInfo serverInfo = _serviceInfoCenter.FindServer(nid);
         if (serverInfo.GetState() != ServerState.RUNNING)

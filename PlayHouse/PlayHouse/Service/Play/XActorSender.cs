@@ -5,21 +5,21 @@ namespace PlayHouse.Service.Play;
 
 internal class XActorSender(
     long accountId,
-    int sessionNid,
+    string sessionNid,
     long sid,
-    int endpoint,
+    string apiNid,
     BaseStage baseStage,
     IServerInfoCenter serverInfoCenter)
     : IActorSender
 {
-    public int SessionNid()
+    public string SessionNid()
     {
         return sessionNid;
     }
 
-    public int ApiNid()
+    public string ApiNid()
     {
-        return endpoint;
+        return apiNid;
     }
 
     public long Sid()
@@ -44,7 +44,7 @@ internal class XActorSender(
 
     public void SendToApi(IPacket packet)
     {
-        var serverInfo = serverInfoCenter.FindServer(endpoint);
+        var serverInfo = serverInfoCenter.FindServer(apiNid);
         if (!serverInfo.IsValid())
         {
             serverInfo = serverInfoCenter.FindServerByAccountId(serverInfo.GetServiceId(), accountId);
@@ -55,7 +55,7 @@ internal class XActorSender(
 
     public async Task<IPacket> RequestToApi(IPacket packet)
     {
-        var serverInfo = serverInfoCenter.FindServer(endpoint);
+        var serverInfo = serverInfoCenter.FindServer(apiNid);
         if (!serverInfo.IsValid())
         {
             serverInfo = serverInfoCenter.FindServerByAccountId(serverInfo.GetServiceId(), accountId);
@@ -66,7 +66,7 @@ internal class XActorSender(
 
     public async Task<IPacket> AsyncToApi(IPacket packet)
     {
-        var serverInfo = serverInfoCenter.FindServer(endpoint);
+        var serverInfo = serverInfoCenter.FindServer(apiNid);
         if (!serverInfo.IsValid())
         {
             serverInfo = serverInfoCenter.FindServerByAccountId(serverInfo.GetServiceId(), accountId);
@@ -75,10 +75,10 @@ internal class XActorSender(
         return await baseStage.StageSender.AsyncToApi(serverInfo.GetNid(), accountId, packet);
     }
 
-    public void Update(int sessionNetworkId, long sid1, int apiNid)
+    public void Update(string sessionNetworkId, long sessionId, string apiNetworkWId)
     {
         sessionNid = sessionNetworkId;
-        sid = sid1;
-        endpoint = apiNid;
+        sid = sessionId;
+        apiNid = apiNetworkWId;
     }
 }

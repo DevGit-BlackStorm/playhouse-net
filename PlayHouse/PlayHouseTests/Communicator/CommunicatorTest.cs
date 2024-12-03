@@ -22,8 +22,8 @@ internal class TestListener : ICommunicateListener
 [Collection("ZSocketCommunicateTest")]
 public class CommunicatorTest
 {
-    private const int SessionNid = 1;
-    private const int ApiNid = 2;
+    private const string SessionNid = "session:1";
+    private const string ApiNid = "api:1";
     public CommunicatorTest()
     {
         PooledBuffer.Init();

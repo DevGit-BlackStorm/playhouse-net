@@ -10,12 +10,12 @@ namespace PlayHouse.Service.Api;
 internal class AllApiSender(ushort serviceId, IClientCommunicator clientCommunicator, RequestCache reqCache)
     : XApiCommonSender(serviceId, clientCommunicator, reqCache), IApiSender, IApiBackendSender
 {
-    public int GetFromNid()
+    public string GetFromNid()
     {
-        return CurrentHeader?.From ?? 0;
+        return CurrentHeader?.From ?? ServiceConst.DefaultNid;
     }
 
-    public int SessionNid => CurrentHeader?.From ?? ServiceConst.DefaultNid;
+    public string SessionNid => CurrentHeader?.From ?? ServiceConst.DefaultNid;
     public long Sid => CurrentHeader?.Sid ?? 0L;
 
     public async Task AuthenticateAsync(long accountId)
@@ -25,7 +25,7 @@ internal class AllApiSender(ushort serviceId, IClientCommunicator clientCommunic
 
         await AuthenticateAsync(accountId, apiNid);
     }
-    public async Task AuthenticateAsync(long accountId,int apiNid)
+    public async Task AuthenticateAsync(long accountId,string apiNid)
     {
         var message = new AuthenticateMsgReq
         {
@@ -54,7 +54,7 @@ internal class AllApiSender(ushort serviceId, IClientCommunicator clientCommunic
     }
 
 
-    public async Task<JoinStageResult> JoinStage(int playNid, long stageId, IPacket packet)
+    public async Task<JoinStageResult> JoinStage(string playNid, long stageId, IPacket packet)
     {
         var req = new JoinStageReq
         {
@@ -71,7 +71,7 @@ internal class AllApiSender(ushort serviceId, IClientCommunicator clientCommunic
         return new JoinStageResult(reply.ErrorCode, CPacket.Of(res.PayloadId, res.Payload));
     }
 
-    public async Task<CreateJoinStageResult> CreateJoinStage(int playNid,
+    public async Task<CreateJoinStageResult> CreateJoinStage(string playNid,
         string stageType,
         long stageId,
         IPacket createPacket,

@@ -10,10 +10,10 @@ public class PlayhouseOption
     public string Ip { get; set; } = string.Empty;
     public int Port { get; set; }
     public ushort ServiceId { get; set; }
+    public int ServerId { get; set; } // 1~ 4095
     public IServiceProvider? ServiceProvider { get; set; }
     public int RequestTimeoutSec { get; set; } = 5;
     public bool ShowQps { get; set; }
-    public int Nid { get; set; } = ServiceConst.DefaultNid;// 1~ 4095
     public bool DebugMode { get; set; }
 
     public PlaySocketConfig PlaySocketConfig { get; set; } = new();

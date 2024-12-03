@@ -13,7 +13,8 @@ public interface IServerInfo
 {
     string GetBindEndpoint();
 
-    int GetNid();
+    string GetNid();
+    int GetServerId();
     ServiceType GetServiceType();
     ushort GetServiceId();
     ServerState GetState();
