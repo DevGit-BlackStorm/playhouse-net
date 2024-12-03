@@ -11,7 +11,7 @@ namespace PlayHouse.Communicator.PlaySocket;
 internal class NetMqPlaySocket : IPlaySocket
 {
     private readonly string _bindEndpoint;
-    private readonly int _nid;
+    private readonly string _nid;
     private readonly PooledByteBuffer _buffer = new(ConstOption.MaxPacketSize);
     private readonly LOG<NetMqPlaySocket> _log = new();
     private readonly RouterSocket _socket = new();
@@ -20,7 +20,7 @@ internal class NetMqPlaySocket : IPlaySocket
     {
         _bindEndpoint = socketConfig.BindEndpoint;
         _nid = socketConfig.Nid;
-        _socket.Options.Identity = BitConverter.GetBytes(socketConfig.Nid);
+        _socket.Options.Identity = Encoding.UTF8.GetBytes(_nid);
         _socket.Options.DelayAttachOnConnect = true; // immediate
         _socket.Options.RouterHandover = true;
         _socket.Options.Backlog = socketConfig.PlaySocketConfig.BackLog;
@@ -79,7 +79,7 @@ internal class NetMqPlaySocket : IPlaySocket
         return _bindEndpoint;
     }
 
-    public int Nid()
+    public string Nid()
     {
         return _nid;
     }
@@ -95,7 +95,7 @@ internal class NetMqPlaySocket : IPlaySocket
                 return null;
             }
 
-            var target = BitConverter.ToInt32(message[0].Buffer);
+            var target = Encoding.UTF8.GetString(message[0].Buffer);
             var header = RouteHeaderMsg.Parser.ParseFrom(message[1].Buffer);
             //PooledBufferPayload payload = new(new (message[2].Buffer));
             var payload = new FramePayload(message[2]);
@@ -108,8 +108,9 @@ internal class NetMqPlaySocket : IPlaySocket
         return null;
     }
 
-    public void Send(int nid, RoutePacket routePacket)
+    public void Send(string nid, RoutePacket routePacket)
     {
+
         if (TestOption.IsUnitTest)
         {
             return;
@@ -142,7 +143,7 @@ internal class NetMqPlaySocket : IPlaySocket
                 }
             }
 
-            message.Append(new NetMQFrame(BitConverter.GetBytes(nid)));
+            message.Append(new NetMQFrame(Encoding.UTF8.GetBytes(nid)));
             var routerHeaderMsg = routePacket.RouteHeader.ToMsg();
 
             var headerSize = routerHeaderMsg.CalculateSize();

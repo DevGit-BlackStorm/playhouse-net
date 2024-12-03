@@ -23,13 +23,13 @@ internal class ServerAddressResolver(
         {
             try
             {
-                var myServerInfo = new XServerInfo(bindEndpoint, service.Nid, service.GetServiceType(), service.ServiceId,
+                var myServerInfo = new XServerInfo(bindEndpoint, service.ServiceId,service.ServerId, service.Nid, service.GetServiceType(),
                     service.GetServerState(), service.GetActorCount(), DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
 
                 IReadOnlyList<IServerInfo> serverInfoList = await system.UpdateServerInfoAsync(myServerInfo);
 
                 var updateList = serverInfoCenter.Update(serverInfoList.Select(e =>
-                    new XServerInfo(e.GetBindEndpoint(), e.GetNid(),e.GetServiceType(), e.GetServiceId(), e.GetState(), e.GetActorCount(), e.GetLastUpdate())
+                    new XServerInfo(e.GetBindEndpoint(), e.GetServiceId(), e.GetServerId(),e.GetNid(),e.GetServiceType(),  e.GetState(), e.GetActorCount(), e.GetLastUpdate())
                 ).ToList());
 
                 foreach (var serverInfo in updateList)

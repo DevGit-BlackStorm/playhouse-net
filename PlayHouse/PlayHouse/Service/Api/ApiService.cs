@@ -8,7 +8,8 @@ namespace PlayHouse.Service.Api;
 
 internal class ApiService(
     ushort serviceId,
-    int nid,
+    int serverId,
+    string nid,
     ApiOption apiOption,
     RequestCache requestCache,
     IClientCommunicator clientCommunicator,
@@ -23,7 +24,8 @@ internal class ApiService(
 
 
     public ushort ServiceId { get; } = serviceId;
-    public int Nid { get; } = nid;
+    public int ServerId { get; } = serverId;
+    public string Nid { get; } = nid;
 
     public void OnStart()
     {

@@ -6,24 +6,29 @@ namespace PlayHouse.Communicator;
 
 internal class XServerInfo(
     string bindEndpoint,
-    int nid,
-    ServiceType serviceType,
     ushort serviceId,
+    int serverId,
+    string nid,
+    ServiceType serviceType,
     ServerState serverState,
     int actorCount,
     long lastUpdate)
     : IServerInfo
 {
-    private int _nid = nid;
 
     public string GetBindEndpoint()
     {
         return bindEndpoint;
     }
 
-    public int GetNid()
+    public string GetNid()
     {
-        return _nid;
+        return nid;
+    }
+
+    public int GetServerId()
+    {
+        return serverId;
     }
 
     public ServiceType GetServiceType()
@@ -55,9 +60,10 @@ internal class XServerInfo(
     {
         return new XServerInfo(
             bindEndpoint,
+            service.ServiceId,
+            service.ServerId,
             service.Nid,
             service.GetServiceType(),
-            service.ServiceId,
             service.GetServerState(),
             service.GetActorCount(),
             DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
@@ -68,9 +74,10 @@ internal class XServerInfo(
     {
         return new XServerInfo(
             infoMsg.Endpoint,
+            (ushort)infoMsg.ServiceId,
+            infoMsg.ServerId,
             infoMsg.Nid,
             Enum.Parse<ServiceType>(infoMsg.ServiceType),
-            (ushort)infoMsg.ServiceId,
             Enum.Parse<ServerState>(infoMsg.ServerState),
             infoMsg.ActorCount,
             infoMsg.Timestamp
@@ -79,18 +86,20 @@ internal class XServerInfo(
 
     public static XServerInfo Of(
         string bindEndpoint,
-        int nid,
-        ServiceType serviceType,
         ushort serviceId,
+        int serverId,
+        string nid,
+        ServiceType serviceType,
         ServerState state,
         int actorCount,
         long timeStamp)
     {
         return new XServerInfo(
             bindEndpoint,
+            serviceId, 
+            serverId,
             nid,
             serviceType,
-            serviceId,
             state,
             actorCount,
             timeStamp);
@@ -100,9 +109,10 @@ internal class XServerInfo(
     {
         return new XServerInfo(
             serverInfo.GetBindEndpoint(),
+            serverInfo.GetServiceId(),
+            serverInfo.GetServerId(),
             serverInfo.GetNid(),
             serverInfo.GetServiceType(),
-            serverInfo.GetServiceId(),
             serverInfo.GetState(),
             serverInfo.GetActorCount(),
             serverInfo.GetLastUpdate());
@@ -128,15 +138,13 @@ internal class XServerInfo(
 
     public void Update(XServerInfo serverInfo)
     {
-        //var stateChanged = GetState != serverInfo.GetState;
-
         serverState = serverInfo.GetState();
-
         lastUpdate = serverInfo.GetLastUpdate();
-
         actorCount = serverInfo.GetActorCount();
 
-        _nid = serverInfo._nid;
+        serviceId = serverInfo.GetServiceId();
+        serverId = serverInfo.GetServerId();
+        nid = serverInfo.GetNid();
     }
 
     public bool IsValid()

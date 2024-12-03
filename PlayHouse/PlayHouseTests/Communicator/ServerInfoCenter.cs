@@ -18,26 +18,42 @@ public class ServerInfoCenterFuncSpecTest
         _curTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         _serverList = new List<XServerInfo>
         {
-            XServerInfo.Of("tcp://127.0.0.1:0001",1, ServiceType.API, (ushort)ServiceType.API, ServerState.RUNNING, 1,
-                _curTime),
-            XServerInfo.Of("tcp://127.0.0.1:0002",2, ServiceType.Play, (ushort)ServiceType.Play, ServerState.RUNNING, 1,
-                _curTime),
-            XServerInfo.Of("tcp://127.0.0.1:0003",3, ServiceType.SESSION, (ushort)ServiceType.SESSION,
-                ServerState.RUNNING, 1, _curTime),
+            XServerInfo.Of("tcp://127.0.0.1:0001",
+                (ushort)ServiceType.API,1,$"{ServiceType.API}:{1}", ServiceType.API,
+                        ServerState.RUNNING, 1, _curTime),
 
-            XServerInfo.Of("tcp://127.0.0.1:0011",11, ServiceType.API, (ushort)ServiceType.API, ServerState.RUNNING, 11,
-                _curTime),
-            XServerInfo.Of("tcp://127.0.0.1:0012",12, ServiceType.Play, (ushort)ServiceType.Play, ServerState.RUNNING, 11,
-                _curTime),
-            XServerInfo.Of("tcp://127.0.0.1:0013",13, ServiceType.SESSION, (ushort)ServiceType.SESSION,
+            XServerInfo.Of("tcp://127.0.0.1:0002",
+                (ushort)ServiceType.Play,2,$"{ServiceType.Play}:{2}", ServiceType.Play, 
+                        ServerState.RUNNING, 1, _curTime),
+
+            XServerInfo.Of("tcp://127.0.0.1:0003",
+                (ushort) ServiceType.SESSION, 3,$"{ServiceType.SESSION}:{3}", ServiceType.SESSION,
+                        ServerState.RUNNING, 1, _curTime),
+
+
+            XServerInfo.Of("tcp://127.0.0.1:0011",
+                        (ushort)ServiceType.API, 11,$"{ServiceType.API}:{11}",ServiceType.API,
+                        ServerState.RUNNING, 11, _curTime),
+            
+            XServerInfo.Of("tcp://127.0.0.1:0012",
+                (ushort)ServiceType.Play,12,$"{ServiceType.Play}:{12}", ServiceType.Play,
+                ServerState.RUNNING, 11, _curTime),
+            XServerInfo.Of("tcp://127.0.0.1:0013",
+                (ushort) ServiceType.SESSION, 13,$"{ServiceType.SESSION}:{13}", ServiceType.SESSION,
                 ServerState.RUNNING, 11, _curTime),
 
-            XServerInfo.Of("tcp://127.0.0.1:0021",21, ServiceType.API, (ushort)ServiceType.API, ServerState.RUNNING, 21,
-                _curTime),
-            XServerInfo.Of("tcp://127.0.0.1:0022",22, ServiceType.Play, (ushort)ServiceType.Play, ServerState.RUNNING, 21,
-                _curTime),
-            XServerInfo.Of("tcp://127.0.0.1:0023",23, ServiceType.SESSION, (ushort)ServiceType.SESSION,
-                ServerState.RUNNING, 21, _curTime)
+
+            XServerInfo.Of("tcp://127.0.0.1:0021",
+                (ushort)ServiceType.API,21,$"{ServiceType.API}:{21}", ServiceType.API,
+                ServerState.RUNNING, 1, _curTime),
+
+            XServerInfo.Of("tcp://127.0.0.1:0022",
+                (ushort)ServiceType.Play,22,$"{ServiceType.Play}:{22}", ServiceType.Play,
+                ServerState.RUNNING, 1, _curTime),
+
+            XServerInfo.Of("tcp://127.0.0.1:0023",
+                (ushort) ServiceType.SESSION, 23,$"{ServiceType.SESSION}:{23}", ServiceType.SESSION,
+                ServerState.RUNNING, 1, _curTime),
         };
     }
 
@@ -50,8 +66,13 @@ public class ServerInfoCenterFuncSpecTest
 
         var update = new List<XServerInfo>
         {
-            XServerInfo.Of("tcp://127.0.0.1:0001",1, ServiceType.API, (ushort)ServiceType.API, ServerState.DISABLE, 11,
-                _curTime)
+            XServerInfo.Of("tcp://127.0.0.1:0001",
+                (ushort)ServiceType.API,1,$"{ServiceType.API}:{1}", ServiceType.API,
+                ServerState.DISABLE, 1, _curTime),
+
+            XServerInfo.Of("tcp://127.0.0.1:0011",
+            (ushort)ServiceType.API, 11,$"{ServiceType.API}:{11}",ServiceType.API,
+            ServerState.RUNNING, 11, _curTime),
         };
 
         updatedList = _serverInfoCenter.Update(update);
@@ -66,8 +87,9 @@ public class ServerInfoCenterFuncSpecTest
 
         var update = new List<XServerInfo>
         {
-            XServerInfo.Of("tcp://127.0.0.1:0011", 11,ServiceType.API, (ushort)ServiceType.API, ServerState.RUNNING, 10,
-                _curTime - 61000)
+            XServerInfo.Of("tcp://127.0.0.1:0011",
+                (ushort)ServiceType.API, 11,$"{ServiceType.API}:{11}",ServiceType.API,
+                ServerState.RUNNING, 11, _curTime - 61000),
         };
 
         var updatedList = _serverInfoCenter.Update(update);
@@ -81,13 +103,13 @@ public class ServerInfoCenterFuncSpecTest
     {
         _serverInfoCenter.Update(_serverList);
 
-        var findServerNid = 21;
+        var findServerNid = $"{ServiceType.API}:{21}";
         var serverInfo = _serverInfoCenter.FindServer(findServerNid);
 
         serverInfo.GetNid().Should().Be(findServerNid);
         serverInfo.GetState().Should().Be(ServerState.RUNNING);
 
-        Action act = () => _serverInfoCenter.FindServer(0);
+        Action act = () => _serverInfoCenter.FindServer($"{ServiceType.API}:{0}");
         act.Should().Throw<CommunicatorException.NotExistServerInfo>();
     }
 

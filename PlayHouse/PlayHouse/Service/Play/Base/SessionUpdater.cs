@@ -5,12 +5,12 @@ namespace PlayHouse.Service.Play.Base;
 
 public interface ISessionUpdater
 {
-    public Task UpdateStageInfo(int sessionNid, long sid);
+    public Task UpdateStageInfo(string sessionNid, long sid);
 }
 
-internal class XSessionUpdater(int playEndpoint, XStageSender stageSender) : ISessionUpdater
+internal class XSessionUpdater(string playEndpoint, XStageSender stageSender) : ISessionUpdater
 {
-    public async Task UpdateStageInfo(int sessionNid, long sid)
+    public async Task UpdateStageInfo(string sessionNid, long sid)
     {
         var joinStageInfoUpdateReq = new JoinStageInfoUpdateReq
         {

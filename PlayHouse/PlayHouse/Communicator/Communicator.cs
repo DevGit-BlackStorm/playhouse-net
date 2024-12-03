@@ -12,12 +12,16 @@ public class CommunicatorOption(
     string bindEndpoint,
     IServiceProvider serviceProvider,
     bool showQps,
-    int nid,
+    int serverId,
+    string nid,
     Func<string, IPayload, ushort, IPacket> packetProducer)
 {
     public string BindEndpoint { get; } = bindEndpoint;
     public bool ShowQps { get; } = showQps;
-    public int Nid { get; } = nid;
+    public int ServerId { get; } = serverId;
+    public string Nid { get; } = nid;
+
+
     public IServiceProvider ServiceProvider { get; } = serviceProvider;
     public Func<string, IPayload, ushort, IPacket>? PacketProducer { get; } = packetProducer;
 
@@ -25,11 +29,12 @@ public class CommunicatorOption(
     public class Builder
     {
         private string _ip = string.Empty;
-        private int _nid;
+        private int _serverId;
         private Func<string, IPayload, ushort, IPacket>? _packetProducer;
         private int _port;
         private IServiceProvider? _serviceProvider;
         private bool _showQps;
+        private ushort _serviceId;
 
         public Builder SetIp(string ip)
         {
@@ -78,24 +83,27 @@ public class CommunicatorOption(
                 throw new Exception("packetProducer is not registered");
             }
 
+            var nid = ISystemPanel.MakeNid(_serviceId, _serverId);
+
             return new CommunicatorOption(
                 bindEndpoint,
                 _serviceProvider!,
                 _showQps,
-                _nid,
+                _serverId,
+                nid,
                 _packetProducer
             );
         }
 
-        public Builder SetNid(int nid)
+        public Builder SetServerId(int serverId)
         {
-            if (nid is >= 0 and < 4096)
+            if (serverId is >= 0 and < 4096)
             {
-                _nid = nid;
+                _serverId = serverId;
             }
             else
             {
-                throw new Exception($"invalid nid (nid should be 0 ~ 4095 ) - [nid:{nid}] ");
+                throw new Exception($"invalid serverId (serverId should be 0 ~ 4095 ) - [serverId:{serverId}] ");
             }
 
             return this;
@@ -104,6 +112,12 @@ public class CommunicatorOption(
         public Builder SetPacketProducer(Func<string, IPayload, ushort, IPacket>? producer)
         {
             _packetProducer = producer;
+            return this;
+        }
+
+        public Builder SetServiceId(ushort serviceId)
+        {
+            _serviceId = serviceId;
             return this;
         }
     }
@@ -145,7 +159,7 @@ internal class Communicator : ICommunicateListener
         _performanceTester = new PerformanceTester(_option.ShowQps);
         _messageLoop = new MessageLoop(_serverCommunicator, _clientCommunicator);
         var sender = new XSender(_serviceId, _clientCommunicator, _requestCache);
-        _systemPanel = new XSystemPanel(serverInfoCenter, _clientCommunicator, _option.Nid);
+        _systemPanel = new XSystemPanel(serverInfoCenter, _clientCommunicator, _option.ServerId,_option.Nid);
 
         var systemController = _option.ServiceProvider.GetRequiredService<ISystemController>();
 

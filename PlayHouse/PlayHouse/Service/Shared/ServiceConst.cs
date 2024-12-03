@@ -8,5 +8,5 @@ namespace PlayHouse.Service.Shared;
 
 internal static class ServiceConst
 {
-    public static int DefaultNid = -1;
+    public static string DefaultNid = string.Empty;
 }

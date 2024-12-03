@@ -30,17 +30,19 @@ message RoutePacketMsg {
 message ServerInfoMsg{
   string service_type = 1;
   int32  service_id = 2;
-  string endpoint = 3;
-  string server_state = 4;
-  int64 timestamp = 5;
-  int32 actor_count = 6;
-  int32 nid = 7;
+  int32  server_Id = 3;
+  string nid = 4;
+  string endpoint = 5;
+  string server_state = 6;
+  int64 timestamp = 7;
+  int32 actor_count = 8;
+  
 }
 
 message AuthenticateMsgReq {
   int32 service_id = 1;
   int64 account_id = 2;
-  int32 apiNid = 3;
+  string apiNid = 3;
 }
 
 message AuthenticateMsgRes {
@@ -66,7 +68,7 @@ message CreateJoinStageReq {
   bytes create_payload = 3;
   string join_payload_id =4;
   bytes join_payload = 5;
-  int32 sessionNid = 6;
+  string sessionNid = 6;
   int64 sid = 7;
 }
 
@@ -90,7 +92,7 @@ message CreateStageRes {
 }
 
 message JoinStageReq {
-  int32 sessionNid = 1;
+  string sessionNid = 1;
   int64 sid = 2;
   string payload_id = 3;
   bytes payload = 4;
@@ -102,7 +104,7 @@ message JoinStageRes {
 }
 
 message JoinStageInfoUpdateReq{
-  int32 playNid = 1;
+  string playNid = 1;
   int64 stage_id = 2;
 }
 message JoinStageInfoUpdateRes{

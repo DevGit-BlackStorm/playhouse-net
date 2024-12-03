@@ -60,7 +60,7 @@ internal class XServerInfoCenter(bool debugMode) : IServerInfoCenter
 
 
 
-    public XServerInfo FindServer(int nid)
+    public XServerInfo FindServer(string nid)
     {
         // 최신 _serverInfoList를 직접 읽어 사용
         var serverInfo = _serverInfoList

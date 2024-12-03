@@ -15,8 +15,8 @@ public class NetMQPlaySocketTests : IDisposable
     private readonly NetMqPlaySocket? _clientSocket;
 
     private readonly NetMqPlaySocket? _serverSocket;
-    private const int ServerNid = 1;
-    private const int ClientNid = 2;
+    private string  ServerNid = "sever:1";
+    private string  ClientNid = "client:1";
 
     public NetMQPlaySocketTests()
     {

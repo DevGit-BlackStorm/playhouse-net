@@ -6,7 +6,7 @@ internal interface IPlaySocket
 {
     string GetBindEndpoint();
     void Bind();
-    void Send(int nid, RoutePacket routerPacket);
+    void Send(string nid, RoutePacket routerPacket);
     void Connect(string endPoint);
     RoutePacket? Receive();
     void Disconnect(string endPoint);
@@ -14,5 +14,5 @@ internal interface IPlaySocket
     void Close();
 
     string EndPoint();
-    int Nid();
+    string Nid();
 }

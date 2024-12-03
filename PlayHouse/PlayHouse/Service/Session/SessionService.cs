@@ -8,7 +8,8 @@ namespace PlayHouse.Service.Session;
 
 internal class SessionService(
     ushort serviceId,
-    int nid,
+    int serverId,
+    string nid,
     SessionOption sessionOption,
     IServerInfoCenter serverInfoCenter,
     IClientCommunicator clientCommunicator,
@@ -24,7 +25,9 @@ internal class SessionService(
 
 
     public ushort ServiceId { get; } = serviceId;
-    public int Nid { get; } = nid;
+    public int ServerId { get; } = serverId;
+    public string Nid { get; } = nid;
+    
 
     public void OnStart()
     {

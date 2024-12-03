@@ -13,7 +13,8 @@ public enum ServiceType
 internal interface IService
 {
     ushort ServiceId { get; }
-    int Nid { get; }
+    int ServerId { get; }
+    string Nid { get; }
     void OnStart();
     void OnPost(RoutePacket routePacket);
     void OnStop();

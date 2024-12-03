@@ -10,46 +10,46 @@ public interface ISender
     void Reply(ushort errorCode);
     void Reply(IPacket reply);
 
-    void SendToClient(int sessionNid, long sid, IPacket packet);
+    void SendToClient(string sessionNid, long sid, IPacket packet);
 
-    void SendToApi(int apiNid, IPacket packet);
-    void SendToApi(int apiNid, long accountId, IPacket packet);
-    void SendToStage(int playNid, long stageId, long accountId, IPacket packet);
+    void SendToApi(string apiNid, IPacket packet);
+    void SendToApi(string apiNid, long accountId, IPacket packet);
+    void SendToStage(string playNid, long stageId, long accountId, IPacket packet);
 
-    void RequestToApi(int apiNid, IPacket packet, ReplyCallback replyCallback);
-    void RequestToStage(int playNid, long stageId, long accountId, IPacket packet, ReplyCallback replyCallback);
-    Task<IPacket> RequestToApi(int apiNid, IPacket packet);
-    Task<IPacket> RequestToApi(int apiNid, long accountId, IPacket packet);
-    Task<IPacket> RequestToStage(int playNid, long stageId, long accountId, IPacket packet);
+    void RequestToApi(string apiNid, IPacket packet, ReplyCallback replyCallback);
+    void RequestToStage(string playNid, long stageId, long accountId, IPacket packet, ReplyCallback replyCallback);
+    Task<IPacket> RequestToApi(string apiNid, IPacket packet);
+    Task<IPacket> RequestToApi(string apiNid, long accountId, IPacket packet);
+    Task<IPacket> RequestToStage(string playNid, long stageId, long accountId, IPacket packet);
 
 
-    void SendToSystem(int nid, IPacket packet);
-    Task<IPacket> RequestToSystem(int nid, IPacket packet);
+    void SendToSystem(string nid, IPacket packet);
+    Task<IPacket> RequestToSystem(string nid, IPacket packet);
 
-    void SessionClose(int sessionNid, long sid);
+    void SessionClose(string sessionNid, long sid);
 }
 
 public interface IApiCommonSender : ISender
 {
     long AccountId { get; }
-    Task<CreateStageResult> CreateStage(int playNid, string stageType, long stageId, IPacket packet);
+    Task<CreateStageResult> CreateStage(string playNid, string stageType, long stageId, IPacket packet);
 }
 
 public interface IApiSender : IApiCommonSender
 {
-    int SessionNid { get; }
+    string SessionNid { get; }
     long Sid { get; }
     Task AuthenticateAsync(long accountId);
-    Task AuthenticateAsync(long accountId, int apiNid);
+    Task AuthenticateAsync(long accountId, string apiNid);
 
     Task<string> GetRemoteIp();
 
-    Task<JoinStageResult> JoinStage(int playNid,
+    Task<JoinStageResult> JoinStage(string playNid,
         long stageId,
         IPacket packet
     );
 
-    Task<CreateJoinStageResult> CreateJoinStage(int playNid,
+    Task<CreateJoinStageResult> CreateJoinStage(string playNid,
         string stageType,
         long stageId,
         IPacket createPacket,
@@ -86,7 +86,7 @@ public interface IStageSender : ISender
 
 public interface IApiBackendSender : IApiCommonSender
 {
-    int GetFromNid();
+    string GetFromNid();
 }
 
 public interface ISessionSender : ISender

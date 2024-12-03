@@ -83,7 +83,7 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
         _queue.CompleteAdding();
     }
 
-    public void Send(int nid, RoutePacket routePacket)
+    public void Send(string nid, RoutePacket routePacket)
     {
         _log.Trace(() => $"before send queue:{nid} - [accountId:{routePacket.AccountId.ToString():accountId},packetInfo:{routePacket.RouteHeader}]");
 

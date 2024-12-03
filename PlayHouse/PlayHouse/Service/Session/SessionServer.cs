@@ -25,15 +25,17 @@ public class SessionServer : IServer
             .SetPort(commonOption.Port)
             .SetServiceProvider(commonOption.ServiceProvider)
             .SetShowQps(commonOption.ShowQps)
-            .SetNid(commonOption.Nid)
+            .SetServerId(commonOption.ServerId)
             .SetPacketProducer(commonOption.PacketProducer)
             .Build();
 
         PooledBuffer.Init(commonOption.MaxBufferPoolSize);
 
         var nid = communicatorOption.Nid;
-        var bindEndpoint = communicatorOption.BindEndpoint;
         var serviceId = commonOption.ServiceId;
+        var serverId = communicatorOption.ServerId;
+
+        var bindEndpoint = communicatorOption.BindEndpoint;
         var playSocketOption = commonOption.PlaySocketConfig;
         var communicateClient =
         new XClientCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(nid, bindEndpoint, commonOption.PlaySocketConfig)));
@@ -43,6 +45,7 @@ public class SessionServer : IServer
 
         var sessionService = new SessionService(
             serviceId,
+            serverId,
             nid,
             sessionOption,
             serverInfoCenter,

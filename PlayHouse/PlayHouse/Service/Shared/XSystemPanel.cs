@@ -6,11 +6,12 @@ namespace PlayHouse.Service.Shared;
 internal class XSystemPanel(
     IServerInfoCenter serverInfoCenter,
     IClientCommunicator clientCommunicator,
-    int nid)
+    int serverId,
+    string nid)
     : ISystemPanel
 {
     private readonly IClientCommunicator _clientCommunicator = clientCommunicator;
-    private readonly UniqueIdGenerator _uniqueIdGenerator = new(nid);
+    private readonly UniqueIdGenerator _uniqueIdGenerator = new(serverId);
 
     public Communicator.Communicator? Communicator { get; set; }
 
@@ -24,7 +25,7 @@ internal class XSystemPanel(
         return serverInfoCenter.FindServerByAccountId(serviceId, accountId);
     }
 
-    public IServerInfo GetServerInfoByNid(int nid)
+    public IServerInfo GetServerInfoByNid(string nid)
     {
         return serverInfoCenter.FindServer(nid);
     }
