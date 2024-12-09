@@ -19,6 +19,7 @@ internal class ApiActor(
     private readonly LOG<ApiActor> _log = new();
 
     private readonly ConcurrentQueue<RoutePacket> _msgQueue = new();
+    private DateTime _lastUpdateTime = DateTime.UtcNow;
 
     public async Task DispatchAsync(RoutePacket routePacket)
     {
@@ -102,8 +103,21 @@ internal class ApiActor(
         }
     }
 
+    public bool IsExpired()
+    {
+        var differenceTime = DateTime.UtcNow - _lastUpdateTime;
+
+        if (differenceTime.TotalSeconds > 60)
+        {
+            return true;
+        }
+        return false;
+    }
+
     public void Post(RoutePacket packet)
     {
+        _lastUpdateTime = DateTime.UtcNow;
+
         _msgQueue.Enqueue(packet);
 
         if (_isUsing.CompareAndSet(false, true))

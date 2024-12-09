@@ -6,6 +6,7 @@ using PlayHouse.Service.Api.Reflection;
 using PlayHouse.Utils;
 using System.Collections.Concurrent;
 using Playhouse.Protocol;
+using PlayHouse.Service.Shared;
 
 namespace PlayHouse.Service.Api;
 
@@ -18,6 +19,7 @@ internal class ApiDispatcher
     private readonly RequestCache _requestCache;
     private readonly ushort _serviceId;
     private readonly ConcurrentDictionary<long, ApiActor> _cache = new();
+    private bool _isRunning = true;
 
     public ApiDispatcher(
         ushort serviceId,
@@ -41,10 +43,38 @@ internal class ApiDispatcher
 
     public void Start()
     {
+        var thread = new Thread(() =>
+        {
+            while (_isRunning)
+            {
+                CheckExpire();
+                Thread.Sleep(1000);
+            }
+        });
+        thread.Start();
+    }
+
+    private void CheckExpire()
+    {
+        List<long> keysToDelete = new();
+
+        foreach (var item in _cache)
+        {
+            if (item.Value.IsExpired())
+            {
+                keysToDelete.Add(item.Key);
+            }
+        }
+
+        foreach (var key in keysToDelete)
+        {
+            Remove(key);
+        }
     }
 
     public void Stop()
     {
+        _isRunning = false;
     }
 
 
@@ -95,14 +125,53 @@ internal class ApiDispatcher
         var apiSender = new AllApiSender(_serviceId, _clientCommunicator, _requestCache);
         apiSender.SetCurrentPacketHeader(routeHeader);
 
-        if (routePacket.IsBackend())
+        try
         {
-            await _apiReflection.CallBackendMethodAsync(routePacket.ToContentsPacket(), apiSender);
+            if (routePacket.IsBackend())
+            {
+                await _apiReflection.CallBackendMethodAsync(routePacket.ToContentsPacket(), apiSender);
+            }
+            else
+            {
+                await _apiReflection.CallMethodAsync(routePacket.ToContentsPacket(), apiSender);
+            }
         }
-        else
+        catch (ServiceException.NotRegisterMethod e)
         {
-            await _apiReflection.CallMethodAsync(routePacket.ToContentsPacket(), apiSender);
+            if (routeHeader.Header.MsgSeq > 0)
+            {
+                apiSender.Reply((ushort)BaseErrorCode.NotRegisteredMessage);
+            }
+
+            _log.Error(() => $"{e}");
         }
+        catch (ServiceException.NotRegisterInstance e)
+        {
+            if (routeHeader.Header.MsgSeq > 0)
+            {
+                apiSender.Reply((ushort)BaseErrorCode.SystemError);
+            }
+
+            _log.Error(() => $"{e}");
+        }
+        catch (Exception e)
+        {
+            if (routeHeader.Header.MsgSeq > 0)
+            {
+                apiSender.Reply((ushort)BaseErrorCode.UncheckedContentsError);
+            }
+
+            _log.Error(() => $"Packet processing failed due to an unexpected error. - [msgId:{routeHeader.MsgId}]");
+            _log.Error(() => $"[exception message:{e.Message}]");
+            _log.Error(() => $"[exception message:{e.StackTrace}]");
+
+            if (e.InnerException != null)
+            {
+                _log.Error(() => $"[internal exception message:{e.InnerException.Message}");
+                _log.Error(() => $"[internal exception trace:{e.InnerException.StackTrace}");
+            }
+        }
+
     }
     private void Remove(long accountId)
     {

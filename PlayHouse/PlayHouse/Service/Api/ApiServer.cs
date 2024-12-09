@@ -29,7 +29,7 @@ public class ApiServer : IServer
 
         PooledBuffer.Init(commonOption.MaxBufferPoolSize);
 
-        var requestCache = new RequestCache(commonOption.RequestTimeoutSec);
+        var requestCache = new RequestCache(commonOption.RequestTimeoutMSec);
         var serverInfoCenter = new XServerInfoCenter(commonOption.DebugMode);
 
         var serviceId = commonOption.ServiceId;
