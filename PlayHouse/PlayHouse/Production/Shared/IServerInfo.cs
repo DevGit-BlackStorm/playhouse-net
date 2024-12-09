@@ -20,5 +20,4 @@ public interface IServerInfo
     ServerState GetState();
     long GetLastUpdate();
     int GetActorCount();
-    void SetActorCount(int count);
 }
