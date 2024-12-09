@@ -21,6 +21,7 @@ internal class ReplyObject(
             }
         }
 
+
         if (routePacket.ErrorCode == 0)
         {
             taskCompletionSource?.SetResult(routePacket);
@@ -44,37 +45,25 @@ internal class ReplyObject(
     }
 }
 
-internal class RequestCache
+internal class RequestCache(int timeout)
 {
     private readonly LOG<RequestCache> _log = new();
     private readonly AtomicShort _sequence = new();
     private readonly ConcurrentDictionary<int, ReplyObject> _cache = new();
-    private readonly int _timeout;
-
-    public RequestCache(int timeout)
-    {
-        _timeout = timeout;
-        var thread = new Thread(() =>
-        {
-            CheckExpire();
-            Thread.Sleep(1000);
-        });
-
-        thread.Start();
-    }
+    private bool _isRunning = true;
 
     private void CheckExpire()
     {
-        if (_timeout > 0)
+        if (timeout > 0)
         {
             List<int> keysToDelete = new();
 
             foreach (var item in _cache)
             {
-                if (item.Value.IsExpired(_timeout))
+                if (item.Value.IsExpired(timeout))
                 {
                     var replyObject = item.Value;
-                    replyObject.Throw((int)BaseErrorCode.RequestTimeout);
+                    replyObject.Throw((ushort)BaseErrorCode.RequestTimeout);
                     keysToDelete.Add(item.Key);
                 }
             }
@@ -125,5 +114,34 @@ internal class RequestCache
         {
             _log.Error(() => $"{ex}");
         }
+    }
+
+    public void Start()
+    {
+        var thread = new Thread(() =>
+        {
+            while (_isRunning)
+            {
+                try
+                {
+                    CheckExpire();
+                    Thread.Sleep(1000);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+                
+            }
+            
+        });
+
+        thread.Start();
+    }
+
+    public void Stop()
+    {
+        _isRunning = false;
     }
 }

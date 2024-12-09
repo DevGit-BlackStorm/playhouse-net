@@ -205,6 +205,8 @@ internal class Communicator : ICommunicateListener
         _performanceTester.Start();
         _systemDispatcher.Start();
 
+        _requestCache.Start();
+
         _log.Info(() => $"============== server start ==============");
         _log.Info(() => $"Ready for bind: {bindEndpoint}");
     }
@@ -219,6 +221,7 @@ internal class Communicator : ICommunicateListener
         _addressResolver.Stop();
         _messageLoop.Stop();
         _systemDispatcher.Stop();
+        _requestCache.Stop();
 
         _log.Info(() => $"============== server stop ==============");
     }

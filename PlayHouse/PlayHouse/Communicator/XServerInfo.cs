@@ -56,6 +56,11 @@ internal class XServerInfo(
         return actorCount;
     }
 
+    public void SetActorCount(int count)
+    {
+        actorCount = count;
+    }
+
     public static XServerInfo Of(string bindEndpoint, IService service)
     {
         return new XServerInfo(
