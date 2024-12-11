@@ -28,9 +28,9 @@ internal class ServerAddressResolver(
 
                 IReadOnlyList<IServerInfo> serverInfoList = await system.UpdateServerInfoAsync(myServerInfo);
 
-                var updateList = serverInfoCenter.Update(serverInfoList.Select(e =>
-                    new XServerInfo(e.GetBindEndpoint(), e.GetServiceId(), e.GetServerId(),e.GetNid(),e.GetServiceType(),  e.GetState(), e.GetActorCount(), e.GetLastUpdate())
-                ).ToList());
+                var updateList = serverInfoCenter.Update(serverInfoList.Select(XServerInfo.Of).ToList());
+                //    new XServerInfo(e.GetBindEndpoint(), e.GetServiceId(), e.GetServerId(),e.GetNid(),e.GetServiceType(),  e.GetState(), e.GetActorCount(), e.GetLastUpdate())
+                //).ToList());
 
                 foreach (var serverInfo in updateList)
                 {

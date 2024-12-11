@@ -27,7 +27,7 @@ internal class XServerInfoCenter(bool debugMode) : IServerInfoCenter
         foreach (var incomingServer in serverList)
         {
             // 기존 서버 정보와 동일한 Endpoint를 가진 서버 검색
-            var existingServer = currentList.FirstOrDefault(x => x.GetBindEndpoint() == incomingServer.GetBindEndpoint());
+            var existingServer = currentList.FirstOrDefault(x => x.GetNid() == incomingServer.GetNid());
 
             if (existingServer != null)
             {
@@ -50,7 +50,7 @@ internal class XServerInfoCenter(bool debugMode) : IServerInfoCenter
         }
 
         // 정렬 후 ImmutableList로 변환
-        var newList = currentList.OrderBy(x => x.GetBindEndpoint()).ToImmutableList();
+        var newList = currentList.OrderBy(x => x.GetNid()).ToImmutableList();
 
         // 기존 리스트를 원자적으로 교체
         _serverInfoList = newList;

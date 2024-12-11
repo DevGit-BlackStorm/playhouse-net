@@ -120,20 +120,20 @@ public class ServerInfoCenterFuncSpecTest
         _serverInfoCenter.Update(_serverList);
 
         // Play service should return servers in order 0012 -> 0022 -> 0002
-        _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.Play).GetBindEndpoint().Should()
-            .Be("tcp://127.0.0.1:0012");
-        _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.Play).GetBindEndpoint().Should()
-            .Be("tcp://127.0.0.1:0022");
-        _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.Play).GetBindEndpoint().Should()
-            .Be("tcp://127.0.0.1:0002");
+        _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.Play).GetNid().Should()
+            .Be("Play:2");
+        _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.Play).GetNid().Should()
+            .Be("Play:22");
+        _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.Play).GetNid().Should()
+            .Be("Play:12");
 
         // Session service should return servers in order 0013 -> 0023 -> 0003
-        _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.SESSION).GetBindEndpoint().Should()
-            .Be("tcp://127.0.0.1:0013");
-        _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.SESSION).GetBindEndpoint().Should()
-            .Be("tcp://127.0.0.1:0023");
-        _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.SESSION).GetBindEndpoint().Should()
-            .Be("tcp://127.0.0.1:0003");
+        _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.SESSION).GetNid().Should()
+            .Be("SESSION:23");
+        _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.SESSION).GetNid().Should()
+            .Be("SESSION:3");
+        _serverInfoCenter.FindRoundRobinServer((ushort)ServiceType.SESSION).GetNid().Should()
+            .Be("SESSION:13");
     }
 
     [Fact]
