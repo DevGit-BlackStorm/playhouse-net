@@ -30,6 +30,7 @@ public class SessionServer : IServer
             .Build();
 
         PooledBuffer.Init(commonOption.MaxBufferPoolSize);
+        ConstOption.ServerTimeLimitMs = commonOption.ServerTimeLimitsMs;
 
         var nid = communicatorOption.Nid;
         var serviceId = commonOption.ServiceId;

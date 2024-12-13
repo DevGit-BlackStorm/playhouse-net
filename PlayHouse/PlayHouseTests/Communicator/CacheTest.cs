@@ -37,6 +37,7 @@ public class CacheTests
     [Fact]
     public void Test_TimeOver()
     {
+        ConstOption.ServerTimeLimitMs = 60000;
         var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
         XServerInfo serverInfo = new(endpoint1, (ushort)ServiceType.SESSION, 1, $"{ServiceType.SESSION}:1",ServiceType.SESSION,  ServerState.RUNNING,

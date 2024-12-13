@@ -1,4 +1,5 @@
-﻿using Google.Protobuf;
+﻿using System.DirectoryServices.ActiveDirectory;
+using Google.Protobuf;
 using PlayHouse.Production.Shared;
 using Playhouse.Protocol;
 
@@ -134,7 +135,9 @@ internal class XServerInfo(
 
     public bool TimeOver()
     {
-        return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - lastUpdate > 60000;
+        if (ConstOption.ServerTimeLimitMs == 0) return false;
+
+        return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - lastUpdate > ConstOption.ServerTimeLimitMs;
     }
 
     public void Update(XServerInfo serverInfo)

@@ -12,52 +12,88 @@ internal class ServerAddressResolver(
 {
     private readonly LOG<ServerAddressResolver> _log = new();
 
-    private Timer? _timer;
-
+    private PeriodicTimer? _periodicTimer;
+    private CancellationTokenSource? _cts;
 
     public void Start()
     {
         _log.Info(() => $"Server address resolver start");
 
-        async void TimerCallback(object? _)
+        _cts = new CancellationTokenSource();
+        _periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(ConstOption.AddressResolverPeriodMs));
+
+        Task.Run(async () => await RunPeriodicTaskAsync(_cts.Token));
+    }
+
+    private async Task RunPeriodicTaskAsync(CancellationToken cancellationToken)
+    {
+        try
         {
-            try
+            while (await _periodicTimer!.WaitForNextTickAsync(cancellationToken))
             {
-                var myServerInfo = new XServerInfo(bindEndpoint, service.ServiceId,service.ServerId, service.Nid, service.GetServiceType(),
-                    service.GetServerState(), service.GetActorCount(), DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
-
-                IReadOnlyList<IServerInfo> serverInfoList = await system.UpdateServerInfoAsync(myServerInfo);
-
-                var updateList = serverInfoCenter.Update(serverInfoList.Select(XServerInfo.Of).ToList());
-                //    new XServerInfo(e.GetBindEndpoint(), e.GetServiceId(), e.GetServerId(),e.GetNid(),e.GetServiceType(),  e.GetState(), e.GetActorCount(), e.GetLastUpdate())
-                //).ToList());
-
-                foreach (var serverInfo in updateList)
-                {
-                    switch (serverInfo.GetState())
-                    {
-                        case ServerState.RUNNING:
-                            communicateClient.Connect(serverInfo.GetBindEndpoint());
-                            break;
-                        case ServerState.DISABLE:
-                            communicateClient.Disconnect(serverInfo.GetBindEndpoint());
-                            break;
-                    }
-                }
-
-            }
-            catch (Exception e)
-            {
-                _log.Error(() => $"{e}");
+                await TimerCallbackAsync();
             }
         }
+        catch (OperationCanceledException)
+        {
+            _log.Info(() => $"Server address resolver stopped.");
+        }
+        catch (Exception e)
+        {
+            _log.Error(() => $"Unexpected error in periodic task: {e}");
+        }
+        finally
+        {
+            _periodicTimer?.Dispose();
+            _periodicTimer = null;
+        }
+    }
 
-        _timer = new Timer(TimerCallback, null, ConstOption.AddressResolverInitialDelayMs,
-            ConstOption.AddressResolverPeriodMs);
+    private async Task TimerCallbackAsync()
+    {
+        try
+        {
+            var myServerInfo = new XServerInfo(
+                bindEndpoint,
+                service.ServiceId,
+                service.ServerId,
+                service.Nid,
+                service.GetServiceType(),
+                service.GetServerState(),
+                service.GetActorCount(),
+                DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+            );
+
+            IReadOnlyList<IServerInfo> serverInfoList = await system.UpdateServerInfoAsync(myServerInfo);
+
+            var updateList = serverInfoCenter.Update(serverInfoList.Select(XServerInfo.Of).ToList());
+
+            foreach (var serverInfo in updateList)
+            {
+                switch (serverInfo.GetState())
+                {
+                    case ServerState.RUNNING:
+                        communicateClient.Connect(serverInfo.GetBindEndpoint());
+                        break;
+
+                    case ServerState.DISABLE:
+                        communicateClient.Disconnect(serverInfo.GetBindEndpoint());
+                        break;
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            _log.Error(() => $"Error in TimerCallbackAsync: {e}");
+        }
     }
 
     public void Stop()
     {
-        _timer?.Dispose();
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = null;
+        _periodicTimer?.Dispose();
+        _periodicTimer = null;
     }
 }

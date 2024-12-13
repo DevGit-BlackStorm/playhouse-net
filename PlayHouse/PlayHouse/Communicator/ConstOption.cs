@@ -7,4 +7,5 @@ public static class ConstOption
     public static int AddressResolverInitialDelayMs { get; internal set; } = 1000;
     public static int AddressResolverPeriodMs { get; internal set; } = 1000;
     public static int StopDelayMs { get; internal set; } = 3000;
+    public static int ServerTimeLimitMs { get; set; }
 }
