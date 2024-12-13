@@ -24,7 +24,7 @@ internal class ReplyObject(
 
         if (routePacket.ErrorCode == 0)
         {
-            taskCompletionSource?.SetResult(routePacket);
+            taskCompletionSource?.TrySetResult(routePacket);
         }
         else
         {
@@ -34,7 +34,7 @@ internal class ReplyObject(
 
     public void Throw(ushort errorCode)
     {
-        taskCompletionSource?.SetException(new PlayHouseException($"request has exception - errorCode:{errorCode}",
+        taskCompletionSource?.TrySetException(new PlayHouseException($"request has exception - errorCode:{errorCode}",
             errorCode));
     }
     
@@ -127,9 +127,9 @@ internal class RequestCache(int timeout)
                     CheckExpire();
                     Thread.Sleep(1000);
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    Console.WriteLine(e);
+                    _log.Error(() => $"{ex}");
                     throw;
                 }
                 
