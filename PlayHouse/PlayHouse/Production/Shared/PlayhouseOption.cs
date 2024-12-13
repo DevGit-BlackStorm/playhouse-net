@@ -12,7 +12,7 @@ public class PlayhouseOption
     public ushort ServiceId { get; set; }
     public int ServerId { get; set; } // 1~ 4095
     public IServiceProvider? ServiceProvider { get; set; }
-    public int RequestTimeoutMSec { get; set; } = 5;
+    public int RequestTimeoutMSec { get; set; } = 10000;
     public bool ShowQps { get; set; }
     public bool DebugMode { get; set; }
 
