@@ -73,11 +73,11 @@ internal class ServerAddressResolver(
                 switch (serverInfo.GetState())
                 {
                     case ServerState.RUNNING:
-                        communicateClient.Connect(serverInfo.GetBindEndpoint());
+                        communicateClient.Connect(serverInfo.GetNid(),serverInfo.GetBindEndpoint());
                         break;
 
                     case ServerState.DISABLE:
-                        communicateClient.Disconnect(serverInfo.GetBindEndpoint());
+                        communicateClient.Disconnect(serverInfo.GetNid(), serverInfo.GetBindEndpoint());
                         break;
                 }
             }

@@ -66,7 +66,7 @@ public class CommunicatorTest
 
         ///////// session to api ///////////
 
-        sessionClient.Connect(apiEndpoint);
+        sessionClient.Connect(ApiNid,apiEndpoint);
         apiListener.Results.Clear();
 
         Thread.Sleep(100);
@@ -81,7 +81,7 @@ public class CommunicatorTest
 
         ////////// api to session ///////////////
 
-        apiClient.Connect(sessionEndpoint);
+        apiClient.Connect(SessionNid,sessionEndpoint);
         sessionListener.Results.Clear();
 
         Thread.Sleep(100);
