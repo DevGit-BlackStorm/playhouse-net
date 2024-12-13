@@ -26,8 +26,8 @@ public class ApiServer : IServer
             .Build();
 
         
-
         PooledBuffer.Init(commonOption.MaxBufferPoolSize);
+        ConstOption.ServerTimeLimitMs = commonOption.ServerTimeLimitsMs;
 
         var requestCache = new RequestCache(commonOption.RequestTimeoutMSec);
         var serverInfoCenter = new XServerInfoCenter(commonOption.DebugMode);

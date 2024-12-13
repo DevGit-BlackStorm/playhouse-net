@@ -24,6 +24,8 @@ internal class XServerInfoCenter(bool debugMode) : IServerInfoCenter
         // 기존 리스트를 복사 (수정 가능한 List로 변환)
         var currentList = _serverInfoList.ToList();
 
+        List<XServerInfo> updateList = [];
+
         foreach (var incomingServer in serverList)
         {
             // 기존 서버 정보와 동일한 Endpoint를 가진 서버 검색
@@ -32,6 +34,14 @@ internal class XServerInfoCenter(bool debugMode) : IServerInfoCenter
             if (existingServer != null)
             {
                 // 기존 서버 정보 업데이트
+                if (existingServer.GetBindEndpoint() != incomingServer.GetBindEndpoint())
+                {
+                    //기존 주소는 disconnect 해야줘야함
+                    var toDisconnectServer = XServerInfo.Of(existingServer);
+                    toDisconnectServer.SetState(ServerState.DISABLE);
+                    updateList.Add(toDisconnectServer);
+                }
+
                 existingServer.Update(incomingServer);
             }
             else
@@ -55,7 +65,9 @@ internal class XServerInfoCenter(bool debugMode) : IServerInfoCenter
         // 기존 리스트를 원자적으로 교체
         _serverInfoList = newList;
 
-        return _serverInfoList;
+        updateList.AddRange(_serverInfoList);
+
+        return updateList;
     }
 
 

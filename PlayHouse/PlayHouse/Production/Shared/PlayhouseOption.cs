@@ -16,6 +16,7 @@ public class PlayhouseOption
     public bool ShowQps { get; set; }
     public bool DebugMode { get; set; }
 
+    public int ServerTimeLimitsMs { get; set; } = 30000;
     public PlaySocketConfig PlaySocketConfig { get; set; } = new();
     public Func<string, IPayload, ushort, IPacket>? PacketProducer { get; set; }
 }

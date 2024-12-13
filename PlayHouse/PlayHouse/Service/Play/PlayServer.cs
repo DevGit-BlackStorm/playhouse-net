@@ -24,13 +24,15 @@ public class PlayServer : IServer
             .SetPacketProducer(commonOption.PacketProducer)
             .Build();
 
-        
+
+        PooledBuffer.Init(commonOption.MaxBufferPoolSize);
+        ConstOption.ServerTimeLimitMs = commonOption.ServerTimeLimitsMs;
+
         var bindEndpoint = communicatorOption.BindEndpoint;
         var serviceId = commonOption.ServiceId;
         var serverId = communicatorOption.ServerId;
-        var nid = communicatorOption.Nid; 
+        var nid = communicatorOption.Nid;
 
-        PooledBuffer.Init(commonOption.MaxBufferPoolSize);
         var playSocketConfig = commonOption.PlaySocketConfig;
         var communicateClient =
             new XClientCommunicator(PlaySocketFactory.CreatePlaySocket(new SocketConfig(nid, bindEndpoint, playSocketConfig)));

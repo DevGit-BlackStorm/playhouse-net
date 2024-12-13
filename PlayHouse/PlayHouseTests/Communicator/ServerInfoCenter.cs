@@ -83,6 +83,7 @@ public class ServerInfoCenterFuncSpecTest
     [Fact]
     public void RemoveTimedOutServerInfoFromTheList()
     {
+        ConstOption.ServerTimeLimitMs = 60000;
         _serverInfoCenter.Update(_serverList);
 
         var update = new List<XServerInfo>
