@@ -148,7 +148,7 @@ internal class XServerInfo(
 
         serviceId = serverInfo.GetServiceId();
         serverId = serverInfo.GetServerId();
-        nid = serverInfo.GetNid();
+        bindEndpoint = serverInfo.GetBindEndpoint();
     }
 
     public bool IsValid()
