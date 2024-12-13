@@ -4,9 +4,9 @@ namespace PlayHouse.Communicator;
 
 internal interface IClientCommunicator
 {
-    void Connect(string endpoint);
+    void Connect(string nid, string endpoint);
     void Send(string nid, RoutePacket routePacket);
     void Communicate();
-    void Disconnect(string endpoint);
+    void Disconnect(string nid, string endpoint);
     void Stop();
 }

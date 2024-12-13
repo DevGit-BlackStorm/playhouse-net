@@ -188,7 +188,7 @@ internal class Communicator : ICommunicateListener
     public void Start()
     {
 
-
+        var nid = _option.Nid;
         var bindEndpoint = _option.BindEndpoint;
         _systemPanel.Communicator = this;
 
@@ -196,7 +196,8 @@ internal class Communicator : ICommunicateListener
 
         _messageLoop.Start();
 
-        _clientCommunicator.Connect(bindEndpoint);
+
+        _clientCommunicator.Connect(nid,bindEndpoint);
 
 
         _addressResolver.Start();
@@ -208,7 +209,7 @@ internal class Communicator : ICommunicateListener
         _requestCache.Start();
 
         _log.Info(() => $"============== server start ==============");
-        _log.Info(() => $"Ready for bind: {bindEndpoint}");
+        _log.Info(() => $"Ready for nid:{nid},bind:{bindEndpoint}");
     }
 
     public async Task StopAsync()

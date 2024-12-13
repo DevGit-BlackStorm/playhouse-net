@@ -12,7 +12,7 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
     private readonly LOG<XClientCommunicator> _log = new();
     private readonly BlockingCollection<Action> _queue = new();
 
-    public void Connect(string endpoint)
+    public void Connect(string nid,string endpoint)
     {
         if (!_connected.Add(endpoint))
         {
@@ -26,16 +26,16 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
                 playSocket.Connect(endpoint);
                 //_connected.Add(endpoint);
                 //_disconnected.Remove(endpoint);
-                _log.Info(() => $"connected with {endpoint}");
+                _log.Info(() => $"connected with - [nid:{nid},endpoint:{endpoint}]");
             }
             catch (Exception ex)
             {
-                _log.Error(() => $"connect error - endpoint:{endpoint}, error:{ex.Message}");
+                _log.Error(() => $"connect error - [nid:{nid},endpoint:{endpoint}], error:{ex.Message}");
             }
         });
     }
 
-    public void Disconnect(string endpoint)
+    public void Disconnect(string nid,string endpoint)
     {
         
         if (_disconnected.Contains(endpoint))
@@ -48,7 +48,7 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
             if (_connected.Contains(endpoint))
             {
                 playSocket.Disconnect(endpoint);
-                _log.Info(() => $"disconnected with {endpoint}");
+                _log.Info(() => $"disconnected with - [nid:{nid},endpoint:{endpoint}]");
                 _connected.Remove(endpoint);
                 _disconnected.Add(endpoint);
             }
@@ -56,7 +56,7 @@ internal class XClientCommunicator(IPlaySocket playSocket) : IClientCommunicator
         }
         catch (Exception ex)
         {
-            _log.Error(() => $"disconnect error - endpoint:{endpoint}, error:{ex.Message}");
+            _log.Error(() => $"disconnect error - [nid:{nid},endpoint:{endpoint}],error:{ex.Message}");
         }
 
         //_queue.Enqueue(() =>
