@@ -39,8 +39,8 @@ public interface IApiSender : IApiCommonSender
 {
     string SessionNid { get; }
     long Sid { get; }
-    Task AuthenticateAsync(long accountId);
-    Task AuthenticateAsync(long accountId, string apiNid);
+    void Authenticate(long accountId);
+    void Authenticate(long accountId, string apiNid);
 
     Task<string> GetRemoteIp();
 
