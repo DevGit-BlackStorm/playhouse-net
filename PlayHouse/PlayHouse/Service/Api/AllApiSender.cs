@@ -18,14 +18,14 @@ internal class AllApiSender(ushort serviceId, IClientCommunicator clientCommunic
     public string SessionNid => CurrentHeader?.From ?? ServiceConst.DefaultNid;
     public long Sid => CurrentHeader?.Sid ?? 0L;
 
-    public async Task AuthenticateAsync(long accountId)
+    public void Authenticate(long accountId)
     {
         var serverInfo = ControlContext.SystemPanel.GetServerInfo();
         var apiNid = serverInfo.GetNid();
 
-        await AuthenticateAsync(accountId, apiNid);
+        Authenticate(accountId, apiNid);
     }
-    public async Task AuthenticateAsync(long accountId,string apiNid)
+    public void Authenticate(long accountId,string apiNid)
     {
         var message = new AuthenticateMsg
         {
