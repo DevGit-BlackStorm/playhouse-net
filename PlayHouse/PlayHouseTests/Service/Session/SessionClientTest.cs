@@ -81,7 +81,7 @@ public class SessionClientTest : IDisposable
         // api 서버로부터 authenticate 패킷을 받을 경우 인증 확인 및 session info 정보 확인
         var accountId = 1000L;
 
-        var message = new AuthenticateMsgReq
+        var message = new AuthenticateMsg
         {
             ServiceId = _idApi,
             AccountId = accountId

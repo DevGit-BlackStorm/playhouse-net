@@ -261,12 +261,12 @@ internal class SessionActor
 
         if (isBase)
         {
-            if (msgId == AuthenticateMsgReq.Descriptor.Name)
+            if (msgId == AuthenticateMsg.Descriptor.Name)
             {
-                var authenticateMsg = AuthenticateMsgReq.Parser.ParseFrom(packet.Span);
+                var authenticateMsg = AuthenticateMsg.Parser.ParseFrom(packet.Span);
                 var apiNid = authenticateMsg.ApiNid;
                 Authenticate((ushort)authenticateMsg.ServiceId, apiNid, authenticateMsg.AccountId);
-                _sessionSender.Reply(XPacket.Of(new AuthenticateMsgRes()));
+                //_sessionSender.Reply(XPacket.Of(new AuthenticateMsgRes()));
 
                 _log.Debug(() => $"session authenticated - [accountId:{AccountId.ToString():accountId}]");
             }
